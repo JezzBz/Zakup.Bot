@@ -1,0 +1,13 @@
+D:\Rekla\rekla\Bot.Core\bin\Debug\net8.0\Bot.Core.deps.json
+D:\Rekla\rekla\Bot.Core\bin\Debug\net8.0\Bot.Core.dll
+D:\Rekla\rekla\Bot.Core\bin\Debug\net8.0\Bot.Core.pdb
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.csproj.AssemblyReference.cache
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.AssemblyInfoInputs.cache
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.AssemblyInfo.cs
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.csproj.CoreCompileInputs.cache
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.sourcelink.json
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.dll
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\refint\Bot.Core.dll
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.pdb
+D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\ref\Bot.Core.dll
