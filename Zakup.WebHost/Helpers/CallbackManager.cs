@@ -4,6 +4,9 @@ using Zakup.Common.Enums;
 
 namespace Zakup.WebHost.Helpers;
 
+/// <summary>
+/// Гарант соответствия типа callbackType и его обработчика
+/// </summary>
 public class CallbackManager
 {
     private readonly IServiceProvider _serviceProvider;
@@ -20,6 +23,12 @@ public class CallbackManager
                 t => t);
     }
     
+    /// <summary>
+    /// Получить хендлер по типу
+    /// </summary>
+    /// <param name="callbackType">Тип callback'а</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public ICallbackHandler GetInstance(CallbackType callbackType)
     {
         if (_handlers.TryGetValue(callbackType, out Type handlerType))
@@ -29,6 +38,13 @@ public class CallbackManager
         throw new ArgumentException($"Unknown handler type: {callbackType}");
     }
 
+    /// <summary>
+    /// Гарантирует правильную генерацию направленного callback сообщения
+    /// </summary>
+    /// <param name="data">Параметры callback</param>
+    /// <typeparam name="TData">Тип параметров</typeparam>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public string ToCallback<TData>(TData data) where TData : ICallbackData
     {
         var handlerEntry = _handlers.FirstOrDefault(x => x.Value == typeof(ICallbackHandler<TData>));

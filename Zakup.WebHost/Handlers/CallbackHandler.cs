@@ -20,8 +20,12 @@ public class CallbackHandler : IUpdatesHandler
         _callbackManager = callbackManager;
     }
 
+    //Реагируем на любые callback сообщения
     public bool ShouldHandle(Update update) => update.IsCallback();
 
+    //Callback отвязан от состояния пользователя поэтому
+    //*все данные, критически необходимые для обработчика нужно передавать в параметры
+    //*UI бота становится независимым от состояния, даже если от пользователя ожидается ввод данных, callback отработает корректно
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         var data = update.CallbackQuery?.Data;

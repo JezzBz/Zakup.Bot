@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zakup.Abstractions", "Zakup
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zakup.Common", "Zakup.Common\Zakup.Common.csproj", "{DD84160B-B168-45C1-92AD-DD4ACB70429E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zakup.Services", "Zakup.Services\Zakup.Services.csproj", "{8583F6B3-9FE8-4848-A8AB-AF314966CAEC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{DD84160B-B168-45C1-92AD-DD4ACB70429E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD84160B-B168-45C1-92AD-DD4ACB70429E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD84160B-B168-45C1-92AD-DD4ACB70429E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8583F6B3-9FE8-4848-A8AB-AF314966CAEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8583F6B3-9FE8-4848-A8AB-AF314966CAEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8583F6B3-9FE8-4848-A8AB-AF314966CAEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8583F6B3-9FE8-4848-A8AB-AF314966CAEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

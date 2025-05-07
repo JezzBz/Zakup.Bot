@@ -1,9 +1,11 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Zakup.Abstractions.Data;
 
 namespace Zakup.Abstractions.Handlers;
 
 public interface ICallbackHandler<T> : ICallbackHandler
+    where T : ICallbackData
 {
     Task Handle(ITelegramBotClient botClient,T data, CallbackQuery callbackQuery);
     

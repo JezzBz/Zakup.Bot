@@ -8,6 +8,9 @@ using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.CallbackHandlers;
 
+/// <summary>
+/// Обработчик команды "Оценка канала"
+/// </summary>
 [CallbackType(CallbackType.RateChannel)]
 public class RateChannelCallBackHandler : ICallbackHandler<RateChannelCallbackData>
 {

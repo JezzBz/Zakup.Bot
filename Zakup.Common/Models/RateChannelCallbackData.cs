@@ -3,6 +3,9 @@ using Zakup.Common.Enums;
 
 namespace Zakup.Common.Models;
 
+/// <summary>
+/// Команда "Оценка канала"
+/// </summary>
 public class RateChannelCallbackData : ICallbackData
 {
     public ChannelRateType RateType { get; set; }
