@@ -24,6 +24,7 @@
       <ProjectReference Include="..\Bot.Core\Bot.Core.csproj" />
       <ProjectReference Include="..\Zakup.Abstractions\Zakup.Abstractions.csproj" />
       <ProjectReference Include="..\Zakup.EntityFramework\Zakup.EntityFramework.csproj" />
+      <ProjectReference Include="..\Zakup.Services\Zakup.Services.csproj" />
     </ItemGroup>
 
 </Project>

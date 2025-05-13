@@ -13,11 +13,11 @@ namespace Zakup.WebHost.Handlers;
 /// </summary>
 public class CallbackHandler : IUpdatesHandler
 {
-    private readonly CallbackManager _callbackManager;
+    private readonly HandlersManager _handlersManager;
 
-    public CallbackHandler(CallbackManager callbackManager)
+    public CallbackHandler(HandlersManager handlersManager)
     {
-        _callbackManager = callbackManager;
+        _handlersManager = handlersManager;
     }
 
     //Реагируем на любые callback сообщения
@@ -36,7 +36,7 @@ public class CallbackHandler : IUpdatesHandler
         }
         
         var command = CallbackCommandsHelper.Parse(data);
-        var handler = _callbackManager.GetInstance(command.Command);
-        await handler.Handle(botClient, command.Paramers.ToList(), update.CallbackQuery!);
+        var handler = _handlersManager.GetInstance(command.Command);
+        await handler.Handle(botClient, command.Params.ToList(), update.CallbackQuery!, cancellationToken);
     }
 }

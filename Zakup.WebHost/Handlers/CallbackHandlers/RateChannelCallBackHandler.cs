@@ -14,7 +14,7 @@ namespace Zakup.WebHost.Handlers.CallbackHandlers;
 [CallbackType(CallbackType.RateChannel)]
 public class RateChannelCallBackHandler : ICallbackHandler<RateChannelCallbackData>
 {
-    public async Task Handle(ITelegramBotClient botClient, RateChannelCallbackData data, CallbackQuery callbackQuery)
+    public async Task Handle(ITelegramBotClient botClient, RateChannelCallbackData data, CallbackQuery callbackQuery, CancellationToken cancellationToken)
     {
         
     }

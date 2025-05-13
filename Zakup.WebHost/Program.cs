@@ -30,7 +30,7 @@ builder.Services.AddTelegramBot(builder.Configuration["Telegram:BotToken"]!, con
     config.UseLogging();
 });
 
-builder.Services.AddSingleton<CallbackManager>();
+builder.Services.AddSingleton<HandlersManager>();
 
 var app = builder.Build();
 

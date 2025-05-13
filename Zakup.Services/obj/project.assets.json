@@ -56,6 +56,19 @@
         "runtime": {
           "bin/placeholder/Zakup.Common.dll": {}
         }
+      },
+      "Zakup.Entities/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Zakup.Common": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Zakup.Entities.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Zakup.Entities.dll": {}
+        }
       }
     }
   },
@@ -114,11 +127,17 @@
       "type": "project",
       "path": "../Zakup.Common/Zakup.Common.csproj",
       "msbuildProject": "../Zakup.Common/Zakup.Common.csproj"
+    },
+    "Zakup.Entities/1.0.0": {
+      "type": "project",
+      "path": "../Zakup.Entities/Zakup.Entities.csproj",
+      "msbuildProject": "../Zakup.Entities/Zakup.Entities.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "Zakup.Common >= 1.0.0"
+      "Zakup.Common >= 1.0.0",
+      "Zakup.Entities >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -155,6 +174,9 @@
           "projectReferences": {
             "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Common\\Zakup.Common.csproj": {
               "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Common\\Zakup.Common.csproj"
+            },
+            "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj": {
+              "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj"
             }
           }
         }

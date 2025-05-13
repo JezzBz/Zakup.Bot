@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Zakup.Common\Zakup.Common.csproj" />
+      <ProjectReference Include="..\Zakup.Entities\Zakup.Entities.csproj" />
     </ItemGroup>
 
 </Project>

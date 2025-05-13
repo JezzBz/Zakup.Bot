@@ -10,7 +10,7 @@ public static class CallbackCommandsHelper
         var result  = new CallbackInfo();
         var data = command.Split("|");
         result.Command = Enum.Parse<CallbackType>(data[0]);
-        result.Paramers = data.Skip(1);
+        result.Params = data.Skip(1);
         return result;
     }
 }

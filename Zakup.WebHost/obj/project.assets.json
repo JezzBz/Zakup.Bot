@@ -429,6 +429,20 @@
         "runtime": {
           "bin/placeholder/Zakup.EntityFramework.dll": {}
         }
+      },
+      "Zakup.Services/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Zakup.Common": "1.0.0",
+          "Zakup.Entities": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Zakup.Services.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Zakup.Services.dll": {}
+        }
       }
     }
   },
@@ -1017,6 +1031,11 @@
       "type": "project",
       "path": "../Zakup.EntityFramework/Zakup.EntityFramework.csproj",
       "msbuildProject": "../Zakup.EntityFramework/Zakup.EntityFramework.csproj"
+    },
+    "Zakup.Services/1.0.0": {
+      "type": "project",
+      "path": "../Zakup.Services/Zakup.Services.csproj",
+      "msbuildProject": "../Zakup.Services/Zakup.Services.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -1027,7 +1046,8 @@
       "NLog.Web.AspNetCore >= 5.4.0",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.4",
       "Zakup.Abstractions >= 1.0.0",
-      "Zakup.EntityFramework >= 1.0.0"
+      "Zakup.EntityFramework >= 1.0.0",
+      "Zakup.Services >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -1070,6 +1090,9 @@
             },
             "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.EntityFramework\\Zakup.EntityFramework.csproj": {
               "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.EntityFramework\\Zakup.EntityFramework.csproj"
+            },
+            "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\Zakup.Services.csproj": {
+              "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\Zakup.Services.csproj"
             }
           }
         }

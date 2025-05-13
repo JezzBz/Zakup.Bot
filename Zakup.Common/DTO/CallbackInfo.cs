@@ -6,5 +6,5 @@ public class CallbackInfo
 {
     public CallbackType Command { get; set; }
     
-    public IEnumerable<string> Paramers { get; set; }
+    public IEnumerable<string> Params { get; set; }
 }
