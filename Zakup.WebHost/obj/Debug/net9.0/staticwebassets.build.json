@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "HZpbm7+TmbLFJHiGTFSReVvl3Z0iKKkfxPUtzSXFdg4=",
+  "Source": "Zakup.WebHost",
+  "BasePath": "_content/Zakup.WebHost",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
