@@ -21,7 +21,7 @@ public class CallbackHandler : IUpdatesHandler
     }
 
     //Реагируем на любые callback сообщения
-    public bool ShouldHandle(Update update) => update.IsCallback();
+    public static bool ShouldHandle(Update update) => update.IsCallback();
 
     //Callback отвязан от состояния пользователя поэтому
     //*все данные, критически необходимые для обработчика нужно передавать в параметры
@@ -35,7 +35,7 @@ public class CallbackHandler : IUpdatesHandler
             throw new ArgumentNullException(nameof(update.CallbackQuery.Data));
         }
         
-        var command = CallbackCommandsHelper.Parse(data);
+        var command = CommandsHelper.ParseCallback(data);
         var handler = _handlersManager.GetInstance(command.Command);
         await handler.Handle(botClient, command.Params.ToList(), update.CallbackQuery!, cancellationToken);
     }

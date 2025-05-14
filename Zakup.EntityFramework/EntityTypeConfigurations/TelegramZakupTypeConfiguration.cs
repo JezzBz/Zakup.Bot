@@ -29,7 +29,7 @@ public class TelegramZakupTypeConfiguration : IEntityTypeConfiguration<TelegramZ
         builder.Property(x => x.Admin)
             .HasMaxLength(255);
         
-        builder .Property(x => x.ZakupSource)
+        builder.Property(x => x.ZakupSource)
             .HasConversion(new EnumToStringConverter<ZakupSource>());
     }
 }

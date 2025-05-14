@@ -5,7 +5,7 @@ using Telegram.Bot.Types;
 
 public class DefaultHandler : IUpdatesHandler
 {
-    public bool ShouldHandle(Update update)
+    public static bool ShouldHandle(Update update)
     {
         return true;
     }

@@ -8,7 +8,7 @@ public class TelegramUserState
     
     public long UserId { get; set; }
     
-    public virtual required TelegramUser User { get; set; }
+    public virtual TelegramUser User { get; set; }
     
     public  UserStateType State { get; set; }
     

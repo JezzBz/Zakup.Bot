@@ -15,5 +15,9 @@ public class TelegramUserStateTypeConfiguration : IEntityTypeConfiguration<Teleg
         
         builder.Property(x => x.State)
             .HasConversion(new EnumToStringConverter<UserStateType>());
+        
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId);
     }
 }

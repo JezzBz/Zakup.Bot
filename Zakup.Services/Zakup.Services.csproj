@@ -9,6 +9,11 @@
     <ItemGroup>
       <ProjectReference Include="..\Zakup.Common\Zakup.Common.csproj" />
       <ProjectReference Include="..\Zakup.Entities\Zakup.Entities.csproj" />
+      <ProjectReference Include="..\Zakup.EntityFramework\Zakup.EntityFramework.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
     </ItemGroup>
 
 </Project>

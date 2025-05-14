@@ -8,8 +8,14 @@ public class TelegramUserTypeConfiguration : IEntityTypeConfiguration<TelegramUs
 {
     public void Configure(EntityTypeBuilder<TelegramUser> builder)
     {
+        builder.HasKey(x => x.Id);
+        
         builder.HasMany(x => x.Channels)
             .WithMany(x => x.Administrators)
             .UsingEntity<ChannelAdministrator>();
+
+        builder.HasOne(x => x.UserState)
+            .WithMany()
+            .HasForeignKey(x => x.UserStateId);
     }
 }

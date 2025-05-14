@@ -353,6 +353,14 @@
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.Relational": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
             }
           },
           "imports": [
@@ -408,6 +416,9 @@
               },
               "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj": {
                 "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj"
+              },
+              "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.EntityFramework\\Zakup.EntityFramework.csproj": {
+                "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.EntityFramework\\Zakup.EntityFramework.csproj"
               }
             }
           }
@@ -427,6 +438,12 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -509,6 +526,20 @@
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "NLog": {
+              "target": "Package",
+              "version": "[5.4.0, )"
+            },
+            "NLog.Config": {
+              "target": "Package",
+              "version": "[4.7.15, )"
             },
             "NLog.Extensions.Logging": {
               "target": "Package",

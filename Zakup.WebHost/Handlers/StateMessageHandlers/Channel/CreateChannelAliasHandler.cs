@@ -10,11 +10,11 @@ namespace Zakup.WebHost.Handlers.MessageHandlers.Channel;
 [StateType(UserStateType.CreateChannelAlias)]
 public class CreateChannelAliasHandler : IStateHandler
 {
-    private readonly UserStateService _userStateService;
+    private readonly UserService _userService;
 
-    public CreateChannelAliasHandler(UserStateService userStateService)
+    public CreateChannelAliasHandler(UserService userService)
     {
-        _userStateService = userStateService;
+        _userService = userService;
     }
     
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)

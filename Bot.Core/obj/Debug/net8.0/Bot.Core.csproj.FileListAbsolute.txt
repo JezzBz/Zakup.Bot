@@ -11,3 +11,16 @@ D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.dll
 D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\refint\Bot.Core.dll
 D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\Bot.Core.pdb
 D:\Rekla\rekla\Bot.Core\obj\Debug\net8.0\ref\Bot.Core.dll
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\bin\Debug\net8.0\Bot.Core.deps.json
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\bin\Debug\net8.0\Bot.Core.dll
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\bin\Debug\net8.0\Bot.Core.pdb
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\Bot.Core.csproj.AssemblyReference.cache
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\Bot.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\Bot.Core.AssemblyInfoInputs.cache
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\Bot.Core.AssemblyInfo.cs
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\Bot.Core.csproj.CoreCompileInputs.cache
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\Bot.Core.sourcelink.json
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\Bot.Core.dll
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\refint\Bot.Core.dll
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\Bot.Core.pdb
+C:\Users\Bogdan\RiderProjects\ZakupBot\Bot.Core\obj\Debug\net8.0\ref\Bot.Core.dll

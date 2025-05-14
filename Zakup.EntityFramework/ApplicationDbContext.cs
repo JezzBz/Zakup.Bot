@@ -27,12 +27,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<TelegramAdPost> TelegramAdPosts { get; set; }
     
     public DbSet<TelegramDocument> TelegramDocuments { get; set; }
-    
-    public DbSet<TelegramPostButton> TelegramPostButtons { get; set; }
-    
     public DbSet<TelegramUser> Users { get; set; }
     
-    public DbSet<TelegramUserState> UserStates { get; set; }
+    public DbSet<TelegramUserState?> UserStates { get; set; }
     
     public DbSet<TelegramZakup> TelegramZakups { get; set; }
     

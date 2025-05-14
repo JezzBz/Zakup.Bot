@@ -1,3 +1,6 @@
+using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
+
 namespace Bot.Core;
 
 using System.Diagnostics;
@@ -12,9 +15,9 @@ using Telegram.Bot.Types;
 public class BotBuilder
 {
     private List<Type> _handlerTypes;
-    private HashSet<IUpdatesHandler> _handlers;
     private IUpdatesHandler _defaultHandler;
     private readonly IServiceCollection _servicesCollection;
+    private IServiceProvider _serviceProvider;
     private readonly ITelegramBotClient _client;
     private Type? _preHandlerType = null;
     private IPreHandler? _preHandler;
@@ -33,7 +36,6 @@ public class BotBuilder
     public BotBuilder(IServiceCollection servicesCollection, ITelegramBotClient client)
     {
         _handlerTypes = new List<Type>();
-        _handlers = new HashSet<IUpdatesHandler>();
         _servicesCollection = servicesCollection;
         _client = client;
     }
@@ -76,8 +78,8 @@ public class BotBuilder
         var handlerType = typeof(DefaultHandler);
         try
         {
-            var handler = _handlers.FirstOrDefault(q => q.ShouldHandle(updates)) ?? _defaultHandler;
-            handlerType = handler.GetType();
+            handlerType = _handlerTypes.FirstOrDefault(q => CallShouldHandle(q, updates)) ?? handlerType;
+            var handler = (IUpdatesHandler)ActivatorUtilities.CreateInstance(_serviceProvider, handlerType);
             await handler.Handle(botClient, updates, cancellationToken);
         }
         catch (Exception e)
@@ -138,6 +140,7 @@ public class BotBuilder
         }
         
         BuildHandlers(provider);
+        _serviceProvider = provider;
         return new BotContainer(HandleUpdates, HandlePollingErrorAsync, _client, _receiverOptions);
     }
     
@@ -148,18 +151,6 @@ public class BotBuilder
         if (_preHandlerType != null)
         {
             _preHandler = (IPreHandler)ActivatorUtilities.CreateInstance(provider, _preHandlerType);
-        }
-        
-        foreach (var type in _handlerTypes)
-        {
-            var handler = (IUpdatesHandler)ActivatorUtilities.CreateInstance(provider, type)!;
-
-            if (handler is null)
-            {
-                throw new ArgumentException($"Can't create instance of {nameof(type)}");
-            }
-
-            _handlers.Add(handler);
         }
     }
     
@@ -183,5 +174,23 @@ public class BotBuilder
         }
         
         return Task.CompletedTask;
+    }
+
+    bool CallShouldHandle(Type targetType, Update update)
+    {
+        // Получаем метод по имени (укажите правильное имя метода и параметры)
+        MethodInfo method = targetType.GetMethod(nameof(IUpdatesHandler.ShouldHandle), 
+            BindingFlags.Public | BindingFlags.Static);
+        
+        if (method != null)
+        {
+            return (bool)method.Invoke(null, new object[] { update });
+        }
+        else
+        {
+            
+            Console.WriteLine($"Метод не найден в типе {targetType.Name}");
+            throw new Exception("Неизвестный тип хендлера");
+        }
     }
 }
