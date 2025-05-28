@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Zakup.Services.Extensions;
@@ -55,5 +56,23 @@ public static class DataContextExtensions
         }
         
         return result;
+    }
+     
+    public static async Task ExecuteInTransactionAsync(
+        this DbContext context, 
+        Func<Task> action,
+        IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+    {
+        await using var transaction = await context.Database.BeginTransactionAsync(isolationLevel);
+        try
+        {
+            await action();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

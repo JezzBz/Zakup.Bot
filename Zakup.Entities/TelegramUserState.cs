@@ -17,4 +17,11 @@ public class TelegramUserState
     public int PreviousMessageId { get; set; }
     
     public int? MenuMessageId { get; set; }
+
+    public void Clear()
+    {
+        CachedValue = null;
+        State = UserStateType.None;
+        PreviousMessageId = 0;
+    }
 }

@@ -5,6 +5,7 @@ using Zakup.Common.Enums;
 using Zakup.Common.Exceptions;
 using Zakup.Entities;
 using Zakup.Services;
+using Zakup.Services.Extensions;
 using Zakup.WebHost.Extensions;
 using Zakup.WebHost.Handlers.MessageHandlers.Channel;
 using Zakup.WebHost.Helpers;

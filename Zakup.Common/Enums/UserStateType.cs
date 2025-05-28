@@ -3,5 +3,9 @@ namespace Zakup.Common.Enums;
 public enum UserStateType
 {
     None,
-    CreateChannelAlias
+    CreateChannelAlias,
+    ConfirmAddChannel,
+    CreateNewPost,
+    WritePostButtonText,
+    AddPostTitle
 }

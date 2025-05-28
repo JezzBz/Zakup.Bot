@@ -22,11 +22,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     
     public DbSet<ChannelSheet> ChannelSheets { get; set; }
     
-    public DbSet<TelegramChannel> Channels { get; set; }
+    public DbSet<TelegramChannel?> Channels { get; set; }
     
     public DbSet<TelegramAdPost> TelegramAdPosts { get; set; }
     
     public DbSet<TelegramDocument> TelegramDocuments { get; set; }
+    
+    public DbSet<FileMediaGroup> FileMediaGroups { get; set; }
+    public DbSet<MediaGroup>MediaGroups { get; set; }
     public DbSet<TelegramUser> Users { get; set; }
     
     public DbSet<TelegramUserState?> UserStates { get; set; }

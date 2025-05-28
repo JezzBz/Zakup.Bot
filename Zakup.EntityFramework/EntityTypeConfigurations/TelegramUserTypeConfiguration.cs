@@ -13,9 +13,5 @@ public class TelegramUserTypeConfiguration : IEntityTypeConfiguration<TelegramUs
         builder.HasMany(x => x.Channels)
             .WithMany(x => x.Administrators)
             .UsingEntity<ChannelAdministrator>();
-
-        builder.HasOne(x => x.UserState)
-            .WithMany()
-            .HasForeignKey(x => x.UserStateId);
     }
 }

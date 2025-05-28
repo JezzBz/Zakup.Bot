@@ -12,8 +12,8 @@ using Zakup.EntityFramework;
 namespace Zakup.EntityFramework.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250513115914_Initial")]
-    partial class Initial
+    [Migration("20250528104200_FixId")]
+    partial class FixId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,12 +40,26 @@ namespace Zakup.EntityFramework.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ThumbnailId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.ToTable("TelegramDocuments");
+                });
+
+            modelBuilder.Entity("Zakup.Entities.AdPostFile", b =>
+                {
+                    b.Property<Guid>("AdPostId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("AdPostId", "FileId");
+
+                    b.HasIndex("FileId");
+
+                    b.ToTable("AdPostFiles");
                 });
 
             modelBuilder.Entity("Zakup.Entities.ChannelAdministrator", b =>
@@ -282,9 +296,6 @@ namespace Zakup.EntityFramework.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("FileId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("HasDeleted")
                         .HasColumnType("boolean");
 
@@ -301,8 +312,6 @@ namespace Zakup.EntityFramework.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChannelId");
-
-                    b.HasIndex("FileId");
 
                     b.ToTable("TelegramAdPosts");
                 });
@@ -496,6 +505,25 @@ namespace Zakup.EntityFramework.Migrations
                     b.ToTable("ZakupClients");
                 });
 
+            modelBuilder.Entity("Zakup.Entities.AdPostFile", b =>
+                {
+                    b.HasOne("Zakup.Entities.TelegramAdPost", "AdPost")
+                        .WithMany()
+                        .HasForeignKey("AdPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TelegramDocument", "File")
+                        .WithMany()
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AdPost");
+
+                    b.Navigation("File");
+                });
+
             modelBuilder.Entity("Zakup.Entities.ChannelAdministrator", b =>
                 {
                     b.HasOne("Zakup.Entities.TelegramChannel", "Channel")
@@ -585,13 +613,7 @@ namespace Zakup.EntityFramework.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TelegramDocument", "File")
-                        .WithMany()
-                        .HasForeignKey("FileId");
-
                     b.Navigation("Channel");
-
-                    b.Navigation("File");
                 });
 
             modelBuilder.Entity("Zakup.Entities.TelegramUser", b =>

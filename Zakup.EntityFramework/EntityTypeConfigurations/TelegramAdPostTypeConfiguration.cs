@@ -12,13 +12,13 @@ public class TelegramAdPostTypeConfiguration : IEntityTypeConfiguration<Telegram
     {
         builder.HasKey(x => x.Id);
         
-        builder.HasOne(x => x.File)
-            .WithMany()
-            .HasForeignKey(x => x.FileId);
-        
         builder.HasOne(x => x.Channel)
             .WithMany()
             .HasForeignKey(x => x.ChannelId);
+        
+        builder.HasOne(x => x.MediaGroup)
+            .WithMany()
+            .HasForeignKey(x => x.MediaGroupId);
         
         builder.Property(x => x.Text)
             .HasMaxLength(4096)
@@ -41,5 +41,6 @@ public class TelegramAdPostTypeConfiguration : IEntityTypeConfiguration<Telegram
             );
 
         builder.HasQueryFilter(r => !r.HasDeleted);
+        
     }
 }

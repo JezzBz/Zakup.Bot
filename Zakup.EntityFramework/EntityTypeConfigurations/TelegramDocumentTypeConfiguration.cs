@@ -13,5 +13,6 @@ public class TelegramDocumentTypeConfiguration : IEntityTypeConfiguration<Telegr
         
         builder .Property(x => x.Kind)
             .HasConversion(new EnumToStringConverter<TelegramDocumentKind>());
+        
     }
 }

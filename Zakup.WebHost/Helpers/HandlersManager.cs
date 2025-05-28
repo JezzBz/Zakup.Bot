@@ -72,7 +72,7 @@ public class HandlersManager
     /// <exception cref="ArgumentException"></exception>
     public string ToCallback<TData>(TData data) where TData : ICallbackData
     {
-        var handlerEntry = _callbackHandlers.FirstOrDefault(x => x.Value == typeof(ICallbackHandler<TData>));
+        var handlerEntry = _callbackHandlers.FirstOrDefault(x => typeof(ICallbackHandler<TData>).IsAssignableFrom(x.Value));
         if (handlerEntry.Value == null)
         {
             throw new ArgumentException($"Unknown handler type: {typeof(TData).Name}");

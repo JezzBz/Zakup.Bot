@@ -13,10 +13,7 @@ public class TelegramAdPost : IDeletable
     public required string Title { get; set; }
 
     public required string Text { get; set; }
-
-    public Guid? FileId { get; set; }
-    public TelegramDocument? File { get; set; }
-
+    
     public required List<MessageEntity> Entities { get; set; }
 
     public required List<TelegramPostButton> Buttons { get; set; }
@@ -25,5 +22,8 @@ public class TelegramAdPost : IDeletable
     public DateTime? DeletedUtc { get; set; }
     
     public required long ChannelId { get; set; }
-    public virtual required TelegramChannel Channel { get; set; }
+    public virtual TelegramChannel Channel { get; set; }
+    
+    public string? MediaGroupId { get; set; }
+    public MediaGroup? MediaGroup { get; set; }
 }
