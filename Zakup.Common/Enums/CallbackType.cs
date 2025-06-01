@@ -25,5 +25,18 @@ public enum CallbackType
     CreatePost,
     AddPostButton,
     GenerateAdPost,
-    DeleteAdPost
+    DeleteAdPost,
+    EnableAutoApprove,
+    DisableAutoApprove,
+    AdminInfo,
+    AddNewChannelAdmin,
+    RemoveAdmin,
+    HelpQuestion,
+    HelpAnOffer,
+    ChooseZakupDate,
+    DeleteZakup,
+    AddZakupPrice,
+    ZakupChannelPrivate,
+    ZakupLinkType,
+    DeleteChannelComplete
 }

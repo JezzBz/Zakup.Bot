@@ -71,7 +71,7 @@ public class ShowChannelMenuCallbackHandler : ICallbackHandler<ShowChannelMenuCa
             },
         };
         
-        var addAdminButtonData = _handlersManager.ToCallback(new AddChannelAdminCallbackData()
+        var addAdminButtonData = _handlersManager.ToCallback(new ChannelAdminsListCallbackData()
         {
             ChannelId = channel.Id
         });

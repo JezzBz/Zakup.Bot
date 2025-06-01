@@ -20,41 +20,51 @@ public class ChannelAliasConfirmCallbackHandler :  ICallbackHandler<ConfirmChann
     private readonly UserService _userService;
     private readonly ChannelService _channelService;
     private readonly HandlersManager _handlersManager;
+    private readonly MessagesService _messagesService;
 
-    public ChannelAliasConfirmCallbackHandler(UserService userService, ChannelService channelService, HandlersManager handlersManager)
+    public ChannelAliasConfirmCallbackHandler(UserService userService, ChannelService channelService, HandlersManager handlersManager, MessagesService messagesService)
     {
         _userService = userService;
         _channelService = channelService;
         _handlersManager = handlersManager;
+        _messagesService = messagesService;
     }
 
     public async Task Handle(ITelegramBotClient botClient, ConfirmChannelAlias data, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
-        var state = await _userService.GetUserState(callbackQuery.From!.Id, cancellationToken);
-        await botClient.SafeDelete(callbackQuery.From.Id, state.PreviousMessageId, cancellationToken);
+        var user = await _userService.GetUser(callbackQuery.From!.Id, cancellationToken);
+        await botClient.SafeDelete(callbackQuery.From.Id, user.UserState.PreviousMessageId, cancellationToken);
         if (!data.Confirm)
         {
             var msg = await botClient.SendTextMessageAsync(
                 callbackQuery.From.Id, 
                 MessageTemplate.AddChannelAliasRequest, cancellationToken: cancellationToken);
             
-            state!.CachedValue = CacheHelper.ToCache(new CreateChannelCacheData
+            user.UserState!.CachedValue = CacheHelper.ToCache(new CreateChannelCacheData
             {
-                ChannelId = data.ChannelId
+                ChannelId = data.ChannelId,
+                RequestFirstPost = true
             });
             
-            state.PreviousMessageId = msg.MessageId;
+            user.UserState.PreviousMessageId = msg.MessageId;
             
-            await _userService.SetUserState(state, cancellationToken);
+            await _userService.SetUserState(user.UserState, cancellationToken);
             return;
         }
         
         var channel = await _channelService.GetChannel(data.ChannelId, cancellationToken);
-        channel.Alias = data.Alias;
+        channel!.Alias = data.Alias;
         await _channelService.UpdateChannel(channel, cancellationToken: cancellationToken);
-        await SendFirstPostMessage(botClient, state.UserId, data.ChannelId);
-        
+
+        if (data.RequestFirstPost)
+            await SendFirstPostMessage(botClient, user.UserState.UserId, data.ChannelId);
+        else
+        {
+            await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId, MessageTemplate.LabelChanged, cancellationToken: cancellationToken);
+            await _messagesService.SendMenu(botClient, user, cancellationToken);
+        }
+            
     }
 
     public ConfirmChannelAlias Parse(List<string> parameters)
@@ -69,7 +79,8 @@ public class ChannelAliasConfirmCallbackHandler :  ICallbackHandler<ConfirmChann
         {
             Alias = parameters[0],
             ChannelId = long.Parse(parameters[1]),
-            Confirm = bool.Parse(parameters[2])
+            Confirm = bool.Parse(parameters[2]),
+            RequestFirstPost = bool.Parse(parameters[3])
         };
     }
 

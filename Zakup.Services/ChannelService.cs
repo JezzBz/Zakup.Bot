@@ -1,6 +1,8 @@
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
+using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Zakup.Common.DTO.Channel;
 using Zakup.Entities;
 using Zakup.EntityFramework;
@@ -141,5 +143,69 @@ public class ChannelService
             .AnyAsync(s => s.ChannelId == channelId && s.SpreadSheet.UserId == userId);
 
         return sheetExists;
+    }
+
+    public async Task<List<TelegramUser>> GetAdmins(long channelId, CancellationToken cancellationToken)
+    {
+        return await _context.Channels
+            .Where(q => q.Id == channelId)
+            .SelectMany(q => q.Administrators)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task RemoveAdmin(long channelId, long adminUserId, CancellationToken cancellationToken = default)
+    {
+        var channelAdmin = await _context.ChannelAdministrators.FirstOrDefaultAsync(q => q.ChannelId == channelId && q.UsersId == adminUserId, cancellationToken: cancellationToken);
+        if (channelAdmin == null)
+        {
+            return;
+        }
+        _context.ChannelAdministrators.Remove(channelAdmin);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> IsAdmin(long channelId, long adminUserId, CancellationToken cancellationToken = default)
+    {
+        return await _context.ChannelAdministrators.AnyAsync(q => q.ChannelId == channelId && q.UsersId == adminUserId, cancellationToken: cancellationToken);
+    }
+
+    public async Task MakeAdmin(long channelId, long adminId, CancellationToken cancellationToken = default)
+    {
+        await _context.AddAsync(new ChannelAdministrator
+        {
+            UsersId = adminId,
+            ChannelId = channelId,
+            IsManual = true,
+            User = null,
+            Channel = null,
+        }, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<long> GetCount(long adminId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Channels
+            .Where(c => !c.HasDeleted)
+            .Where(c => c.Administrators.Any(a => a.Id == adminId))
+            .CountAsync(cancellationToken: cancellationToken);
+    }
+
+    public async Task<bool> IsPublic(long chatId, ITelegramBotClient botClient,
+        CancellationToken cancellationToken = default)
+    {
+        var chat = await botClient.GetChatAsync(chatId, cancellationToken: cancellationToken);
+
+        return chat.Type == ChatType.Channel && !string.IsNullOrEmpty(chat.Username);
+    }
+
+    public async Task Delete(long channelId, CancellationToken cancellationToken = default)
+    {
+        var channel = await _context.Channels.FirstOrDefaultAsync(c => c.Id == channelId, cancellationToken);
+        if (channel == null)
+        {
+            return;
+        }
+        _context.Remove(channel);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

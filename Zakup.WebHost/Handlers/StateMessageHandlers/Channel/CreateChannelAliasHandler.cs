@@ -40,7 +40,7 @@ public class CreateChannelAliasHandler : IStateHandler
         var state = await _userService.GetUserState(update.Message!.From!.Id, cancellationToken);
         await botClient.SafeDelete(state!.UserId, state.PreviousMessageId, cancellationToken);
         var data = CacheHelper.ToData<CreateChannelCacheData>(state!.CachedValue!);
-        var channel = await _channelService.GetChannel(data!.ChannelId);
+        var channel = await _channelService.GetChannel(data!.ChannelId, cancellationToken);
             
         
         alias = alias.ToLowerInvariant();
@@ -48,12 +48,14 @@ public class CreateChannelAliasHandler : IStateHandler
         {
             Alias = alias,
             ChannelId = data!.ChannelId,
-            Confirm = true
+            Confirm = true,
+            RequestFirstPost = data.RequestFirstPost,
         });
         var emptyData = _handlersManager.ToCallback(new ConfirmChannelAlias
         {
             ChannelId = data!.ChannelId,
-            Confirm = false
+            Confirm = false,
+            RequestFirstPost = data.RequestFirstPost,
         });
         var msg = await botClient.SendTextMessageAsync(update.Message?.From?.Id, $"Для вашего канала «{channel.Title}» будет установлена метка: {alias}. Вы уверены?"
             , replyMarkup: new InlineKeyboardMarkup(new List<InlineKeyboardButton>

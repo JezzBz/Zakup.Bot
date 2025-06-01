@@ -8,9 +8,10 @@ public class ConfirmChannelAlias : ICallbackData
 
     public long ChannelId { get; set; }
     public bool Confirm { get; set; }
-    
+    public bool RequestFirstPost { get; set; }
+
     public string ToCallback()
     {
-        return $"{Alias}|{ChannelId}|{Confirm}";
+        return $"{Alias}|{ChannelId}|{Confirm}|{RequestFirstPost}";
     }
 }

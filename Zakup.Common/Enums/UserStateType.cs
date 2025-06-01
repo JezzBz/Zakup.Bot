@@ -7,5 +7,10 @@ public enum UserStateType
     ConfirmAddChannel,
     CreateNewPost,
     WritePostButtonText,
-    AddPostTitle
+    AddPostTitle,
+    SetApproveTime,
+    AddAdmin,
+    ChooseZakupDate,
+    AddZakupPrice,
+    ZakupChannelAlias,
 }

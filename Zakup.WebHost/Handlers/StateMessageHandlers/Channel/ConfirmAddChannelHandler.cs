@@ -58,7 +58,7 @@ public class ConfirmAddChannelHandler : IStateHandler
             Console.WriteLine("Message is not a forwarded message from a channel.");
             await botClient.SendTextMessageAsync(
                 message.From!.Id,
-                "Перешлите сюда пост из канала, куда вы меня добавили", cancellationToken: cancellationToken);
+                MessageTemplate.ForwardPostFromChannelRequest, cancellationToken: cancellationToken);
             return;
         }
 
@@ -68,7 +68,7 @@ public class ConfirmAddChannelHandler : IStateHandler
             Console.WriteLine("Message was forwarded from a bot.");
             await botClient.SendTextMessageAsync(
                 message.From!.Id,
-                "Вы переслали сообщение от бота. Пожалуйста, перешлите сообщение из канала.", cancellationToken: cancellationToken);
+                MessageTemplate.MessageForwardedFromBotError, cancellationToken: cancellationToken);
             return;
         }
     }
@@ -88,7 +88,7 @@ public class ConfirmAddChannelHandler : IStateHandler
             Console.WriteLine($"Ошибка получения администраторов канала: {ex.Message}");
             await botClient.SendTextMessageAsync(
                 userId,
-                "Бот не участник этого канала. Убедитесь, что добавили меня в качестве администратора и попробуйте ещё раз.", cancellationToken: cancellationToken);
+                MessageTemplate.BotIsNotMemberError, cancellationToken: cancellationToken);
             return null;
         }
 
@@ -97,7 +97,7 @@ public class ConfirmAddChannelHandler : IStateHandler
             Console.WriteLine("Bot is not an administrator in the channel.");
             await botClient.SendTextMessageAsync(
                 userId,
-                "Бот не администратор в этом канале. Добавьте его как администратора и попробуйте ещё раз.", cancellationToken: cancellationToken);
+                MessageTemplate.BotIsNotAdminError, cancellationToken: cancellationToken);
             return null;
         }
 
@@ -166,7 +166,8 @@ public class ConfirmAddChannelHandler : IStateHandler
         currentState!.State = UserStateType.CreateChannelAlias;
         currentState.CachedValue = CacheHelper.ToCache(new CreateChannelCacheData
         {
-            ChannelId = existChannel.Id
+            ChannelId = existChannel.Id,
+            RequestFirstPost = true
         });
         currentState.PreviousMessageId = previousMessageId;
         await _userService.SetUserState(message.From!.Id, currentState, cancellationToken);

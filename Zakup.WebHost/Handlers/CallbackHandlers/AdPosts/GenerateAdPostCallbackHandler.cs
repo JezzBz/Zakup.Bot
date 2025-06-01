@@ -44,7 +44,7 @@ public class GenerateAdPostCallbackHandler : ICallbackHandler<GenerateAdPostCall
         
         //Отправка нескольких файлов
         await SendWithManyFiles(post, botClient, callbackQuery, cancellationToken);
-        
+        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
     }
 
     private async Task SendWithManyFiles(TelegramAdPost post, ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken)

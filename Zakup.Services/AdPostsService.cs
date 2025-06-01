@@ -60,4 +60,29 @@ public class AdPostsService
         _context.Update(post);
         await _context.SaveChangesAsync();
     }
+
+    public async Task Delete(Guid postId, CancellationToken token = default)
+    {
+        var post = await _context.TelegramAdPosts
+            .FirstOrDefaultAsync(a => a.Id == postId, cancellationToken: token);
+        
+        if (post == null)
+        {
+            return;
+        }
+
+        _context.TelegramAdPosts.Remove(post);
+        await _context.SaveChangesAsync(token);
+    }
+    
+    public async Task Delete(TelegramAdPost post, CancellationToken token = default)
+    {
+        if (post == null)
+        {
+            return;
+        }
+
+        _context.TelegramAdPosts.Remove(post);
+        await _context.SaveChangesAsync(token);
+    }
 }

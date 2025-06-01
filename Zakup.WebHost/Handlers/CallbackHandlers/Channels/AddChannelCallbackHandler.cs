@@ -17,15 +17,24 @@ namespace Zakup.WebHost.Handlers.CallbackHandlers;
 public class AddChannelCallbackHandler : ICallbackHandler<EmptyCallbackData>
 {
     private readonly UserService _userService;
-
-    public AddChannelCallbackHandler(UserService userService)
+    private readonly ChannelService _channelService;
+    private const int MaxChannelLimit = 120;
+    public AddChannelCallbackHandler(UserService userService, ChannelService channelService)
     {
         _userService = userService;
+        _channelService = channelService;
     }
 
     public async Task Handle(ITelegramBotClient botClient, EmptyCallbackData data, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
+        var channelsCount = await _channelService.GetCount(callbackQuery.From.Id, cancellationToken);
+        if (channelsCount >= MaxChannelLimit)
+        {
+            await botClient.SendTextMessageAsync(callbackQuery.From.Id, MessageTemplate.ChannelsLimitError, cancellationToken: cancellationToken);
+            return;
+        }
+        
         var state = await _userService.GetUserState(callbackQuery.From.Id, cancellationToken);
         
         state!.State = UserStateType.ConfirmAddChannel;
