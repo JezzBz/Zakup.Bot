@@ -54,12 +54,48 @@ public class ZakupService
 
     public async Task<TelegramZakup?> Get(Guid zakupId, CancellationToken cancellationToken = default)
     {
-        return await _context.TelegramZakups.FindAsync(zakupId, cancellationToken);
+        return await _context.TelegramZakups
+            .FirstOrDefaultAsync(q => q.Id == zakupId, cancellationToken);
     }
 
     public async Task Update(TelegramZakup zakup, CancellationToken cancellationToken = default)
     {
         _context.Update(zakup);
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<List<TelegramZakup>> GetList(long channelId, int skip = 0, int take = 5, CancellationToken cancellationToken = default)
+    {
+        return await _context.TelegramZakups
+            .Where(q => q.ChannelId == channelId)
+            .OrderByDescending(z => z.CreatedUtc)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<PlacementStatisticDTO?> GetPlacementData(Guid zakupId, CancellationToken cancellationToken)
+    {
+        return await _context.TelegramZakups
+            .Where(q => q.Id == zakupId)
+            .Select(q => new PlacementStatisticDTO
+            {
+                PlaceDate = q.CreatedUtc,
+                Platform = q.Platform!,
+                Price = q.Price,
+                TotalSubscribers = q.Members.Count(),
+                RemainingSubscribers = q.Members.Count(m => m.LeftUtc == null),
+                ClientsCount = q.Clients.Count(),
+                CommentersCount = q.Members.Count(m => m.IsCommenter == true),
+                ChannelId = q.ChannelId
+            })
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+    }
+
+    public async Task<List<ChannelMember>> GetMembers(Guid zakupId, CancellationToken cancellationToken)
+    {
+        return await _context.ChannelMembers
+            .Where(q => q.ZakupId == zakupId)
+            .ToListAsync(cancellationToken);
     }
 }

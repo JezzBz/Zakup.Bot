@@ -26,7 +26,9 @@ public class ConfirmAddChannelHandler : IStateHandler
 
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
+       
        var message = update.Message;
+       var state = await _userService.GetUserState(message.From.Id, cancellationToken);
        await ValidateMessage(message, botClient, cancellationToken);
        var meBot = await botClient.GetMeAsync(cancellationToken: cancellationToken);
        var admins = await GetAdmins(botClient, message!.ForwardFromChat!, message!.From!.Id, meBot, cancellationToken);
@@ -35,7 +37,7 @@ public class ConfirmAddChannelHandler : IStateHandler
            return;
        }
 
-       var existChannel = await _channelService.GetChannel(message!.ForwardFromChat!.Id);
+       var existChannel = await _channelService.GetChannel(message!.ForwardFromChat!.Id, cancellationToken);
        
        // Если канал ранее удаляли – «воскрешаем» его
        if (existChannel?.HasDeleted == true)
@@ -48,6 +50,8 @@ public class ConfirmAddChannelHandler : IStateHandler
       
        // Если канал уже существовал, проверяем Alias
        await CheckChannelAlias(botClient, existChannel, message.From.Id, message, cancellationToken);
+       state.Clear();
+       await _userService.SetUserState(state, cancellationToken);
     }
 
 

@@ -48,5 +48,6 @@ public class SetAutoApproveTimeHandler : IStateHandler
         await _channelService.UpdateChannel(channel, cancellationToken);
         await botClient.SendTextMessageAsync(update.Message.From.Id, MessageTemplate.AutoApproveEnabled(time), cancellationToken: cancellationToken);
         await _messagesService.SendMenu(botClient, user, cancellationToken);
+        
     }
 }

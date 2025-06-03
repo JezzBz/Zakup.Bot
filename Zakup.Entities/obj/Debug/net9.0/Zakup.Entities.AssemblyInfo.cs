@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Zakup.Entities")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c707c9a53a0dba05b2ec69c96f51886106d1c1cd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ae8e29236ec24709344de20782f3a0aa07a7100")]
 [assembly: System.Reflection.AssemblyProductAttribute("Zakup.Entities")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Zakup.Entities")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

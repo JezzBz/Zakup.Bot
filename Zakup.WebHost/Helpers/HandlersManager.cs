@@ -1,6 +1,7 @@
 using Zakup.Abstractions.Data;
 using Zakup.Abstractions.Handlers;
 using Zakup.Common.Enums;
+using Zakup.WebHost.Handlers.MessageHandlers;
 
 namespace Zakup.WebHost.Helpers;
 
@@ -51,7 +52,7 @@ public class HandlersManager
     /// <summary>
     /// Получить хендлер по типу остояния
     /// </summary>
-    /// <param name="stateType">Тип callback'а</param>
+    /// <param name="stateType">Тип стейта</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     public IStateHandler GetInstance(UserStateType stateType)
@@ -61,6 +62,18 @@ public class HandlersManager
             return (IStateHandler)ActivatorUtilities.CreateInstance(_serviceProvider, handlerType)!;
         }
         throw new ArgumentException($"Unknown handler type: {stateType}");
+    }
+    
+    /// <summary>
+    /// Получить хендлер без состояния
+    /// </summary>
+    /// <param name="stateType">Тип callback'а</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public StatelessHandler GetStatelessHandlerInstance()
+    {
+        return (StatelessHandler)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(StatelessHandler))!;
+        
     }
 
     /// <summary>
@@ -77,6 +90,6 @@ public class HandlersManager
         {
             throw new ArgumentException($"Unknown handler type: {typeof(TData).Name}");
         }
-        return $"{handlerEntry.Key}|" + data.ToCallback();
+        return (int)handlerEntry.Key + "|" + data.ToCallback();
     }
 }

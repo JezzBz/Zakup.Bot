@@ -45,7 +45,8 @@ public class ShowChannelMenuCallbackHandler : ICallbackHandler<ShowChannelMenuCa
         });
         var statisticButtonData = _handlersManager.ToCallback(new ChannelStatisticCallbackData
         {
-            ChannelId = channel.Id
+            ChannelId = channel.Id,
+            PageNumber = 1
         });
         var autoApproveButtonData = _handlersManager.ToCallback(new ChannelAutoApproveCallbackData
         {

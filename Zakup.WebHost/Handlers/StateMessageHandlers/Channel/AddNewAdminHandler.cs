@@ -56,6 +56,8 @@ public class AddNewAdminHandler : IStateHandler
         
         await botClient.SendTextMessageAsync(message.From.Id, MessageTemplate.AdminCreated, cancellationToken: cancellationToken);
         //TODO: добавить таблицы
+        state.Clear();
+        await _userService.SetUserState(state, cancellationToken);
     }
     
     private async Task ValidateMessage(Message? message, ITelegramBotClient botClient, CancellationToken cancellationToken)

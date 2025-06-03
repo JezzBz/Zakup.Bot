@@ -52,7 +52,7 @@ public class AddZakupPriceCallbackHandler : ICallbackHandler<AddZakupPriceCallba
 
         };
         
-        await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId,MessageTemplate.AddZakupPrice, replyMarkup: new InlineKeyboardMarkup(keyBoard), cancellationToken: cancellationToken);
+        await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId,MessageTemplate.ZakupPrice, replyMarkup: new InlineKeyboardMarkup(keyBoard), cancellationToken: cancellationToken);
     }
 
     public AddZakupPriceCallbackData Parse(List<string> parameters)

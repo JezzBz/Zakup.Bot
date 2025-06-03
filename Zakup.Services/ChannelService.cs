@@ -208,4 +208,30 @@ public class ChannelService
         _context.Remove(channel);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<ChannelRating?> GetRating(long channelId, CancellationToken cancellationToken)
+    {
+        return await _context.ChannelRatings.FirstOrDefaultAsync(q => q.ChannelId == channelId, cancellationToken: cancellationToken);
+    }
+    
+    public async Task<ChannelRating?> AddRating(ChannelRating rating, CancellationToken cancellationToken)
+    {
+        var entity = await _context.AddAsync(rating, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return entity.Entity;
+    }
+
+    public async Task<long> GetPositiveFeedbackCount(long channelId, CancellationToken cancellationToken = default)
+    {
+        return await _context.ChannelFeedback.Where(f => f.ChannelId == channelId)
+            .Where(q => q.Positive)
+            .CountAsync(cancellationToken);
+    }
+    
+    public async Task<long> GetNegativeFeedbackCount(long channelId, CancellationToken cancellationToken = default)
+    {
+        return await _context.ChannelFeedback.Where(f => f.ChannelId == channelId)
+            .Where(q => !q.Positive)
+            .CountAsync(cancellationToken);
+    }
 }

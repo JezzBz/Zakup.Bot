@@ -27,9 +27,16 @@ public class MessageHandler :  IUpdatesHandler
 
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        var userState = await _userService.GetUserState(update.Message.Chat.Id);
+        var userState = await _userService.GetUserState(update.Message!.Chat.Id, cancellationToken);
 
-        var handler = _handlersManager.GetInstance(userState.State);
+        if (userState!.State == UserStateType.None)
+        {
+            var stateLessHandler = _handlersManager.GetStatelessHandlerInstance();
+            await stateLessHandler.Handle(botClient, update, cancellationToken);
+            return;
+        }
+        
+        var handler = _handlersManager.GetInstance(userState!.State);
         try
         {
             await handler.Handle(botClient, update, cancellationToken);

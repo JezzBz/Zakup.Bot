@@ -12,6 +12,7 @@ public static class ButtonsTextTemplate
     public const string NewChannel = "🆕Новый канал";
     
     public const string Back = "⬅️Назад";
+    public const string Forward = "️➡️ Вперед";
     public const string Cancel = "❌Отмена";
     public const string Skip = "Пропустить ➡️";
     public const string Free = "Бесплатно ➡️";
@@ -40,4 +41,9 @@ public static class ButtonsTextTemplate
     public const string FinalAdPost = "🚀Готовый пост";
     public const string OnlyLink = "⛓Только ссылка";
     public const string PremiumEmoji = "💎Пост с премиум emoji";
+    public const string ChannelMenu = "⬅️Меню канала";
+    public const string ShowMembers = "👀 Посмотреть вступивших";
+    public const string CheckSubscribers = "🤝 Сверка подписчиков";
+    public const string ChangePrice ="💰 Изменить цену";
+    public const string AcceptPDP = "Подтвердить сверку";
 }

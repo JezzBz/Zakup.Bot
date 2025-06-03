@@ -42,5 +42,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     
     public DbSet<MessageForward> MessageForwards { get; set; }
     
-    public DbSet<ChannelRating> ChannelRatings { get; set; }
+    public DbSet<ChannelRating?> ChannelRatings { get; set; }
 }

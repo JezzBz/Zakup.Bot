@@ -1,3 +1,6 @@
+using System.Globalization;
+using Zakup.Common.DTO.Zakup;
+
 namespace Zakup.WebHost.Constants;
 
 public static class MessageTemplate
@@ -38,12 +41,14 @@ public static class MessageTemplate
     public const string ChooseZakupChannel = "Выберите канал для закупа:";
     public const string ChannelsLimitError = "Вы достигли лимита каналов. Удалите какой-нибудь или обратитесь к администратору для повышения привилегий";
     public const string ChooseZakupDate = "📅Введите планируемую дату выхода поста (в формате дд.мм.гггг ЧЧ:ММ) по Москве.";
-    public const string AddZakupPrice = "💸Введите цену (число)";
+    public const string ZakupPrice = "💸Введите цену (число)";
     public const string PublicChannelNotification = "🤔Ваш канал публичный. Сделайте его приватным, чтобы появилась возможность создавать ссылки со вступлением по заявке.";
     public const string ChooseLinkType = "Выберите тип публичности ссылки:";
     public const string ZakupChannelAlias = "Перешлите пост из канала, где вас опубликуют, или напишите источник трафика так, *чтобы Вам было понятно*";
     public const string BadZakupChannelAlias = "❌Перешлите сообщение из площадки размещения или напишите название платформы до 60 символов";
     public const string BadZakupDateError = "Не удалось прочитать дату и время, проверьте форматирование и попробуйте снова. (дд.мм.гггг ЧЧ:ММ) по Москве";
+    public const string NoZakupsForThisChannel = "Нет размещений для выбранного канала.";
+    public const string ChooseZakup = "Выберите размещение:";
 
     public const string AddAdminRequest =
         "Пожалуйста, перешлите сообщение от пользователя, которого вы хотите добавить в качестве администратора.";
@@ -54,11 +59,13 @@ public static class MessageTemplate
     public const string IsAlreadyAdmin = "Пользователь уже является администратором этого канала.";
     public const string AdminCreated = "Пользователь успешно добавлен в качестве администратора.";
     public const string ZakupActions = "Выберите действие для закупа:";
-    public static string PriceSaved = "Цена сохранена";
+    public static string PriceSaved = "✅Цена сохранена";
     public const string ChannelDeleted = "Канал удалён";
     public const string DeleteChannelAlert = "Вы уверены? Канал, вся статистика и все креативы будут удалены, остановится обработка вступлений." +
                                              "\n" +
                                              "Поиск пользователя по юзернейму останется доступным";
+
+    public const string ZakupNotFound = "Размещение не найдено.";
 
     public static string GetMenu(decimal zakupPrice = 0, decimal payedPrice = 0, long subscriptions = 0,
         long unsubscriptions = 0)
@@ -114,8 +121,32 @@ public static class MessageTemplate
                                             "Разрешены буквы (латиница, кириллица), цифры и пробелы.";
 
     public const string AdPostDeleted = "Креатив удалён!";
+    public const string PdpCheckRequest = "Перешлите мне сообщение из канала, где ранее была опубликована реклама. Подробнее о сверке подписчиков тут: https://t.me/easyzakup/18";
 
     public const string ChannelNotFound = "Канал не найден в базе данных.";
+    public const string PDPBotMessageError = "Вы переслали сообщение от бота. Пожалуйста, перешлите сообщение из канала, в котором ранее размещалась реклама.";
+    public const string PDPBadMessageError = "Перешлите сюда пост из канала, в котором ранее размещалась реклама.";
+    private const string PDPRequestNotification = "Вам поступил запрос на сверку подписчиков для размещения {0}.\nБот проанализирует, сколько из вступивших подписчиков действительно являются подписчиками канала и пришлёт вам отчёт.\n\nЕсли вы подтверждаете, нажмите кнопку ниже.";
+
+    private const string PdpVerificationResult =
+        "Сверка завершена: из {0} вступивших, {1} ({2}%) являются подписчиками канала.";
+
+    public static string PdpVerificationResultMessage(long total, long verifiedCount, double percentage)
+    {
+        return string.Format(PdpVerificationResult,total,verifiedCount,$"{percentage:F2}");
+    }
+    public static string PDPRequestNotificationMessage(Guid zakupId)
+    {
+        return string.Format(PDPRequestNotification, zakupId);
+    }
+    public const string PDPRequestSent =
+        "Запрос на сверку подписчиков отправлен администраторам. Ожидайте подтверждения.";
+    public const string PDPNoBotInChannels = "Не удалось получить список администраторов канала. Бот должен быть добавлен в канал как администратор с правом на пригласительные ссылки.\n\n Перешлите сообщение из канала когда он будет добавлен";
+
+    public const string PDPError =
+        "Не удалось отправить запрос на сверку подписчиков ни одному администратору. Убедитесь, что хотя бы один из администраторов запустил бота командой /start.";
+    public const string PDPNoChatWithAdmins =
+        "Ошибка: у бота нет открытого чата ни с одним из администраторов проверяемого канала.\n\nХотя бы один из администраторов должен написать что-нибудь нашему боту, чтобы мы смогли запросить у него подтверждение проверки.";
 
     private const string AutoApproveIsEnabled =
         "✅ **Автоприём заявок:** ВКЛЮЧЕН. Задержка {0} минут.";
@@ -150,8 +181,67 @@ public static class MessageTemplate
 
     public const string ForwardPostFromChannelRequest = "Перешлите сюда пост из канала, куда вы меня добавили";
     public const string CantSendFileError = "Извините, произошла ошибка при отправке файла. Пожалуйста, обратитесь к администратору.";
+    public const string CurrentSubscribers = "🔥 Текущие подписчики:";
+    public const string UnSubscribedMembers = "❌ Отписавшиеся пользователи:";
+    public const string NoSubscribeData = "Нет данных о вступивших и отписавшихся пользователях.";
     
     public static readonly HelpMessageTemplate Help = new HelpMessageTemplate();
+
+    private const string ZakupStatistc = "📅 *Дата размещения:* {0}" +
+                                        "\n" +
+                                        "💼 *Платформа:* {1} " +
+                                        "\n" +
+                                        "💰 *Цена:* {2} руб\\." +
+                                        "\n" +
+                                        "\n" +
+                                        "👥 *Всего подписчиков:* {3}" +
+                                        "\n" +
+                                        "📌 *Оставшихся в канале:* {4}" +
+                                        "\n" +
+                                        "💸 *Цена за подписчика:* {5}" +
+                                        "\n" +
+                                        "💎 *Цена за оставшегося:* {6}" +
+                                        "\n" +
+                                        "🛒 *Количество клиентов:* {7}" +
+                                        "\n" +
+                                        "💬 *Количество комментаторов:* {8}";
+
+    public static string ZakupStatisticMessage(PlacementStatisticDTO data)
+    {
+        var costPerSubscriber = data.TotalSubscribers > 0 
+            ? data.Price / data.TotalSubscribers 
+            : 0;
+        var costPerRemainingSubscriber = data.RemainingSubscribers > 0 
+            ? data.Price / data.RemainingSubscribers
+            : 0;
+        
+        return string.Format(ZakupStatistc,
+            EscapeMarkdownV2(data.PlaceDate.ToString("dd.MM.yyyy")),
+            EscapeMarkdownV2(data.Platform),
+            EscapeMarkdownV2(data.Price.ToString(CultureInfo.InvariantCulture)),
+            EscapeMarkdownV2(data.TotalSubscribers.ToString()),
+            EscapeMarkdownV2(data.RemainingSubscribers.ToString()),
+            EscapeMarkdownV2(costPerSubscriber.ToString(CultureInfo.InvariantCulture)),
+            EscapeMarkdownV2(costPerRemainingSubscriber.ToString(CultureInfo.InvariantCulture)),
+            EscapeMarkdownV2(data.ClientsCount.ToString()),
+            EscapeMarkdownV2(data.CommentersCount.ToString())
+            );
+    }
+    
+    private static string EscapeMarkdownV2(string text)
+    {
+        if (text == null) return "";
+        
+        // Сначала экранируем обратные слеши, чтобы при замене других символов они не потерялись
+        text = text.Replace("\\", "\\\\");
+        
+        var charactersToEscape = new char[] { '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!' };
+        foreach (var character in charactersToEscape)
+        {
+            text = text.Replace(character.ToString(), "\\" + character);
+        }
+        return text;
+    }
 }
 
 public  class HelpMessageTemplate
@@ -183,7 +273,7 @@ public  class HelpMessageTemplate
     public const string AnotherQuestionResponse = "Напишите на @gandalftg и мы ответим на все ваши вопросы";
     
    
-    //Важно соблюдать индексы вопросов и ответов
+    //Важно соблюдать индексы вопросов и ответов или сделать класс вопрос-ответ и собрать в один массив
     public readonly List<string> Questions = new List<string>{ForWhatBot, HowToCreateZakup, HowToTrackResult, HowToTrackLead, AnotherQuestion};
     public readonly List<string> Responses = new List<string>{ForWhatBotResponse, HowToCreateZakupResponse, HowToTrackResultResponse, HowToTrackLeadResponse, AnotherQuestionResponse};
 }

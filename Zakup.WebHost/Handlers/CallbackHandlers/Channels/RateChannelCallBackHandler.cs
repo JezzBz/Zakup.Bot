@@ -15,14 +15,14 @@ namespace Zakup.WebHost.Handlers.CallbackHandlers;
 /// <summary>
 /// Обработчик команды "Оценка канала"
 /// </summary>
-[CallbackType(CallbackType.RateChannel)]
+[CallbackType(CallbackType.RateChannel)]//TODO: вынести логику в сервис
 public class RateChannelCallBackHandler : ICallbackHandler<RateChannelCallbackData>
 {
-    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
+    private readonly ApplicationDbContext _context;
 
-    public RateChannelCallBackHandler(IDbContextFactory<ApplicationDbContext> dbContextFactory)
+    public RateChannelCallBackHandler(ApplicationDbContext context)
     {
-        _dbContextFactory = dbContextFactory;
+        _context = context;
     }
 
     public RateChannelCallbackData Parse(List<string> parameters)
@@ -39,8 +39,8 @@ public class RateChannelCallBackHandler : ICallbackHandler<RateChannelCallbackDa
         await (data.RateType switch
         {
             ChannelRateType.Report => HandleReport(botClient, callbackQuery.From.Id),
-            ChannelRateType.Like => HandleRate(botClient, data.ChannelId,  callbackQuery.From.Id, true),
-            ChannelRateType.Dislike => HandleRate(botClient, data.ChannelId,  callbackQuery.From.Id, false), 
+            ChannelRateType.Like => HandleRate(botClient, data.ChannelId,  callbackQuery.From.Id, true, callbackQuery),
+            ChannelRateType.Dislike => HandleRate(botClient, data.ChannelId,  callbackQuery.From.Id, false, callbackQuery), 
                 _ => throw new ArgumentOutOfRangeException()
         });
     }
@@ -51,13 +51,13 @@ public class RateChannelCallBackHandler : ICallbackHandler<RateChannelCallbackDa
             "Пожалуйста пришлите доказательства и ссылку на канал(или перешлите пост из него) в личные сообщения @gandalftg");
     }
     
-    private async Task HandleRate(ITelegramBotClient botClient, long channelId, long userId, bool positive)      
+    private async Task HandleRate(ITelegramBotClient botClient, long channelId, long userId, bool positive, CallbackQuery callbackQuery)      
     {
         var rateValue = positive ? 1 : -1;
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
-        await AssertNoMute(botClient, context, userId);
+       
+        await AssertNoMute(botClient, _context, userId);
         
-        var channelRating = await context.ChannelRatings.FirstOrDefaultAsync(c => c.ChannelId == channelId);
+        var channelRating = await _context.ChannelRatings.FirstOrDefaultAsync(c => c.ChannelId == channelId);
         
         if (channelRating is null)
         {
@@ -67,16 +67,16 @@ public class RateChannelCallBackHandler : ICallbackHandler<RateChannelCallbackDa
                 BadDeals = 0,
                 Rate = 0
             };
-            await context.AddAsync(channelRating);
+            await _context.AddAsync(channelRating);
         }
         
-        var previousFeedBack = await context.ChannelFeedback
+        var previousFeedBack = await _context.ChannelFeedback
             .Where(f => f.FromUserId == userId)
             .FirstOrDefaultAsync(f => f.ChannelId == channelId);
 
         if (previousFeedBack is null) //Это первый фидбек
         {
-            await context.AddAsync(new ChannelFeedback()
+            await _context.AddAsync(new ChannelFeedback()
             {
                 FromUserId = userId,
                 ChannelId = channelId,
@@ -107,13 +107,14 @@ public class RateChannelCallBackHandler : ICallbackHandler<RateChannelCallbackDa
             
         }
         
-        await context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
         var stringStatus = positive ? "повышен" : "понижен";
         await botClient.SendTextMessageAsync(userId,
             $"Рейтинг канала {stringStatus}!");
         
-        await SendFeedbackInfoToOwner(context, botClient, channelId,false, userId);
+        await SendFeedbackInfoToOwner(_context, botClient, channelId,false, userId);
+        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
     }
 
     private async Task AssertNoMute(ITelegramBotClient botClient, ApplicationDbContext context, long userId)

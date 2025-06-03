@@ -13,4 +13,6 @@ public enum UserStateType
     ChooseZakupDate,
     AddZakupPrice,
     ZakupChannelAlias,
+    ChangeZakupPrice,
+    PdpCheck
 }

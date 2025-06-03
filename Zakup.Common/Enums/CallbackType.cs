@@ -1,7 +1,9 @@
 namespace Zakup.Common.Enums;
 
+//Нужно для передачи типа callback в данные callback с минимальной длиной строки
 public enum CallbackType
 {
+    PDPApprove,
     Unknown,
     RateChannel,
     ZakupCreate,
@@ -38,5 +40,9 @@ public enum CallbackType
     AddZakupPrice,
     ZakupChannelPrivate,
     ZakupLinkType,
-    DeleteChannelComplete
+    DeleteChannelComplete,
+    ZakupStatistic,
+    CheckSubscribers,
+    ShowMembers,
+    ChangeZakupPrice
 }

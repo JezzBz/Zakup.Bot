@@ -60,6 +60,6 @@ public class ZakupAddDateHandler : IStateHandler
             InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Free, freeData),
         };
         
-        await botClient.SendTextMessageAsync(state.UserId, MessageTemplate.AddZakupPrice, replyMarkup: new InlineKeyboardMarkup(keyBoard), cancellationToken: cancellationToken);
+        await botClient.SendTextMessageAsync(state.UserId, MessageTemplate.ZakupPrice, replyMarkup: new InlineKeyboardMarkup(keyBoard), cancellationToken: cancellationToken);
     }
 }
