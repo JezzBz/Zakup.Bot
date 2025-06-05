@@ -53,9 +53,4 @@ public class HelpCallbackHandler : ICallbackHandler<EmptyCallbackData>
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId,
             HelpMessageTemplate.ChooseQuestion, replyMarkup: new InlineKeyboardMarkup(buttons), cancellationToken: cancellationToken);
     }
-
-    public EmptyCallbackData Parse(List<string> parameters)
-    {
-        return new EmptyCallbackData();
-    }
 }

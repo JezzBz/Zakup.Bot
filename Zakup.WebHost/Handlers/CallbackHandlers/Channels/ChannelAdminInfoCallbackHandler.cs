@@ -67,14 +67,4 @@ public class ChannelAdminInfoCallbackHandler : ICallbackHandler<AdminInfoCallbac
         
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId, messageText, replyMarkup: new InlineKeyboardMarkup(keyboard), cancellationToken: cancellationToken);
     }
-
-    public AdminInfoCallbackData Parse(List<string> parameters)
-    {
-
-        return new AdminInfoCallbackData
-        {
-            UserId = long.Parse(parameters[0]),
-            ChannelId = long.Parse(parameters[1])
-        };
-    }
 }

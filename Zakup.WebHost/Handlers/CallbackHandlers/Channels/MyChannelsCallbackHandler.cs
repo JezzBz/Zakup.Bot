@@ -64,9 +64,4 @@ public class MyChannelsCallbackHandler : ICallbackHandler<EmptyCallbackData>
         
         await _userService.SetUserState(userState.UserId, userState, cancellationToken);
     }
-
-    public EmptyCallbackData Parse(List<string> parameters)
-    {
-        return new EmptyCallbackData();
-    }
 }

@@ -129,12 +129,4 @@ public class ShowChannelMenuCallbackHandler : ICallbackHandler<ShowChannelMenuCa
 
         return new InlineKeyboardMarkup(keyboard);
     }
-    
-    public ShowChannelMenuCallbackData Parse(List<string> parameters)
-    {
-        return new ShowChannelMenuCallbackData
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
 }

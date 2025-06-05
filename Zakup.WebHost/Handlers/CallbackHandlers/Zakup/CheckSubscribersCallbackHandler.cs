@@ -37,12 +37,4 @@ public class CheckSubscribersCallbackHandler : ICallbackHandler<CheckSubscribers
             callbackQuery.Message!.MessageId,
             MessageTemplate.PdpCheckRequest, cancellationToken: cancellationToken);
     }
-
-    public CheckSubscribersCallbackData Parse(List<string> parameters)
-    {
-        return new CheckSubscribersCallbackData()
-        {
-            ZakupId = Guid.Parse(parameters[0]),
-        };
-    }
 }

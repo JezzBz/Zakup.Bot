@@ -34,12 +34,4 @@ public class HelpQuestionCallbackHandler : ICallbackHandler<HelpQuestionCallback
             parseMode: ParseMode.Markdown,
             replyMarkup: keyboard, cancellationToken: cancellationToken);
     }
-
-    public HelpQuestionCallbackData Parse(List<string> parameters)
-    {
-        return new HelpQuestionCallbackData
-        {
-            QuestionId = int.Parse(parameters[0])
-        };
-    }
 }

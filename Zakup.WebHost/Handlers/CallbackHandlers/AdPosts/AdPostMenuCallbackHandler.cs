@@ -53,12 +53,4 @@ public class AdPostMenuCallbackHandler : ICallbackHandler<AdPostMenuCallbackData
         
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId, $"Креатив {post.Title} [{post.Id}]", replyMarkup: new InlineKeyboardMarkup(buttons), cancellationToken: cancellationToken);
     }
-
-    public AdPostMenuCallbackData Parse(List<string> parameters)
-    {
-        return new AdPostMenuCallbackData
-        {
-            PostId = Guid.Parse(parameters[0])
-        };
-    }
 }

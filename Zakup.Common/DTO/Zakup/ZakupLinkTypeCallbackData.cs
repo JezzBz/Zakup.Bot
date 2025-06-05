@@ -12,4 +12,10 @@ public class ZakupLinkTypeCallbackData : ICallbackData
         
         return $"{ZakupId}|{Private}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        ZakupId = Guid.Parse(parameters[0]);
+        Private = bool.Parse(parameters[1]);
+    }
 }

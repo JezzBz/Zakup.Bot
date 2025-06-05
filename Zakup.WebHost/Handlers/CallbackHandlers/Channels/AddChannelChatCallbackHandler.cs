@@ -15,13 +15,4 @@ public class AddChannelChatCallbackHandler : ICallbackHandler<AddChannelChatCall
     {
         throw new NotImplementedException();
     }
-
-    public AddChannelChatCallbackData Parse(List<string> parameters)
-    {
-        return new AddChannelChatCallbackData
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
-
 }

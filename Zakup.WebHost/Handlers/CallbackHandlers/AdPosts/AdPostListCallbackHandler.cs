@@ -81,11 +81,5 @@ public class AdPostListCallbackHandler : ICallbackHandler<AdPostListCallbackData
             cancellationToken: cancellationToken);
     }
 
-    public AdPostListCallbackData Parse(List<string> parameters)
-    {
-        return new AdPostListCallbackData()
-        {
-            ChannelId = long.Parse(parameters[0]),
-        };
-    }
+    
 }

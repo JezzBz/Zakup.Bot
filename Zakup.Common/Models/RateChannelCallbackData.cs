@@ -16,4 +16,10 @@ public class RateChannelCallbackData : ICallbackData
     {
         return $"{RateType}|{ChannelId}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        RateType = Enum.Parse<ChannelRateType>(parameters[0]);
+        ChannelId = long.Parse(parameters[1]);
+    }
 }

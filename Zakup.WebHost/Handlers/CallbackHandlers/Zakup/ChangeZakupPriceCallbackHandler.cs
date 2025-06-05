@@ -33,12 +33,4 @@ public class ChangeZakupPriceCallbackHandler : ICallbackHandler<ChangePriceCallb
         await _userService.SetUserState(state, cancellationToken);
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId, MessageTemplate.ZakupPrice, cancellationToken: cancellationToken);
     }
-
-    public ChangePriceCallbackData Parse(List<string> parameters)
-    {
-        return new ChangePriceCallbackData
-        {
-            ZakupId = Guid.Parse(parameters[0])
-        };
-    }
 }

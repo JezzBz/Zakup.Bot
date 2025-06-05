@@ -80,12 +80,4 @@ public class ZakupCheckChannelPrivateCallbackHandler : ICallbackHandler<ZakupChe
             text: messageText, 
             replyMarkup: optionsMarkup, cancellationToken: cancellationToken);
     }
-
-    public ZakupCheckChannelPrivateCallbackData Parse(List<string> parameters)
-    {
-        return new ZakupCheckChannelPrivateCallbackData
-        {
-            ZakupId = Guid.Parse(parameters[0]),
-        };
-    }
 }

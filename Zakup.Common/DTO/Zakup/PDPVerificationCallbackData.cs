@@ -13,4 +13,11 @@ public class PDPVerificationCallbackData : ICallbackData
     {
         return $"{RequestUserId}|{ChannelId}|{PlacementId}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        RequestUserId = long.Parse(parameters[0]);
+        ChannelId = long.Parse(parameters[1]);
+        PlacementId = Guid.Parse(parameters[2]);
+    }
 }

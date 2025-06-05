@@ -29,12 +29,4 @@ public class MarkAsLeadCallbackHandler : ICallbackHandler<MarkAsLeadCallbackData
             callbackQuery.Message!.Text!, 
             cancellationToken: cancellationToken);
     }
-
-    public MarkAsLeadCallbackData Parse(List<string> parameters)
-    {
-        return new MarkAsLeadCallbackData()
-        {
-            LeadUserId = long.Parse(parameters[0]),
-        };
-    }
 }

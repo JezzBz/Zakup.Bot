@@ -9,4 +9,9 @@ public class ShowChannelMenuCallbackData : ICallbackData
     {
         return $"{ChannelId}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        ChannelId = long.Parse(parameters[0]);
+    }
 }

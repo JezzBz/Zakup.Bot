@@ -48,14 +48,4 @@ public class PDPVerificationCallbackHandler : ICallbackHandler<PDPVerificationCa
         await botClient.SendTextMessageAsync(callbackQuery.From.Id, resultText, cancellationToken: cancellationToken);
         await botClient.SafeDelete(callbackQuery.From.Id, callbackQuery.Message!.MessageId, cancellationToken);
     }
-
-    public PDPVerificationCallbackData Parse(List<string> parameters)
-    {
-        return new PDPVerificationCallbackData()
-        {
-            RequestUserId = long.Parse(parameters[0]),
-            ChannelId = long.Parse(parameters[1]),
-            PlacementId = Guid.Parse(parameters[2]),
-        };
-    }
 }

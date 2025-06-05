@@ -35,14 +35,6 @@ public class ShowZakupMembersCallbackHandler : ICallbackHandler<ShowZakupMembers
         await SendMembersList(botClient,MessageTemplate.CurrentSubscribers, currentMembers, callbackQuery.From.Id);
         await SendMembersList(botClient, MessageTemplate.UnSubscribedMembers, unsubscribedMembers, callbackQuery.From.Id);
     }
-
-    public ShowZakupMembersCallbackData Parse(List<string> parameters)
-    {
-        return new ShowZakupMembersCallbackData()
-        {
-            ZakupId = Guid.Parse(parameters[0]),
-        };
-    }
     
      async Task SendMembersList(ITelegramBotClient botClient, string header, List<ChannelMember> memberList, long userId)
         {

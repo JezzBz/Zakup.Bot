@@ -10,4 +10,9 @@ public class CheckSubscribersCallbackData : ICallbackData
     {
         return $"{ZakupId}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        ZakupId = Guid.Parse(parameters[0]);
+    }
 }

@@ -46,13 +46,4 @@ public class CreateFirstPostCallbackHandler : ICallbackHandler<FirstAdPostCallba
         state.PreviousMessageId = msg.MessageId;
         await _userService.SetUserState(state, cancellationToken);
     }
-
-    public FirstAdPostCallbackData Parse(List<string> parameters)
-    {
-        return new FirstAdPostCallbackData
-        {
-            ChannelId = long.Parse(parameters[0]),
-            Create = bool.Parse(parameters[1])
-        };
-    }
 }

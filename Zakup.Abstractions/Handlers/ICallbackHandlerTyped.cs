@@ -4,23 +4,18 @@ using Zakup.Abstractions.Data;
 
 namespace Zakup.Abstractions.Handlers;
 
-public interface ICallbackHandler<T> : ICallbackHandler
-    where T : ICallbackData
+public interface ICallbackHandler<in T> : ICallbackHandler
+    where T : ICallbackData, new()
 {
     Task Handle(ITelegramBotClient botClient,T data, CallbackQuery callbackQuery, CancellationToken cancellationToken);
     
-    T Parse(List<string> parameters);
     
     // Явная реализация для необобщенного интерфейса
     Task ICallbackHandler.Handle(ITelegramBotClient botClient, List<string> parameters, CallbackQuery callbackQuery, CancellationToken cancellationToken)
     {
-        var data = Parse(parameters);
-     
-        if (data is T typedData)
-        {
-            return Handle(botClient, typedData, callbackQuery, cancellationToken);
-        }
+        var data = new T(); 
+        data.Parse(parameters);
         
-        throw new ArgumentException($"Invalid data type. Expected {typeof(T)}");
+        return Handle(botClient, data, callbackQuery, cancellationToken);
     }
 }

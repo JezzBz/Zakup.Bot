@@ -26,12 +26,4 @@ public class DeleteChannelCompleteCallbackHandler : ICallbackHandler<DeleteChann
         await _channelService.Delete(data.ChannelId, cancellationToken);
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId, MessageTemplate.ChannelDeleted, cancellationToken: cancellationToken);
     }
-
-    public DeleteChannelCompleteCallbackData Parse(List<string> parameters)
-    {
-        return new DeleteChannelCompleteCallbackData
-        {
-            ChannelId = long.Parse(parameters[0]),
-        };
-    }
 }

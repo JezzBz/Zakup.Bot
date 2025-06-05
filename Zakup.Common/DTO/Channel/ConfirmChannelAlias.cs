@@ -14,4 +14,17 @@ public class ConfirmChannelAlias : ICallbackData
     {
         return $"{Alias}|{ChannelId}|{Confirm}|{RequestFirstPost}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        if (parameters.Count < 2)
+        {
+            throw new Exception();
+        }
+        
+        Alias = parameters[0];
+        ChannelId = long.Parse(parameters[1]);
+        Confirm = bool.Parse(parameters[2]);
+        RequestFirstPost = bool.Parse(parameters[3]);
+    }
 }

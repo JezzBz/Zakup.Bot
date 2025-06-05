@@ -42,11 +42,5 @@ public class DisableAutoApproveCallbackHandler : ICallbackHandler<DisableAutoApp
         await _messagesService.SendMenu(botClient, user, cancellationToken);
     }
 
-    public DisableAutoApproveCallbackData Parse(List<string> parameters)
-    {
-        return new DisableAutoApproveCallbackData()
-        {
-            ChannelId = long.Parse(parameters[0]),
-        };
-    }
+   
 }

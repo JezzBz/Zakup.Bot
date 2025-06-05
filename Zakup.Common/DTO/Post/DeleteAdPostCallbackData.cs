@@ -11,4 +11,9 @@ public class DeleteAdPostCallbackData : ICallbackData
     {
         return $"{PostId}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        PostId = Guid.Parse(parameters[0]);
+    }
 }

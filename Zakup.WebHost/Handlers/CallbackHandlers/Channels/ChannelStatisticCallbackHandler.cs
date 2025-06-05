@@ -101,12 +101,5 @@ public class ChannelStatisticCallbackHandler : ICallbackHandler<ChannelStatistic
             replyMarkup: new InlineKeyboardMarkup(buttons), cancellationToken: cancellationToken);
     }
 
-    public ChannelStatisticCallbackData Parse(List<string> parameters)
-    {
-        return new ChannelStatisticCallbackData
-        {
-            ChannelId = long.Parse(parameters[0]),
-            PageNumber = int.Parse(parameters[1]),
-        };
-    }
+   
 }

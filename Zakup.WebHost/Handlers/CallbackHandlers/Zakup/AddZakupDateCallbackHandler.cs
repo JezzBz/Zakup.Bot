@@ -68,12 +68,4 @@ public class AddZakupDateCallbackHandler : ICallbackHandler<AddZakupDateCallback
             replyMarkup: new InlineKeyboardMarkup(keyboard),
             cancellationToken: cancellationToken);
     }
-
-    public AddZakupDateCallbackData Parse(List<string> parameters)
-    {
-        return new AddZakupDateCallbackData
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
 }

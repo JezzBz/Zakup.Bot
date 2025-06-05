@@ -86,12 +86,4 @@ public class ChannelAutoApproveCallbackHandler : ICallbackHandler<ChannelAutoApp
             }
         });
     }
-    
-    public ChannelAutoApproveCallbackData Parse(List<string> parameters)
-    {
-        return new ChannelAutoApproveCallbackData()
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
 }

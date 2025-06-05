@@ -50,12 +50,4 @@ public class EnableAutoApproveCallbackHandler : ICallbackHandler<EnableAutoAppro
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId,
             MessageTemplate.WriteAutoApproveMinutes, cancellationToken: cancellationToken);
     }
-
-    public EnableAutoApproveCallbackData Parse(List<string> parameters)
-    {
-        return new EnableAutoApproveCallbackData
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
 }

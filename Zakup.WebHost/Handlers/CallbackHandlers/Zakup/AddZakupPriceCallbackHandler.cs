@@ -54,12 +54,4 @@ public class AddZakupPriceCallbackHandler : ICallbackHandler<AddZakupPriceCallba
         
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId,MessageTemplate.ZakupPrice, replyMarkup: new InlineKeyboardMarkup(keyBoard), cancellationToken: cancellationToken);
     }
-
-    public AddZakupPriceCallbackData Parse(List<string> parameters)
-    {
-        return new AddZakupPriceCallbackData()
-        {
-            ZakupId = Guid.Parse(parameters[0]),
-        };
-    }
 }

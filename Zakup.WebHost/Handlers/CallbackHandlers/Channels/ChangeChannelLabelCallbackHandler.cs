@@ -34,12 +34,4 @@ public class ChangeChannelLabelCallbackHandler : ICallbackHandler<ChangeChannelL
         await _userService.SetUserState(userState, cancellationToken);
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId, MessageTemplate.WriteNewLabel, cancellationToken: cancellationToken);
     }
-
-    public ChangeChannelLabelCallbackData Parse(List<string> parameters)
-    {
-        return new ChangeChannelLabelCallbackData
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
 }

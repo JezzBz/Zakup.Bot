@@ -51,13 +51,4 @@ public class AddPostButtonCallbackHandler : ICallbackHandler<AddPostButtonCallba
         await botClient.SafeDelete(callbackQuery.From.Id, callbackQuery.Message!.MessageId, cancellationToken);
        
     }
-
-    public AddPostButtonCallbackData Parse(List<string> parameters)
-    {
-        return new AddPostButtonCallbackData
-        {
-            AdPostId = Guid.Parse(parameters[0]),
-            Add = bool.Parse(parameters[1])
-        };
-    }
 }

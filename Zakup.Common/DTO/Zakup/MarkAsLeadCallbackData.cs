@@ -9,4 +9,8 @@ public class MarkAsLeadCallbackData : ICallbackData
     {
         return $"{LeadUserId}";
     }
+    public void Parse(List<string> parameters)
+    {
+        LeadUserId = long.Parse(parameters[0]);
+    }
 }

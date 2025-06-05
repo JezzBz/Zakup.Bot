@@ -11,4 +11,10 @@ public class ChannelStatisticCallbackData : ICallbackData
     {
         return $"{ChannelId}|{PageNumber}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        ChannelId = long.Parse(parameters[0]);
+        PageNumber = int.Parse(parameters[1]);
+    }
 }

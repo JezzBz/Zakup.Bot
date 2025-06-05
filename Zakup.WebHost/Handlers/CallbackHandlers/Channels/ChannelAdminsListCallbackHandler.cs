@@ -70,12 +70,4 @@ public class ChannelAdminsListCallbackHandler : ICallbackHandler<ChannelAdminsLi
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId, MessageTemplate.ChannelAdmins,
             replyMarkup: new InlineKeyboardMarkup(buttons),  cancellationToken: cancellationToken);
     }
-
-    public ChannelAdminsListCallbackData Parse(List<string> parameters)
-    {
-        return new ChannelAdminsListCallbackData
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
 }

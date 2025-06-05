@@ -66,24 +66,7 @@ public class ChannelAliasConfirmCallbackHandler :  ICallbackHandler<ConfirmChann
         }
             
     }
-
-    public ConfirmChannelAlias Parse(List<string> parameters)
-    {
-
-        if (parameters.Count < 2)
-        {
-            throw new Exception();
-        }
-        
-        return new ConfirmChannelAlias
-        {
-            Alias = parameters[0],
-            ChannelId = long.Parse(parameters[1]),
-            Confirm = bool.Parse(parameters[2]),
-            RequestFirstPost = bool.Parse(parameters[3])
-        };
-    }
-
+    
     private async Task SendFirstPostMessage(ITelegramBotClient botClient, long userId, long channelId)
     {
         var yesData = await _handlersManager.ToCallback(new FirstAdPostCallbackData

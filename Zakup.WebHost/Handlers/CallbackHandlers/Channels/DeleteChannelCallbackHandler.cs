@@ -46,12 +46,4 @@ public class DeleteChannelCallbackHandler : ICallbackHandler<DeleteChannelCallba
             replyMarkup: new InlineKeyboardMarkup(keyboard),
             cancellationToken: cancellationToken);
     }
-
-    public DeleteChannelCallbackData Parse(List<string> parameters)
-    {
-        return new DeleteChannelCallbackData
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
 }

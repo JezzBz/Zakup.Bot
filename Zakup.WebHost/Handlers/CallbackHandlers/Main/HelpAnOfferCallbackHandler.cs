@@ -37,9 +37,4 @@ public class HelpAnOfferCallbackHandler : ICallbackHandler<EmptyCallbackData>
                 }), cancellationToken: cancellationToken);
         }
     }
-
-    public EmptyCallbackData Parse(List<string> parameters)
-    {
-        return new EmptyCallbackData();
-    }
 }

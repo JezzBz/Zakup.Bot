@@ -8,4 +8,8 @@ public class EmptyCallbackData: ICallbackData
     {
         return string.Empty;
     }
+
+    public void Parse(List<string> parameters)
+    {
+    }
 }

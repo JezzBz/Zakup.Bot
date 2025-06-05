@@ -4,7 +4,6 @@ using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
 using Zakup.Common.DTO.Post;
 using Zakup.Common.DTO.Zakup;
-using Zakup.Common.Enums;
 using Zakup.Services;
 using Zakup.Services.Extensions;
 using Zakup.WebHost.Constants;
@@ -12,21 +11,20 @@ using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.CallbackHandlers.Zakup;
 
-[CallbackType(CallbackType.PremiumEmojiChooseAdPost)]
-public class PremiumEmojiChooseAdPostCallbackHandler : ICallbackHandler<PremiumEmojiChooseAdPostCallbackData>
+public class ReplacePostChooseCreativeCallbackHandler : ICallbackHandler<ReplacePostChooseCreativeCallbackData>
 {
     private readonly AdPostsService _adPostsService;
     private readonly ZakupService _zakupService;
     private readonly HandlersManager _handlersManager;
 
-    public PremiumEmojiChooseAdPostCallbackHandler(AdPostsService adPostsService, ZakupService zakupService, HandlersManager handlersManager)
+    public ReplacePostChooseCreativeCallbackHandler(AdPostsService adPostsService, ZakupService zakupService, HandlersManager handlersManager)
     {
         _adPostsService = adPostsService;
         _zakupService = zakupService;
         _handlersManager = handlersManager;
     }
 
-    public async Task Handle(ITelegramBotClient botClient, PremiumEmojiChooseAdPostCallbackData data, CallbackQuery callbackQuery,
+    public async Task Handle(ITelegramBotClient botClient, ReplacePostChooseCreativeCallbackData data, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
         var zakup = await _zakupService.Get(data.ZakupId,cancellationToken:cancellationToken);

@@ -65,13 +65,4 @@ public class ZakupLinkTypeCallbackHandler : ICallbackHandler<ZakupLinkTypeCallba
         state.PreviousMessageId = message.MessageId;
         await _userService.SetUserState(state, cancellationToken);
     }
-
-    public ZakupLinkTypeCallbackData Parse(List<string> parameters)
-    {
-        return new ZakupLinkTypeCallbackData
-        {
-            ZakupId = Guid.Parse(parameters[0]),
-            Private = bool.Parse(parameters[1]),
-        };
-    }
 }

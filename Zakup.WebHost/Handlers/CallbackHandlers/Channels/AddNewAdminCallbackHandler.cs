@@ -32,12 +32,4 @@ public class AddNewAdminCallbackHandler : ICallbackHandler<AddNewAdminCallbackDa
         });
         await _userService.SetUserState(userState, cancellationToken);
     }
-
-    public AddNewAdminCallbackData Parse(List<string> parameters)
-    {
-        return new AddNewAdminCallbackData
-        {
-            ChannelId = long.Parse(parameters[0]),
-        };
-    }
 }

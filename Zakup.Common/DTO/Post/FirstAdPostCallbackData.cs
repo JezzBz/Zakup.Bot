@@ -11,4 +11,10 @@ public class FirstAdPostCallbackData : ICallbackData
     {
         return $"{ChannelId}|{Create}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        ChannelId = long.Parse(parameters[0]);
+        Create = bool.Parse(parameters[1]);
+    }
 }

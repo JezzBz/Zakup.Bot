@@ -49,12 +49,6 @@ public class AddChannelCallbackHandler : ICallbackHandler<EmptyCallbackData>
         
         await _userService.SetUserState(state.UserId, state, cancellationToken);
     }
-
-    public EmptyCallbackData Parse(List<string> parameters)
-    {
-       return new EmptyCallbackData();
-    }
-
     private InlineKeyboardMarkup GetKeyboardMarkup(long msgId)
     {
         return new InlineKeyboardMarkup(new[]

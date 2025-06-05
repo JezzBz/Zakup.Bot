@@ -9,4 +9,9 @@ public class HelpQuestionCallbackData : ICallbackData
     {
         return $"{QuestionId}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        QuestionId = int.Parse(parameters[0]);
+    }
 }

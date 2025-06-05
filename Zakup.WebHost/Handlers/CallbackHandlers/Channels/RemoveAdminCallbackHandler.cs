@@ -32,13 +32,4 @@ public class RemoveAdminCallbackHandler : ICallbackHandler<RemoveAdminCallbackDa
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId, MessageTemplate.AdminRemoved, cancellationToken: cancellationToken);
         await _messagesService.SendMenu(botClient, user,cancellationToken);
     }
-
-    public RemoveAdminCallbackData Parse(List<string> parameters)
-    {
-        return new RemoveAdminCallbackData
-        {
-            ChannelId = long.Parse(parameters[0]),
-            AdminUserId = long.Parse(parameters[1])
-        };
-    }
 }

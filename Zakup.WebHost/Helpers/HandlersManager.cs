@@ -86,7 +86,7 @@ public class HandlersManager
     /// <typeparam name="TData">Тип параметров</typeparam>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public async Task<string> ToCallback<TData>(TData data) where TData : ICallbackData
+    public async Task<string> ToCallback<TData>(TData data) where TData : ICallbackData, new()
     {
         var handlerEntry = _callbackHandlers.FirstOrDefault(x => typeof(ICallbackHandler<TData>).IsAssignableFrom(x.Value));
         if (handlerEntry.Value == null)

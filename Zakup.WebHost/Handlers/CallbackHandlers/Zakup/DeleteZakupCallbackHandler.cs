@@ -31,12 +31,4 @@ public class DeleteZakupCallbackHandler  : ICallbackHandler<DeleteZakupCallbackD
         await botClient.SafeDelete(callbackQuery.From.Id, callbackQuery.Message!.MessageId, cancellationToken);
         await _messagesService.SendMenu(botClient, user, cancellationToken);
     }
-
-    public DeleteZakupCallbackData Parse(List<string> parameters)
-    {
-        return new DeleteZakupCallbackData()
-        {
-            ZakupId = Guid.Parse(parameters[0])
-        };
-    }
 }

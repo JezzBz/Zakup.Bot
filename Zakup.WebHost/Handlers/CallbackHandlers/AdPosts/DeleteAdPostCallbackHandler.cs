@@ -38,12 +38,4 @@ public class DeleteAdPostCallbackHandler : ICallbackHandler<DeleteAdPostCallback
         await _messagesService.SendMenu(botClient, user! ,cancellationToken, callbackQuery.Message!.MessageId);
         await botClient.SendTextMessageAsync(callbackQuery.From.Id, MessageTemplate.AdPostDeleted, cancellationToken: cancellationToken);
     }
-
-    public DeleteAdPostCallbackData Parse(List<string> parameters)
-    {
-        return new DeleteAdPostCallbackData
-        {
-            PostId = Guid.Parse(parameters[0])
-        };
-    }
 }

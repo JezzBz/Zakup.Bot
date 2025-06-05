@@ -24,15 +24,6 @@ public class RateChannelCallBackHandler : ICallbackHandler<RateChannelCallbackDa
     {
         _context = context;
     }
-
-    public RateChannelCallbackData Parse(List<string> parameters)
-    {
-        return new RateChannelCallbackData
-        {
-            RateType = Enum.Parse<ChannelRateType>(parameters[0]),
-            ChannelId = long.Parse(parameters[1])
-        };
-    }
     
     public async Task Handle(ITelegramBotClient botClient, RateChannelCallbackData data, CallbackQuery callbackQuery, CancellationToken cancellationToken)
     {

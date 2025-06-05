@@ -120,12 +120,4 @@ public class GenerateAdPostCallbackHandler : ICallbackHandler<GenerateAdPostCall
             _ => throw new ArgumentOutOfRangeException()
         });
     }
-    
-    public GenerateAdPostCallbackData Parse(List<string> parameters)
-    {
-        return new GenerateAdPostCallbackData
-        {
-            PostId = Guid.Parse(parameters[0])
-        };
-    }
 }

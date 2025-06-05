@@ -64,9 +64,4 @@ public class ZakupCreateCallbackHandler : ICallbackHandler<EmptyCallbackData>
             replyMarkup: new InlineKeyboardMarkup(buttons), 
             cancellationToken: cancellationToken);
     }
-
-    public EmptyCallbackData Parse(List<string> parameters)
-    {
-        return new EmptyCallbackData();
-    }
 }

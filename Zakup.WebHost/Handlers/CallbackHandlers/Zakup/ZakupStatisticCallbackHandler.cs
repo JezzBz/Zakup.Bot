@@ -86,11 +86,4 @@ public class ZakupStatisticCallbackHandler : ICallbackHandler<ZakupStatisticCall
         };
         return new InlineKeyboardMarkup(buttons);
     }
-    public ZakupStatisticCallbackData Parse(List<string> parameters)
-    {
-        return new ZakupStatisticCallbackData
-        {
-            ZakupId = Guid.Parse(parameters[0])
-        };
-    }
 }

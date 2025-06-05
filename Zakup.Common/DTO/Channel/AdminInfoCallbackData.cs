@@ -10,4 +10,10 @@ public class AdminInfoCallbackData : ICallbackData
     {
         return $"{UserId}|{ChannelId}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        UserId = long.Parse(parameters[0]);
+        ChannelId = long.Parse(parameters[1]);
+    }
 }

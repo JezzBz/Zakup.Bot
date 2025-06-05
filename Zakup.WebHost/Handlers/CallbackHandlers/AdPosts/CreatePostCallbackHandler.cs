@@ -34,12 +34,4 @@ public class CreatePostCallbackHandler : ICallbackHandler<CreatePostCallbackData
         state.PreviousMessageId = msg.MessageId;
         await _userService.SetUserState(state, cancellationToken);
     }
-
-    public CreatePostCallbackData Parse(List<string> parameters)
-    {
-        return new CreatePostCallbackData()
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
 }

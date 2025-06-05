@@ -40,13 +40,4 @@ public class PremiumEmojiCallbackHandler : ICallbackHandler<PremiumEmojiCallback
             parseMode: ParseMode.Markdown,
             cancellationToken: cancellationToken);
     }
-
-    public PremiumEmojiCallbackData Parse(List<string> parameters)
-    {
-        return new PremiumEmojiCallbackData
-        {
-            ZakupId = Guid.Parse(parameters[0]),
-            AdPostId = Guid.Parse(parameters[1]),
-        };
-    }
 }

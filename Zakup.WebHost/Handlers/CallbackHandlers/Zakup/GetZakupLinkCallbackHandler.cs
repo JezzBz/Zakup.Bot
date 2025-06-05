@@ -39,12 +39,4 @@ public class GetZakupLinkCallbackHandler : ICallbackHandler<GetZakupLinkCallback
         await botClient.SendTextMessageAsync(callbackQuery.From.Id, zakupMessage, cancellationToken: cancellationToken); //TODO: Добавить markup 
         await botClient.SendTextMessageAsync(callbackQuery.From.Id, MessageTemplate.YouLinkMessage(zakup.InviteLink), cancellationToken: cancellationToken);
     }
-
-    public GetZakupLinkCallbackData Parse(List<string> parameters)
-    {
-        return new GetZakupLinkCallbackData
-        {
-            ZakupId = Guid.Parse(parameters[0]),
-        };
-    }
 }

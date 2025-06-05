@@ -15,12 +15,4 @@ public class ApproveAllChannelRequestsCallbackHandler : ICallbackHandler<Approve
     {
         throw new NotImplementedException();
     }
-
-    public ApproveAllChannelRequestsCallbackData Parse(List<string> parameters)
-    {
-        return new ApproveAllChannelRequestsCallbackData
-        {
-            ChannelId = long.Parse(parameters[0])
-        };
-    }
 }

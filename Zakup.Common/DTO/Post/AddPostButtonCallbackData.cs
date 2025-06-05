@@ -12,4 +12,10 @@ public class AddPostButtonCallbackData : ICallbackData
 
         return $"{AdPostId}|{Add}";
     }
+    
+    public void Parse(List<string> parameters)
+    {
+        AdPostId = Guid.Parse(parameters[0]);
+        Add = bool.Parse(parameters[1]);
+    }
 }
