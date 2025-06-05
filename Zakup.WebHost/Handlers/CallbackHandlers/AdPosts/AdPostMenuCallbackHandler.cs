@@ -29,17 +29,17 @@ public class AdPostMenuCallbackHandler : ICallbackHandler<AdPostMenuCallbackData
     {
         var post = await _adPostsService.Get(data.PostId, cancellationToken);
 
-        var deletePostData = _handlersManager.ToCallback(new DeleteAdPostCallbackData
+        var deletePostData = await _handlersManager.ToCallback(new DeleteAdPostCallbackData
         {
             PostId = data.PostId
         });
         
-        var generatePostData = _handlersManager.ToCallback(new GenerateAdPostCallbackData()
+        var generatePostData = await _handlersManager.ToCallback(new GenerateAdPostCallbackData()
         {
             PostId = data.PostId
         });
         
-        var backPostData = _handlersManager.ToCallback(new AdPostListCallbackData()
+        var backPostData = await _handlersManager.ToCallback(new AdPostListCallbackData()
         {
             ChannelId = post!.ChannelId
         });

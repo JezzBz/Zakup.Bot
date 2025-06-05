@@ -44,6 +44,23 @@ namespace Zakup.EntityFramework.Migrations
                     b.ToTable("TelegramDocuments");
                 });
 
+            modelBuilder.Entity("Zakup.Entities.BigCallbackData", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CallbackData")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BigCallbackData");
+                });
+
             modelBuilder.Entity("Zakup.Entities.ChannelAdministrator", b =>
                 {
                     b.Property<long>("ChannelId")

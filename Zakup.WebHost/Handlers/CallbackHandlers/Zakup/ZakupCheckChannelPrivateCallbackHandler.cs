@@ -30,14 +30,14 @@ public class ZakupCheckChannelPrivateCallbackHandler : ICallbackHandler<ZakupChe
     public async Task Handle(ITelegramBotClient botClient, ZakupCheckChannelPrivateCallbackData data, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
-        var zakup = await _zakupService.Get(data.ZakupId, cancellationToken);
+        var zakup = await _zakupService.Get(data.ZakupId, cancellationToken:cancellationToken);
         var isPublicChannel = await _channelService.IsPublic(zakup.ChannelId, botClient, cancellationToken);
         var messageText = string.Empty;
         InlineKeyboardMarkup optionsMarkup;
         var state = await _userService.GetUserState(callbackQuery.From.Id, cancellationToken);
         state.Clear();
         await _userService.SetUserState(state, cancellationToken);
-        var publicData = _handlersManager.ToCallback(new ZakupLinkTypeCallbackData
+        var publicData = await _handlersManager.ToCallback(new ZakupLinkTypeCallbackData
         {
             ZakupId = data.ZakupId,
             Private = true
@@ -57,7 +57,7 @@ public class ZakupCheckChannelPrivateCallbackHandler : ICallbackHandler<ZakupChe
         }
         else
         {
-            var privateData = _handlersManager.ToCallback(new ZakupLinkTypeCallbackData
+            var privateData = await _handlersManager.ToCallback(new ZakupLinkTypeCallbackData
             {
                 ZakupId = data.ZakupId,
                 Private = true

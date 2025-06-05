@@ -1,12 +1,18 @@
+using System.Globalization;
 using System.Text;
 using Bot.Core;
+using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using Zakup.Common.DTO.Zakup;
 using Zakup.Common.Enums;
 using Zakup.Common.Models;
 using Zakup.Entities;
 using Zakup.Services;
+using Zakup.WebHost.Constants;
 using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.MessageHandlers;
@@ -18,11 +24,13 @@ public class StatelessHandler : IUpdatesHandler
 {
     private readonly ChannelService _channelService;
     private readonly HandlersManager _handlersManager;
+    private readonly UserService _userService;
 
-    public StatelessHandler(ChannelService channelService, HandlersManager handlersManager)
+    public StatelessHandler(ChannelService channelService, HandlersManager handlersManager, UserService userService)
     {
         _channelService = channelService;
         _handlersManager = handlersManager;
+        _userService = userService;
     }
 
     public static bool ShouldHandle(Update update)
@@ -37,116 +45,64 @@ public class StatelessHandler : IUpdatesHandler
             await ChannelRating(botClient,update,cancellationToken);
             return;
         }
+
+        if (update.Message?.ForwardFrom != null && !update.Message.ForwardFrom.IsBot)
+        {
+            await PrintUserInfo(botClient, update, cancellationToken);
+        }
     }
-    //TODO: отрефакторить и добавить
-  //    private async Task PrintUserInfo(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-  //   {
-  //       await using var scope = _provider.CreateAsyncScope();
-  //       var _dataContext = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-  //
-  //       var message = update.Message;
-  //       var messageBuilder = new StringBuilder();
-  //
-  //       var memberInfoQuery = _dataContext.TelegramChannel_Members
-  //           .Include(m => m.Channel)
-  //           .Where(m => m.UserId == message.ForwardFrom.Id && m.Channel.Administrators.Any(a => a.Id == message.From.Id));
-  //           // .Where(m => m.UserId == message.ForwardFrom!.Id)
-  //           // // Добавляем условие, что текущий пользователь является администратором этого канала
-  //           // .Where(m => m.Channel.Administrators.Any(a => a.Id == message.From!.Id));
-  //       var forwardMessage = new MessageForward
-  //       {
-  //           UserId = message!.From!.Id,
-  //           ForwardAtUtc = DateTime.UtcNow,
-  //           Source = MessageForwardSource.User
-  //       };
-  //       await _dataContext.AddAsync(forwardMessage, cancellationToken);
-  //       await _dataContext.SaveChangesAsync(cancellationToken);
-  //       var resultQuery = from m in memberInfoQuery
-  //           join z in _dataContext.ZakupEntities on m.InviteLink equals z.InviteLink into outter
-  //           from o in outter.DefaultIfEmpty()
-  //           select new { Zakup = o, Member = m };
-  //
-  //       var untrackedChannelsMember = await _dataContext.TelegramChannels
-  //           .Where(tc => tc.Administrators.Any(c => c.Id == message.From!.Id))
-  //           .Where(tc => tc.Members.All(m => m.UserId != message.ForwardFrom!.Id))
-  //           .ToListAsync(cancellationToken: cancellationToken);
-  //
-  //       var untrackedMemberList = new List<TelegramChannel_Member>();
-  //
-  //       foreach (var c in untrackedChannelsMember)
-		// {
-		// 	try
-		// 	{
-  //               // Console.WriteLine(с.Id);
-		// 		var memberInfo = await botClient.GetChatMemberAsync(c.Id, message.ForwardFrom!.Id, cancellationToken: cancellationToken);
-  //
-		// 		if (memberInfo.Status is ChatMemberStatus.Kicked or ChatMemberStatus.Left)
-		// 		{
-		// 			continue;
-		// 		}
-  //
-		// 		var newMember = new TelegramChannel_Member
-		// 		{
-		// 			UserId = message.ForwardFrom!.Id,
-		// 			IsPremium = message.ForwardFrom.IsPremium,
-		// 			UserName = message.ForwardFrom.Username,
-		// 			ChannelId = c.Id,
-		// 			Status = true,
-		// 			Refer = "origin",
-		// 			JoinCount = 1,
-		// 		};
-  //
-		// 		untrackedMemberList.Add(newMember);
-		// 	}
-		// 	catch (ApiRequestException ex) when (ex.Message.Contains("bot is not a member of the channel chat") || ex.Message.Contains("chat not found"))
-		// 	{
-		// 		// Optionally log the error or inform the user
-		// 		Console.WriteLine($"Ошика Bot is not an admin in the channel {c.Id}. Cannot retrieve member info.");
-		// 		continue;
-		// 	}
-		// }
-  //
-  //
-  //       await _dataContext.AddRangeAsync(untrackedMemberList, cancellationToken);
-  //       await _dataContext.SaveChangesAsync(cancellationToken);
-  //
-  //       await resultQuery.ForEachAsync(member =>
-  //       {
-  //           messageBuilder.AppendLine(
-  //               $"Пользователь вступил в {member.Member.Channel.Title} - {member.Member.JoinedUtc?.AddHours(3).ToString(CultureInfo.InvariantCulture) ?? "Неизвестно"}");
-  //
-  //           _ = member.Member.InviteLink is null
-  //               ? messageBuilder.AppendLine("Изначальная аудитория")
-  //               : messageBuilder.AppendLine($"По ссылке: {member.Member.InviteLink}");
-  //
-  //           _ = member.Zakup is null
-  //               ? messageBuilder.AppendLine("Площадка: Неизвестно")
-  //               : messageBuilder.AppendLine($"Площадка: {member.Zakup.Platform}");
-  //
-  //           if (member.Zakup is not null)
-  //           {
-  //               messageBuilder.AppendLine($"Цена: {member.Zakup.Price}");
-  //           }
-  //
-  //           messageBuilder.AppendLine("");
-  //       }, cancellationToken: cancellationToken);
-  //
-  //       var responseText = messageBuilder.ToString();
-  //       if (responseText.Length == 0)
-  //       {
-  //           await botClient.SendTextMessageAsync(message.Chat.Id,
-  //               "Пользователь не обнаржуен ни в одном из ваших каналов", cancellationToken: cancellationToken);
-  //           return;
-  //       }
-  //
-  //       var buttons = new List<InlineKeyboardButton>()
-  //       {
-  //           InlineKeyboardButton.WithCallbackData("Отметить как лид", $"lead_userId:{message.ForwardFrom!.Id}")
-  //       };
-  //
-  //       await botClient.SendTextMessageAsync(message.Chat.Id, responseText,
-  //           replyMarkup: new InlineKeyboardMarkup(buttons), cancellationToken: cancellationToken);
-  //   }
+    
+    
+      private async Task PrintUserInfo(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+     {
+         var message = update.Message;
+         var messageBuilder = new StringBuilder();
+
+         var resultQuery = await _userService.GetForwardInfo(botClient, message.ForwardFrom.Id, message.ForwardFrom.IsPremium ?? false,
+             message.ForwardFrom.Username!, cancellationToken);
+         
+  
+         await resultQuery.ForEachAsync(member =>
+         {
+             messageBuilder.AppendLine(
+                 $"Пользователь вступил в {member.Member.Channel.Title} - {member.Member.JoinedUtc?.AddHours(3).ToString(CultureInfo.InvariantCulture) ?? "Неизвестно"}");
+  
+             _ = member.Member.InviteLink is null
+                 ? messageBuilder.AppendLine("Изначальная аудитория")
+                 : messageBuilder.AppendLine($"По ссылке: {member.Member.InviteLink}");
+  
+             _ = member.Zakup is null
+                 ? messageBuilder.AppendLine("Площадка: Неизвестно")
+                 : messageBuilder.AppendLine($"Площадка: {member.Zakup.Platform}");
+  
+             if (member.Zakup is not null)
+             {
+                 messageBuilder.AppendLine($"Цена: {member.Zakup.Price}");
+             }
+  
+             messageBuilder.AppendLine("");
+         }, cancellationToken: cancellationToken);
+  
+         var responseText = messageBuilder.ToString();
+         if (responseText.Length == 0)
+         {
+             await botClient.SendTextMessageAsync(message.Chat.Id,
+                 "Пользователь не обнаржуен ни в одном из ваших каналов", cancellationToken: cancellationToken);
+             return;
+         }
+
+         var callbackData =  await _handlersManager.ToCallback(new MarkAsLeadCallbackData
+         {
+             LeadUserId = message.ForwardFrom.Id
+         });
+         var buttons = new List<InlineKeyboardButton>()
+         {
+             InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.MarkAsLead, callbackData)
+         };
+  
+         await botClient.SendTextMessageAsync(message.Chat.Id, responseText,
+             replyMarkup: new InlineKeyboardMarkup(buttons), cancellationToken: cancellationToken);
+     }
 
     public async Task ChannelRating(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
@@ -180,19 +136,19 @@ public class StatelessHandler : IUpdatesHandler
         messageBuilder.AppendLine(
             $"\ud83c\udfc5 Репутация: ({rating.BadDeals})\u26d4 ({negativeFeedback})\ud83d\udc4e ({positiveFeedback})\ud83d\udc4d");
 
-        var positiveData = _handlersManager.ToCallback(new RateChannelCallbackData
+        var positiveData = await _handlersManager.ToCallback(new RateChannelCallbackData
         {
             RateType = ChannelRateType.Like,
             ChannelId = channelId
         });
         
-        var negativeData = _handlersManager.ToCallback(new RateChannelCallbackData
+        var negativeData = await _handlersManager.ToCallback(new RateChannelCallbackData
         {
             RateType = ChannelRateType.Dislike,
             ChannelId = channelId
         });
         
-        var reportData = _handlersManager.ToCallback(new RateChannelCallbackData
+        var reportData = await _handlersManager.ToCallback(new RateChannelCallbackData
         {
             RateType = ChannelRateType.Report,
             ChannelId = channelId

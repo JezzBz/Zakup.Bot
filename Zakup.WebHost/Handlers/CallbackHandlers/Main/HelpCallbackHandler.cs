@@ -27,7 +27,7 @@ public class HelpCallbackHandler : ICallbackHandler<EmptyCallbackData>
         var buttons = new List<List<InlineKeyboardButton>>();
         foreach (var question in MessageTemplate.Help.Questions)
         {
-            var callbackData = _handlersManager.ToCallback(new HelpQuestionCallbackData
+            var callbackData = await _handlersManager.ToCallback(new HelpQuestionCallbackData
             {
                 QuestionId = index
             });

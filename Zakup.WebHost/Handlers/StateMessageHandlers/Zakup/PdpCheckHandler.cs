@@ -86,7 +86,7 @@ public class PdpCheckHandler : IStateHandler
             return;
         }
         int sentCount = 0;
-        var pdpAcceptCallbackData = _handlersManager.ToCallback(new PDPVerificationCallbackData
+        var pdpAcceptCallbackData = await _handlersManager.ToCallback(new PDPVerificationCallbackData
         {
             RequestUserId = message.From.Id,
             ChannelId = verifiedChannelId,

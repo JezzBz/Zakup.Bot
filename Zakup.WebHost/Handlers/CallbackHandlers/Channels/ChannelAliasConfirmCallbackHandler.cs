@@ -86,13 +86,13 @@ public class ChannelAliasConfirmCallbackHandler :  ICallbackHandler<ConfirmChann
 
     private async Task SendFirstPostMessage(ITelegramBotClient botClient, long userId, long channelId)
     {
-        var yesData = _handlersManager.ToCallback(new FirstAdPostCallbackData
+        var yesData = await _handlersManager.ToCallback(new FirstAdPostCallbackData
         {
             ChannelId = channelId,
             Create = true
         });
         
-        var noData = _handlersManager.ToCallback(new FirstAdPostCallbackData
+        var noData = await _handlersManager.ToCallback(new FirstAdPostCallbackData
         {
             ChannelId = channelId,
             Create = false

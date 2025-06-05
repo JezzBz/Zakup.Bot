@@ -2,6 +2,7 @@ using Bot.Core;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Zakup.Abstractions.DataContext;
 using Zakup.Common.Models;
 using Zakup.Services.Extensions;
 using Zakup.WebHost.Extensions;
@@ -15,10 +16,11 @@ namespace Zakup.WebHost.Handlers;
 public class CallbackHandler : IUpdatesHandler
 {
     private readonly HandlersManager _handlersManager;
-
-    public CallbackHandler(HandlersManager handlersManager)
+    private readonly IBigCallbackDataService _bigCallbackDataService;
+    public CallbackHandler(HandlersManager handlersManager, IBigCallbackDataService bigCallbackDataService)
     {
         _handlersManager = handlersManager;
+        _bigCallbackDataService = bigCallbackDataService;
     }
 
     //Реагируем на любые callback сообщения
@@ -34,6 +36,13 @@ public class CallbackHandler : IUpdatesHandler
         if (data == null)
         {
             throw new ArgumentNullException(nameof(update.CallbackQuery.Data));
+        }
+        
+        //Для даных больше 64 символов
+        if (data.StartsWith("BCD"))
+        {
+            var dataId = long.Parse(data.Split("|")[1]);
+            data = await _bigCallbackDataService.GetBigCallbackData(dataId);
         }
         
         var command = CommandsHelper.ParseCallback(data);

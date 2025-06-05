@@ -35,7 +35,7 @@ public class ZakupCreateCallbackHandler : ICallbackHandler<EmptyCallbackData>
         var buttons = new List<List<InlineKeyboardButton>>();
         for (int i = 0; i < channels.Count; i += 2)
         {
-            var buttonData = _handlersManager.ToCallback(new AddZakupDateCallbackData()
+            var buttonData = await _handlersManager.ToCallback(new AddZakupDateCallbackData()
             {
                 ChannelId = channels[i].Id
             });

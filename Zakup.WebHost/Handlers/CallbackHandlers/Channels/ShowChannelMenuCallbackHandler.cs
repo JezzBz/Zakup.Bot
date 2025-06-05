@@ -39,21 +39,21 @@ public class ShowChannelMenuCallbackHandler : ICallbackHandler<ShowChannelMenuCa
     {
         var pendingRequestsCount = await _channelService.GetPendingRequestsCount(channel.Id, cancellationToken);
 
-        var creaButtonData = _handlersManager.ToCallback(new AdPostListCallbackData
+        var creaButtonData = await _handlersManager.ToCallback(new AdPostListCallbackData
         {
             ChannelId = channel.Id
         });
-        var statisticButtonData = _handlersManager.ToCallback(new ChannelStatisticCallbackData
+        var statisticButtonData = await _handlersManager.ToCallback(new ChannelStatisticCallbackData
         {
             ChannelId = channel.Id,
             PageNumber = 1
         });
-        var autoApproveButtonData = _handlersManager.ToCallback(new ChannelAutoApproveCallbackData
+        var autoApproveButtonData = await _handlersManager.ToCallback(new ChannelAutoApproveCallbackData
         {
             ChannelId = channel.Id
         });
 
-        var changeLabelButtonData = _handlersManager.ToCallback(new ChangeChannelLabelCallbackData
+        var changeLabelButtonData = await _handlersManager.ToCallback(new ChangeChannelLabelCallbackData
         {
             ChannelId = channel.Id
         });
@@ -72,13 +72,13 @@ public class ShowChannelMenuCallbackHandler : ICallbackHandler<ShowChannelMenuCa
             },
         };
         
-        var addAdminButtonData = _handlersManager.ToCallback(new ChannelAdminsListCallbackData()
+        var addAdminButtonData = await _handlersManager.ToCallback(new ChannelAdminsListCallbackData()
         {
             ChannelId = channel.Id
         });
         if (channel.ChannelChatId is null)
         {
-            var addChatButtonData = _handlersManager.ToCallback(new AddChannelChatCallbackData()
+            var addChatButtonData = await _handlersManager.ToCallback(new AddChannelChatCallbackData()
             {
                 ChannelId = channel.Id
             });
@@ -106,7 +106,7 @@ public class ShowChannelMenuCallbackHandler : ICallbackHandler<ShowChannelMenuCa
         // Добавляем кнопку "✅ Принять все заявки", если есть ожидающие заявки
         if (pendingRequestsCount > 0)
         {
-            var approveButtonData = _handlersManager.ToCallback(new ApproveAllChannelRequestsCallbackData()
+            var approveButtonData = await _handlersManager.ToCallback(new ApproveAllChannelRequestsCallbackData()
             {
                 ChannelId = channel.Id
             });
@@ -117,7 +117,7 @@ public class ShowChannelMenuCallbackHandler : ICallbackHandler<ShowChannelMenuCa
             });
         }
         
-        var removeButtonData = _handlersManager.ToCallback(new DeleteChannelCallbackData()
+        var removeButtonData = await _handlersManager.ToCallback(new DeleteChannelCallbackData()
         {
             ChannelId = channel.Id
         });

@@ -64,8 +64,10 @@ public class NewPostHandler : IStateHandler
         
         var entity = await _adPostsService.SavePost(adPost);
         await _documentsStorageService.SaveDocuments(botClient, message, message.MediaGroupId!);
-        await _documentsStorageService.AttachMediaGroupToPost(message.MediaGroupId!, entity.Id);
-        var markup = GetKeyboardMarkup(adPost.Id);
+        if(message.MediaGroupId != null) 
+            await _documentsStorageService.AttachMediaGroupToPost(message.MediaGroupId!, entity.Id);
+        
+        var markup = await GetKeyboardMarkup(adPost.Id);
 
         await botClient.SafeDelete(user.Id, user.UserState.PreviousMessageId, cancellationToken);
         await botClient.SendTextMessageAsync(user.Id, 
@@ -123,15 +125,15 @@ public class NewPostHandler : IStateHandler
         return true;
     }
 
-    private InlineKeyboardMarkup GetKeyboardMarkup(Guid postId)
+    private async Task<InlineKeyboardMarkup> GetKeyboardMarkup(Guid postId)
     {
-        var trueData = _handlersManager.ToCallback(new AddPostButtonCallbackData
+        var trueData = await _handlersManager.ToCallback(new AddPostButtonCallbackData
         {
             AdPostId = postId,
             Add = true
         });
         
-        var falseData = _handlersManager.ToCallback(new AddPostButtonCallbackData
+        var falseData = await _handlersManager.ToCallback(new AddPostButtonCallbackData
         {
             AdPostId = postId,
             Add = false

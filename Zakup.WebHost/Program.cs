@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Minio;
 using NLog.Web;
 using Telegram.Bot.Types.Enums;
+using Zakup.Abstractions.DataContext;
 using Zakup.EntityFramework;
 using Zakup.Services;
 using Zakup.Services.Options;
@@ -80,6 +81,7 @@ builder.Services.AddScoped<ChannelService>();
 builder.Services.AddScoped<FileStorageService>();
 builder.Services.AddScoped<DocumentsStorageService>();
 builder.Services.AddScoped<AdPostsService>();
+builder.Services.AddScoped<IBigCallbackDataService, BigCallbackDataService>();
 
 #endregion
 

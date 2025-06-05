@@ -44,5 +44,9 @@ public enum CallbackType
     ZakupStatistic,
     CheckSubscribers,
     ShowMembers,
-    ChangeZakupPrice
+    ChangeZakupPrice,
+    MarkAsLead,
+    PremiumEmoji,
+    PremiumEmojiChooseAdPost,
+    GetZakupLink
 }

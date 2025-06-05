@@ -43,12 +43,12 @@ public class ChannelAdminInfoCallbackHandler : ICallbackHandler<AdminInfoCallbac
         var addedDate = "нет данных"; 
         var messageText = MessageTemplate.AdminInfo(adminDisplay, totalSum, averagePrice, addedDate,zakups.Count);
         
-        var removeAdminData = _handlersManager.ToCallback(new RemoveAdminCallbackData
+        var removeAdminData = await _handlersManager.ToCallback(new RemoveAdminCallbackData
         {
             ChannelId = data.ChannelId,
             AdminUserId = data.UserId
         });
-        var backData = _handlersManager.ToCallback(new ChannelAdminsListCallbackData
+        var backData = await _handlersManager.ToCallback(new ChannelAdminsListCallbackData
         {
             ChannelId = data.ChannelId
         });

@@ -25,11 +25,11 @@ public class DeleteChannelCallbackHandler : ICallbackHandler<DeleteChannelCallba
     public async Task Handle(ITelegramBotClient botClient, DeleteChannelCallbackData data, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
-        var yesData = _handlersManager.ToCallback(new DeleteChannelCompleteCallbackData()
+        var yesData = await _handlersManager.ToCallback(new DeleteChannelCompleteCallbackData()
         {
             ChannelId = data.ChannelId
         });
-        var noData = _handlersManager.ToCallback(new ShowChannelMenuCallbackData()
+        var noData = await _handlersManager.ToCallback(new ShowChannelMenuCallbackData()
         {
             ChannelId = data.ChannelId
         });

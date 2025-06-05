@@ -30,12 +30,12 @@ public class ZakupLinkTypeCallbackHandler : ICallbackHandler<ZakupLinkTypeCallba
     public async Task Handle(ITelegramBotClient botClient, ZakupLinkTypeCallbackData data, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
-        var zakup = await _zakupService.Get(data.ZakupId, cancellationToken);
+        var zakup = await _zakupService.Get(data.ZakupId, cancellationToken:cancellationToken);
         zakup.NeedApprove = data.Private;
         await _zakupService.Update(zakup, cancellationToken);
         
         
-        var cancelData = _handlersManager.ToCallback(new DeleteZakupCallbackData
+        var cancelData = await _handlersManager.ToCallback(new DeleteZakupCallbackData
         {
             ZakupId = data.ZakupId
         });

@@ -37,7 +37,7 @@ public class MyChannelsCallbackHandler : ICallbackHandler<EmptyCallbackData>
 
         for (int i = 0; i < channels.Count; i += 2)
         {
-            var buttonData = _handlersManager.ToCallback(new ShowChannelMenuCallbackData
+            var buttonData = await _handlersManager.ToCallback(new ShowChannelMenuCallbackData
             {
                 ChannelId = channels[i].Id
             });

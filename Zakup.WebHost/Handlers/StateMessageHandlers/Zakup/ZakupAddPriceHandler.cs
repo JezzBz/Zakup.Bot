@@ -35,12 +35,12 @@ public class ZakupAddPriceHandler : IStateHandler
         }
         var state = await _userService.GetUserState(update.Message!.From.Id, cancellationToken);
         var zakupId = CacheHelper.ToData<ZakupIdCache>(state.CachedValue).ZakupId;
-        var zakup = await _zakupService.Get(zakupId, cancellationToken);
+        var zakup = await _zakupService.Get(zakupId, cancellationToken:cancellationToken);
         zakup.Price = amount;
         await _zakupService.Update(zakup, cancellationToken);
         state.Clear();
         await _userService.SetUserState(state, cancellationToken);
-        var callbackData = _handlersManager.ToCallback(new ZakupCheckChannelPrivateCallbackData()
+        var callbackData = await _handlersManager.ToCallback(new ZakupCheckChannelPrivateCallbackData()
         {
             ZakupId = zakupId
         });

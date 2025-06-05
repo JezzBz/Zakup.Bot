@@ -48,7 +48,7 @@ public class ChannelStatisticCallbackHandler : ICallbackHandler<ChannelStatistic
         foreach (var placement in zakups)
         {
             var buttonText = $"{placement.CreatedUtc:dd.MM.yyyy} {placement.Platform} {placement.Price}";
-            var callbackData = _handlersManager.ToCallback(new ZakupStatisticCallbackData
+            var callbackData = await _handlersManager.ToCallback(new ZakupStatisticCallbackData
             {
                 ZakupId = placement.Id
             });
@@ -63,7 +63,7 @@ public class ChannelStatisticCallbackHandler : ICallbackHandler<ChannelStatistic
         
         if (data.PageNumber > 1)
         {
-            var backCallback = _handlersManager.ToCallback(new ChannelStatisticCallbackData
+            var backCallback = await _handlersManager.ToCallback(new ChannelStatisticCallbackData
             {
                 ChannelId = data.ChannelId,
                 PageNumber = data.PageNumber - 1,
@@ -74,7 +74,7 @@ public class ChannelStatisticCallbackHandler : ICallbackHandler<ChannelStatistic
 
         if (!isLastPage)
         {
-            var backCallback = _handlersManager.ToCallback(new ChannelStatisticCallbackData
+            var backCallback = await _handlersManager.ToCallback(new ChannelStatisticCallbackData
             {
                 ChannelId = data.ChannelId,
                 PageNumber = data.PageNumber + 1,
@@ -88,7 +88,7 @@ public class ChannelStatisticCallbackHandler : ICallbackHandler<ChannelStatistic
             buttons.Add(paginationButtons);
         }
 
-        var menuData = _handlersManager.ToCallback(new ShowChannelMenuCallbackData
+        var menuData = await _handlersManager.ToCallback(new ShowChannelMenuCallbackData
         {
             ChannelId = data.ChannelId
         });

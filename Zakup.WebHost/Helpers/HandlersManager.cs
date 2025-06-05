@@ -1,6 +1,9 @@
 using Zakup.Abstractions.Data;
+using Zakup.Abstractions.DataContext;
 using Zakup.Abstractions.Handlers;
 using Zakup.Common.Enums;
+using Zakup.Entities;
+using Zakup.EntityFramework;
 using Zakup.WebHost.Handlers.MessageHandlers;
 
 namespace Zakup.WebHost.Helpers;
@@ -83,13 +86,21 @@ public class HandlersManager
     /// <typeparam name="TData">Тип параметров</typeparam>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public string ToCallback<TData>(TData data) where TData : ICallbackData
+    public async Task<string> ToCallback<TData>(TData data) where TData : ICallbackData
     {
         var handlerEntry = _callbackHandlers.FirstOrDefault(x => typeof(ICallbackHandler<TData>).IsAssignableFrom(x.Value));
         if (handlerEntry.Value == null)
         {
             throw new ArgumentException($"Unknown handler type: {typeof(TData).Name}");
         }
-        return (int)handlerEntry.Key + "|" + data.ToCallback();
+
+        var callbackData = (int)handlerEntry.Key + "|" + data.ToCallback();
+        if (callbackData.Length <= 64) return callbackData;
+        
+        var bcdService = _serviceProvider.GetRequiredService<IBigCallbackDataService>();
+        
+        var dataId = await bcdService.AddData(callbackData);
+        
+        return $"BCD|{dataId}";
     }
 }

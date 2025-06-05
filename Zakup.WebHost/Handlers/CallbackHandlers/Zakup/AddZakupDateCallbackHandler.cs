@@ -45,12 +45,12 @@ public class AddZakupDateCallbackHandler : ICallbackHandler<AddZakupDateCallback
             ZakupId = zakup.Id
         });
         await _userService.SetUserState(state, cancellationToken);
-        var cancelData = _handlersManager.ToCallback(new DeleteZakupCallbackData
+        var cancelData = await _handlersManager.ToCallback(new DeleteZakupCallbackData
         {
             ZakupId = zakup.Id
         });
         
-        var skipData = _handlersManager.ToCallback(new AddZakupPriceCallbackData()
+        var skipData = await _handlersManager.ToCallback(new AddZakupPriceCallbackData()
         {
             ZakupId = zakup.Id
         });

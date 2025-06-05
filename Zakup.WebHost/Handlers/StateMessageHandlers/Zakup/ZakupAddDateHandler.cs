@@ -39,18 +39,18 @@ public class ZakupAddDateHandler : IStateHandler
         
         var state = await _userService.GetUserState(update.Message!.From.Id, cancellationToken);
         var zakupId = CacheHelper.ToData<ZakupIdCache>(state.CachedValue).ZakupId;
-        var zakup = await _zakupService.Get(zakupId, cancellationToken);
+        var zakup = await _zakupService.Get(zakupId, cancellationToken:cancellationToken);
         zakup.PostTime = postDateTime.ToUniversalTime();
         await _zakupService.Update(zakup, cancellationToken);
 
         state.State = UserStateType.AddZakupPrice;
         await _userService.SetUserState(state, cancellationToken);
-        var cancelData = _handlersManager.ToCallback(new DeleteZakupCallbackData
+        var cancelData = await _handlersManager.ToCallback(new DeleteZakupCallbackData
         {
             ZakupId = zakupId
         });
         
-        var freeData = _handlersManager.ToCallback(new ZakupCheckChannelPrivateCallbackData()
+        var freeData = await _handlersManager.ToCallback(new ZakupCheckChannelPrivateCallbackData()
         {
             ZakupId = zakupId
         });

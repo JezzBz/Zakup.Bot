@@ -44,14 +44,14 @@ public class CreateChannelAliasHandler : IStateHandler
             
         
         alias = alias.ToLowerInvariant();
-        var callbackData = _handlersManager.ToCallback(new ConfirmChannelAlias
+        var callbackData = await _handlersManager.ToCallback(new ConfirmChannelAlias
         {
             Alias = alias,
             ChannelId = data!.ChannelId,
             Confirm = true,
             RequestFirstPost = data.RequestFirstPost,
         });
-        var emptyData = _handlersManager.ToCallback(new ConfirmChannelAlias
+        var emptyData = await _handlersManager.ToCallback(new ConfirmChannelAlias
         {
             ChannelId = data!.ChannelId,
             Confirm = false,

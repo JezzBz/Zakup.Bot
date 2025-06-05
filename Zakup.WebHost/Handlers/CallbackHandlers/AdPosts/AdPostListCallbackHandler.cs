@@ -44,23 +44,24 @@ public class AdPostListCallbackHandler : ICallbackHandler<AdPostListCallbackData
                 var row = new List<InlineKeyboardButton>();
                 for (int j = i; j < Math.Min(i + 2, posts.Count); j++)
                 {
-                    var callback = _handlersManager.ToCallback(new AdPostMenuCallbackData()
+                    var callback = await _handlersManager.ToCallback(new AdPostMenuCallbackData()
                     {
                         PostId = posts[j].Id,
                     });
-                    row.Add(InlineKeyboardButton.WithCallbackData(posts[j].Title, callback));
+                    var title = string.IsNullOrEmpty(posts[j].Title) ? posts[j].Text[..4]  + "..." : posts[j].Title;
+                    row.Add(InlineKeyboardButton.WithCallbackData(title, callback));
                 }
 
                 buttons.Add(row);
             }
         }
 
-        var createPostButton = _handlersManager.ToCallback(new CreatePostCallbackData()
+        var createPostButton = await _handlersManager.ToCallback(new CreatePostCallbackData()
         {
             ChannelId = channel!.Id
         });
         
-        var backButton = _handlersManager.ToCallback(new ShowChannelMenuCallbackData
+        var backButton = await _handlersManager.ToCallback(new ShowChannelMenuCallbackData
         {
             ChannelId = channel!.Id
         });

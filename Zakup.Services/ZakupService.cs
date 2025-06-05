@@ -52,16 +52,22 @@ public class ZakupService
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<TelegramZakup?> Get(Guid zakupId, CancellationToken cancellationToken = default)
+    public async Task<TelegramZakup?> Get(Guid zakupId, bool includeAll = false, CancellationToken cancellationToken = default)
     {
-        return await _context.TelegramZakups
-            .FirstOrDefaultAsync(q => q.Id == zakupId, cancellationToken);
+        var query = _context.TelegramZakups.AsQueryable();
+        if (includeAll)
+        {
+            query = query.Include(q => q.Channel)
+                .Include(q => q.AdPost);
+        }
+        return await query.FirstOrDefaultAsync(q => q.Id == zakupId, cancellationToken);
     }
 
-    public async Task Update(TelegramZakup zakup, CancellationToken cancellationToken = default)
+    public async Task<TelegramZakup> Update(TelegramZakup zakup, CancellationToken cancellationToken = default)
     {
-        _context.Update(zakup);
+        var entity = _context.Update(zakup);
         await _context.SaveChangesAsync(cancellationToken);
+        return entity.Entity;
     }
 
     public async Task<List<TelegramZakup>> GetList(long channelId, int skip = 0, int take = 5, CancellationToken cancellationToken = default)

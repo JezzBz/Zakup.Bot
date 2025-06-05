@@ -32,7 +32,7 @@ public class ZakupChangePriceHandler : IStateHandler
         
         var state = await _userService.GetUserState(update.Message!.From.Id, cancellationToken);
         var zakupId = CacheHelper.ToData<ZakupIdCache>(state.CachedValue).ZakupId;
-        var zakup = await _zakupService.Get(zakupId, cancellationToken);
+        var zakup = await _zakupService.Get(zakupId, cancellationToken:cancellationToken);
         zakup.Price = amount;
         await _zakupService.Update(zakup, cancellationToken);
         state.Clear();

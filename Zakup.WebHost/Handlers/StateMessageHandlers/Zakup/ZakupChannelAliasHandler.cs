@@ -3,6 +3,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
 using Zakup.Common.DTO.Channel;
+using Zakup.Common.DTO.Zakup;
 using Zakup.Common.Enums;
 using Zakup.Services;
 using Zakup.Services.Extensions;
@@ -16,11 +17,13 @@ public class ZakupChannelAliasHandler : IStateHandler
 {
     private readonly UserService _userService;
     private readonly ZakupService _zakupService;
+    private readonly HandlersManager _handlersManager;
 
-    public ZakupChannelAliasHandler(UserService userService, ZakupService zakupService)
+    public ZakupChannelAliasHandler(UserService userService, ZakupService zakupService, HandlersManager handlersManager)
     {
         _userService = userService;
         _zakupService = zakupService;
+        _handlersManager = handlersManager;
     }
 
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -31,7 +34,7 @@ public class ZakupChannelAliasHandler : IStateHandler
         var state = await _userService.GetUserState(update.Message.From.Id, cancellationToken);
         await botClient.SafeDelete(state.UserId, state.PreviousMessageId,cancellationToken);
         var zakupId = CacheHelper.ToData<ZakupIdCache>(state.CachedValue).ZakupId;
-        var zakup = await _zakupService.Get(zakupId, cancellationToken);
+        var zakup = await _zakupService.Get(zakupId, cancellationToken:cancellationToken);
         if (message.ForwardFromChat != null)
         {
             zakup.Platform = message.ForwardFromChat.Title;
@@ -47,17 +50,26 @@ public class ZakupChannelAliasHandler : IStateHandler
         }
 
         await _zakupService.Update(zakup, cancellationToken);
+
+        var premiumData = await _handlersManager.ToCallback(new PremiumEmojiChooseAdPostCallbackData()
+        {
+            ZakupId = zakupId
+        });
         
+        var linkData = await _handlersManager.ToCallback(new GetZakupLinkCallbackData()
+        {
+            ZakupId = zakupId
+        });
         var optionsMarkup = new InlineKeyboardMarkup(new List<List<InlineKeyboardButton>>
         {
             new List<InlineKeyboardButton>
             {
                 InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.FinalAdPost, $"replace:{zakupId}"),
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.OnlyLink, $"get_link:{zakupId}")
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.OnlyLink, linkData)
             },
             new List<InlineKeyboardButton>
             {
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.PremiumEmoji, $"premium:{zakupId}")
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.PremiumEmoji, premiumData)
             }
         });
         await botClient.SafeDelete(state.UserId, message.MessageId, cancellationToken);

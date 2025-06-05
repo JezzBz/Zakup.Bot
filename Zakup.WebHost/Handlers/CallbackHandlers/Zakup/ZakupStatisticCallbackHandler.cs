@@ -38,33 +38,33 @@ public class ZakupStatisticCallbackHandler : ICallbackHandler<ZakupStatisticCall
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId,
             MessageTemplate.ZakupStatisticMessage(placementsData), 
             parseMode: ParseMode.MarkdownV2, 
-            replyMarkup: GetKeyboard(data, placementsData),
+            replyMarkup: await GetKeyboard(data, placementsData),
             cancellationToken: cancellationToken);
     }
 
-    private InlineKeyboardMarkup GetKeyboard(ZakupStatisticCallbackData data, PlacementStatisticDTO placementsData)
+    private async Task<InlineKeyboardMarkup> GetKeyboard(ZakupStatisticCallbackData data, PlacementStatisticDTO placementsData)
     {
-        var showMembersData = _handlersManager.ToCallback(new ShowZakupMembersCallbackData
+        var showMembersData = await _handlersManager.ToCallback(new ShowZakupMembersCallbackData
         {
             ZakupId = data.ZakupId
         });
         
-        var checkSubscribersData = _handlersManager.ToCallback(new CheckSubscribersCallbackData
+        var checkSubscribersData = await _handlersManager.ToCallback(new CheckSubscribersCallbackData
         {
             ZakupId = data.ZakupId
         });
         
-        var deleteData = _handlersManager.ToCallback(new DeleteZakupCallbackData()
+        var deleteData = await _handlersManager.ToCallback(new DeleteZakupCallbackData()
         {
             ZakupId = data.ZakupId
         });
         
-        var editPriceData = _handlersManager.ToCallback(new ChangePriceCallbackData()
+        var editPriceData = await _handlersManager.ToCallback(new ChangePriceCallbackData()
         {
             ZakupId = data.ZakupId
         });
         
-        var backData = _handlersManager.ToCallback(new ChannelStatisticCallbackData()
+        var backData = await _handlersManager.ToCallback(new ChannelStatisticCallbackData()
         {
             ChannelId = placementsData.ChannelId,
             PageNumber = 1

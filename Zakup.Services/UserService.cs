@@ -1,9 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Zakup.Common.Enums;
 using Zakup.Entities;
 using Zakup.EntityFramework;
+using Zakup.Services.Data;
 using Zakup.Services.Extensions;
 using Zakup.Services.Options;
 
@@ -178,5 +182,92 @@ public class UserService
         Console.WriteLine("Admin list updated.");
         
         return adminList;
+    }
+
+    public async Task<IQueryable<ForwardUserInfo>> GetForwardInfo(ITelegramBotClient botClient, long userId, bool isPremium, string userName, CancellationToken cancellationToken = default)
+    {
+        var memberInfoQuery = _context.ChannelMembers
+             .Include(m => m.Channel)
+             .Where(m => m.UserId == userId && m.Channel.Administrators.Any(a => a.Id == userId));
+             // .Where(m => m.UserId == message.ForwardFrom!.Id)
+             // // Добавляем условие, что текущий пользователь является администратором этого канала
+             // .Where(m => m.Channel.Administrators.Any(a => a.Id == message.From!.Id));
+         var forwardMessage = new MessageForward
+         {
+             UserId = userId,
+             ForwardAtUtc = DateTime.UtcNow,
+             Source = MessageForwardSource.User
+         };
+         await _context.AddAsync(forwardMessage, cancellationToken);
+         await _context.SaveChangesAsync(cancellationToken);
+         var resultQuery = from m in memberInfoQuery
+             join z in _context.TelegramZakups on m.InviteLink equals z.InviteLink into outter
+             from o in outter.DefaultIfEmpty()
+             select new ForwardUserInfo { Zakup = o, Member = m };
+  
+         var untrackedChannelsMember = await _context.Channels
+             .Where(tc => tc.Administrators.Any(c => c.Id == userId))
+             .Where(tc => tc.Members.All(m => m.UserId != userId))
+             .ToListAsync(cancellationToken: cancellationToken);
+  
+         var untrackedMemberList = new List<ChannelMember>();
+  
+         foreach (var c in untrackedChannelsMember)
+		 {
+		 	try
+		 	{
+                 // Console.WriteLine(с.Id);
+		 		var memberInfo = await botClient.GetChatMemberAsync(c.Id, userId, cancellationToken: cancellationToken);
+  
+		 		if (memberInfo.Status is ChatMemberStatus.Kicked or ChatMemberStatus.Left)
+		 		{
+		 			continue;
+		 		}
+  
+		 		var newMember = new ChannelMember()
+		 		{
+		 			UserId = userId,
+		 			IsPremium = isPremium,
+		 			UserName = userName,
+		 			ChannelId = c.Id,
+		 			Status = true,
+		 			Refer = "origin",
+		 			JoinCount = 1,
+		 		};
+  
+		 		untrackedMemberList.Add(newMember);
+		 	}
+		 	catch (ApiRequestException ex) when (ex.Message.Contains("bot is not a member of the channel chat") || ex.Message.Contains("chat not found"))
+		 	{
+		 		// Optionally log the error or inform the user
+		 		Console.WriteLine($"Ошика Bot is not an admin in the channel {c.Id}. Cannot retrieve member info.");
+		 		continue;
+		 	}
+		 }
+  
+  
+         await _context.AddRangeAsync(untrackedMemberList, cancellationToken);
+         await _context.SaveChangesAsync(cancellationToken);
+         return resultQuery;
+    }
+
+    public async Task MarkAsLead(long userId, long leadUserId, CancellationToken cancellationToken = default)
+    {
+        var memberInfoQuery = _context.ChannelMembers
+            .Include(m => m.Channel)
+            .Where(m => m.UserId == leadUserId && m.Channel.Administrators.Any(a => a.Id == userId));
+
+        var clientsQuery = memberInfoQuery.Join(_context.TelegramZakups, m => m.InviteLink, z => z.InviteLink,
+            (member, zakup) => new ZakupClient()
+            {
+                ZakupId = zakup.Id,
+                MemberId = member.Id
+            });
+
+        clientsQuery = clientsQuery
+            .Where(c => !_context.ZakupClients.Any(zc => zc.Id == c.MemberId && zc.ZakupId == c.ZakupId));
+
+        await _context.AddRangeAsync(clientsQuery, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

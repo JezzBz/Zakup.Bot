@@ -21,12 +21,19 @@ public class AdPostsService
        return entity.Entity;
     }
 
-    public async Task<IEnumerable<TelegramAdPost>> GetPosts(long channelId, long userId)
+    public async Task<IEnumerable<TelegramAdPost>> GetPosts(long channelId, long userId, CancellationToken cancellationToken = default)
     {
         return await _context.TelegramAdPosts
             .Where(q => q.ChannelId == channelId)
             .Where(q => q.Channel.Administrators.Any(x => x.Id == userId))
-            .ToListAsync();
+            .ToListAsync(cancellationToken: cancellationToken);
+    }
+    
+    public async Task<List<TelegramAdPost>> GetPosts(long channelId, CancellationToken cancellationToken = default)
+    {
+        return await _context.TelegramAdPosts
+            .Where(q => q.ChannelId == channelId)
+            .ToListAsync(cancellationToken: cancellationToken);
     }
 
     public async Task AddButton(Guid postId, TelegramPostButton button)

@@ -38,7 +38,7 @@ public class ChannelAdminsListCallbackHandler : ICallbackHandler<ChannelAdminsLi
         foreach (var admin in channel.Administrators)
         {
             var displayName = string.IsNullOrEmpty(admin.UserName) ? admin.Id.ToString() : "@" + admin.UserName;
-            var cbqData = _handlersManager.ToCallback(new AdminInfoCallbackData
+            var cbqData = await _handlersManager.ToCallback(new AdminInfoCallbackData
             {
                 UserId = admin.Id,
                 ChannelId = data.ChannelId
@@ -47,7 +47,7 @@ public class ChannelAdminsListCallbackHandler : ICallbackHandler<ChannelAdminsLi
             buttons.Add([InlineKeyboardButton.WithCallbackData(displayName, cbqData)]);
         }
 
-        var newAdminData = _handlersManager.ToCallback(new AddNewAdminCallbackData
+        var newAdminData = await _handlersManager.ToCallback(new AddNewAdminCallbackData
         {
             ChannelId = data.ChannelId
         });
@@ -57,7 +57,7 @@ public class ChannelAdminsListCallbackHandler : ICallbackHandler<ChannelAdminsLi
             InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.AddNewAdmin, newAdminData)
         });
 
-        var backData = _handlersManager.ToCallback(new ShowChannelMenuCallbackData
+        var backData = await _handlersManager.ToCallback(new ShowChannelMenuCallbackData
         {
             ChannelId = data.ChannelId
         });

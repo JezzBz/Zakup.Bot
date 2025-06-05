@@ -36,7 +36,7 @@ public class ChannelAutoApproveCallbackHandler : ICallbackHandler<ChannelAutoApp
         }
 
         var isActuallyEnabled = channel.MinutesToAcceptRequest.HasValue;
-        var keyBoard = GetKeyboard(isActuallyEnabled, data.ChannelId);
+        var keyBoard = await GetKeyboard(isActuallyEnabled, data.ChannelId);
         var statusText = isActuallyEnabled
             ? MessageTemplate.AutoApproveEnabled(channel.MinutesToAcceptRequest!.Value)
             : MessageTemplate.AutoApproveDisabled;
@@ -47,17 +47,17 @@ public class ChannelAutoApproveCallbackHandler : ICallbackHandler<ChannelAutoApp
             ParseMode.MarkdownV2, replyMarkup: keyBoard, cancellationToken: cancellationToken);
     }
 
-    private InlineKeyboardMarkup GetKeyboard(bool isEnabled, long channelId)
+    private async Task<InlineKeyboardMarkup> GetKeyboard(bool isEnabled, long channelId)
     {
         InlineKeyboardButton button;
-        var backData = _handlersManager.ToCallback(new ShowChannelMenuCallbackData
+        var backData = await _handlersManager.ToCallback(new ShowChannelMenuCallbackData
         {
             ChannelId = channelId
         });
         
         if (isEnabled)
         {
-            var callbackData = _handlersManager.ToCallback(new DisableAutoApproveCallbackData
+            var callbackData = await _handlersManager.ToCallback(new DisableAutoApproveCallbackData
             {
                 ChannelId = channelId
             });
@@ -66,7 +66,7 @@ public class ChannelAutoApproveCallbackHandler : ICallbackHandler<ChannelAutoApp
         }
         else
         {
-            var callbackData = _handlersManager.ToCallback(new EnableAutoApproveCallbackData
+            var callbackData = await _handlersManager.ToCallback(new EnableAutoApproveCallbackData
             {
                 ChannelId = channelId
             });
