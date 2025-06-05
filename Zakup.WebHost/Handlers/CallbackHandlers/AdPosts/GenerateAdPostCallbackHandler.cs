@@ -28,7 +28,7 @@ public class GenerateAdPostCallbackHandler : ICallbackHandler<GenerateAdPostCall
         var post = await _adPostsService.Get(data.PostId, cancellationToken, true);
         post!.Entities = post.Entities.Where(x => x.Type != 0).ToList();
         
-        if (!post.MediaGroup.Documents.Any())
+        if (!post.MediaGroup?.Documents.Any() ?? true)
         {
             await botClient.SendTextMessageAsync(callbackQuery.From.Id, post.Text, parseMode: null,
                 entities: post.Entities,

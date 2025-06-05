@@ -12,7 +12,9 @@ using Zakup.Services;
 using Zakup.Services.Options;
 using Zakup.WebHost.Extensions;
 using Zakup.WebHost.Handlers;
+using Zakup.WebHost.Handlers.Inline;
 using Zakup.WebHost.Handlers.MessageHandlers;
+using Zakup.WebHost.Handlers.SystemHandlers;
 using Zakup.WebHost.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,6 +46,8 @@ builder.Services.AddTelegramBot(builder.Configuration["Telegram:BotToken"]!, con
    
    
     config.AddHandler<StartMessageHandler>();
+    config.AddHandler<InlineQueryHandler>();
+    config.AddHandler<InlineResultHandler>();
     config.AddHandler<MessageHandler>();
     config.AddHandler<CallbackHandler>();
     config.AddHandler<MediaGroupUploadHandler>();
@@ -74,6 +78,7 @@ builder.Services.AddSingleton<MinioClient>(provider =>
 #region Services
 
 builder.Services.AddSingleton<HandlersManager>();
+builder.Services.AddSingleton<MetadataStorage>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<MessagesService>();
 builder.Services.AddScoped<ZakupService>();

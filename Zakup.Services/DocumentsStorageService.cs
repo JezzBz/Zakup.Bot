@@ -55,6 +55,10 @@ public class DocumentsStorageService
 
     public async Task AttachFileToMediaGroup(Guid fileId, string mediaGroupId)
     {
+        if (mediaGroupId == null)
+        {
+            return;
+        }
         await CreateMediaGroupIfNotExist(mediaGroupId);
         var relation = new FileMediaGroup
         {
@@ -77,6 +81,10 @@ public class DocumentsStorageService
 
     private async Task CreateMediaGroupIfNotExist(string mediaGroupId)
     {
+        if (mediaGroupId == null)
+        {
+            return;
+        }
         var mediaGroup = await _context.MediaGroups.FirstOrDefaultAsync(q => q.MediaGroupId == mediaGroupId);
         if (mediaGroup == null)
         {
