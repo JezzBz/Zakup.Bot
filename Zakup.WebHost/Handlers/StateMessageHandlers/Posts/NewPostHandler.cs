@@ -63,21 +63,36 @@ public class NewPostHandler : IStateHandler
         };
         
         var entity = await _adPostsService.SavePost(adPost);
-        await _documentsStorageService.SaveDocuments(botClient, message, message.MediaGroupId!);
-        if(message.MediaGroupId != null) 
-            await _documentsStorageService.AttachMediaGroupToPost(message.MediaGroupId!, entity.Id);
-        
-        var markup = await GetKeyboardMarkup(adPost.Id);
-
+        var fakeMediaGroupId = $"post:{entity.Id}";
+        await _documentsStorageService.SaveDocuments(botClient, message, message.MediaGroupId ?? fakeMediaGroupId);
         await botClient.SafeDelete(user.Id, user.UserState.PreviousMessageId, cancellationToken);
-        await botClient.SendTextMessageAsync(user.Id, 
-            MessageTemplate.AddButtonQuestion, 
-            replyMarkup: markup, 
-            cancellationToken: cancellationToken);
+        if (message.MediaGroupId == null)
+        {
+            await _documentsStorageService.AttachMediaGroupToPost(fakeMediaGroupId, entity.Id);
+            var markup = await GetKeyboardMarkup(adPost.Id);
+            
+            await botClient.SendTextMessageAsync(user.Id, 
+                MessageTemplate.AddButtonQuestion, 
+                replyMarkup: markup, 
+                cancellationToken: cancellationToken);
+            user.UserState.Clear();
+            await _userService.SetUserState(user.UserState, cancellationToken);
+        }
+        else
+        {
+            await _documentsStorageService.AttachMediaGroupToPost(message.MediaGroupId!, entity.Id);
+            var msg = await botClient.SendTextMessageAsync(user.Id, MessageTemplate.WriteAliasForPost, cancellationToken: cancellationToken);
+            user.UserState.Clear();
+            user.UserState.CachedValue = CacheHelper.ToCache(new AddPostAliasCache
+            {
+                PostId = entity.Id
+            });
+            user.UserState.State = UserStateType.AddPostTitle;
         
-        user.UserState.Clear();
-        await _userService.SetUserState(user.UserState, cancellationToken);
-
+            user.UserState.PreviousMessageId = msg.MessageId;
+            await _userService.SetUserState(user.UserState, cancellationToken);
+        }
+        
     }
 
     private async Task<bool> ValidateMessage(ITelegramBotClient botClient, Message message, long userId)

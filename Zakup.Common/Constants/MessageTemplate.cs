@@ -128,6 +128,7 @@ public static class MessageTemplate
         "Ошибка: текст поста не может быть пустым или слишком коротким (минимум 2 символа). Пожалуйста, добавьте текст и попробуйте снова.";
 
     public const string AddButtonQuestion = "Добавить кнопку?";
+    public const string PostGenerationProcess = "Генерация поста...";
     public const string WriteButtonText = "Введите текст для кнопки";
     
     public const string WriteAliasForPost = "Теперь придумайте метку для этого поста (слово или число для поиска и идентификации)";

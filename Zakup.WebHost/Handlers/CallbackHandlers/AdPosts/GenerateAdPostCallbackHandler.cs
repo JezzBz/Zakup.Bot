@@ -33,12 +33,14 @@ public class GenerateAdPostCallbackHandler : ICallbackHandler<GenerateAdPostCall
             await botClient.SendTextMessageAsync(callbackQuery.From.Id, post.Text, parseMode: null,
                 entities: post.Entities,
                 disableWebPagePreview: true, cancellationToken: cancellationToken);
+            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
             return;
         }
 
         if (post.MediaGroup.Documents.Count() == 1)
         {
             await SendWithSingleFile(post, post.MediaGroup.Documents.First(), botClient, callbackQuery.From.Id, cancellationToken);
+            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
             return;
         }
         
@@ -62,7 +64,7 @@ public class GenerateAdPostCallbackHandler : ICallbackHandler<GenerateAdPostCall
             {
                 caption = post.Text;
                 entities = post.Entities.ToArray();
-                parseMode = ParseMode.MarkdownV2;
+                
             }
             IAlbumInputMedia input = document.Kind switch
             {
@@ -70,22 +72,22 @@ public class GenerateAdPostCallbackHandler : ICallbackHandler<GenerateAdPostCall
                 {
                     Caption = caption, 
                     CaptionEntities = entities,
-                    ParseMode = parseMode
+                   
                 },
                 TelegramDocumentKind.GIF => new InputMediaDocument(InputFile.FromStream(fileStream, document.Id.ToString())) {
                     Caption = caption, 
                     CaptionEntities = entities,
-                    ParseMode = parseMode
+                   
                 },
                 TelegramDocumentKind.IMAGE => new InputMediaPhoto(InputFile.FromStream(fileStream, document.Id.ToString())) {
                     Caption = caption, 
                     CaptionEntities = entities,
-                    ParseMode = parseMode
+                    
                 },
                 TelegramDocumentKind.VIDEO => new InputMediaVideo(InputFile.FromStream(fileStream, document.Id.ToString())) {
                     Caption = caption, 
                     CaptionEntities = entities,
-                    ParseMode = parseMode
+                   
                 },
                 _ => throw new Exception("Unknown document type")
             };

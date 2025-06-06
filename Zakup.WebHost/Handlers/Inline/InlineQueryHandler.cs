@@ -10,6 +10,7 @@ using Zakup.Common.Enums;
 using Zakup.Entities;
 using Zakup.EntityFramework;
 using Zakup.Services;
+using Zakup.Services.Extensions;
 using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.SystemHandlers;
@@ -99,7 +100,7 @@ public class InlineQueryHandler : IUpdatesHandler
         var results = new List<InlineQueryResult>();
         
         
-        
+       
         foreach (var site in posts)
         {
             // Console.WriteLine($"показываю крео {site.Title}");
@@ -120,9 +121,10 @@ public class InlineQueryHandler : IUpdatesHandler
                         Title = site.Title,
                         Caption = site.Text,
                         CaptionEntities = site.Entities.ToArray(),
-                        ReplyMarkup =
+                        ReplyMarkup = 
                             new InlineKeyboardMarkup(
                                 InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace"))
+                       
                     },
                     TelegramDocumentKind.GIF => new InlineQueryResultCachedGif($"{site.Id}", file.FileId)
                     {
@@ -131,7 +133,7 @@ public class InlineQueryHandler : IUpdatesHandler
                         CaptionEntities = site.Entities.ToArray(),
                         ReplyMarkup =
                             new InlineKeyboardMarkup(
-                                InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace"))
+                                InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace")) 
                     },
                     TelegramDocumentKind.VIDEO => new InlineQueryResultCachedPhoto($"{site.Id}", file.ThumbnailId)
                     {
@@ -140,7 +142,7 @@ public class InlineQueryHandler : IUpdatesHandler
                         CaptionEntities = site.Entities.ToArray(),
                         ReplyMarkup =
                             new InlineKeyboardMarkup(
-                            InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace"))
+                                InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace"))
                     },
                     TelegramDocumentKind.DOCUMENT => new InlineQueryResultCachedDocument($"{site.Id}", file.FileId, site.Title)
                     {
@@ -148,7 +150,7 @@ public class InlineQueryHandler : IUpdatesHandler
                         CaptionEntities = site.Entities.ToArray(),
                         ReplyMarkup =
                             new InlineKeyboardMarkup(
-                                InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace"))
+                                InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace")) 
                     },
                 });
             }

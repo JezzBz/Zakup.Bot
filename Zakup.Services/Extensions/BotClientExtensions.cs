@@ -186,11 +186,14 @@ public static class BotClientExtensions
             string caption = null;
             MessageEntity[]? entities = null;
             ParseMode? parseMode = null;
+            InlineKeyboardMarkup replyMarkup = null;
             if (i == 0)
             {
                 caption = post.Text;
                 entities = post.Entities.ToArray();
                 parseMode = ParseMode.MarkdownV2;
+                replyMarkup = new InlineKeyboardMarkup(
+                    InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace"));
             }
             IAlbumInputMedia input = document.Kind switch
             {
@@ -198,7 +201,7 @@ public static class BotClientExtensions
                 {
                     Caption = caption, 
                     CaptionEntities = entities,
-                    ParseMode = parseMode
+                    ParseMode = parseMode,
                 },
                 TelegramDocumentKind.GIF => new InputMediaDocument(InputFile.FromStream(fileStream, document.Id.ToString())) {
                     Caption = caption, 
@@ -219,7 +222,6 @@ public static class BotClientExtensions
             };
             media.Add(input);
         }
-        
         return (await botClient.SendMediaGroupAsync(
             chatId: userId,
             media: media, cancellationToken: cancellationToken))[0];

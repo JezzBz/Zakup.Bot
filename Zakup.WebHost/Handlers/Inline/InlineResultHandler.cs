@@ -25,12 +25,14 @@ public class InlineResultHandler : IUpdatesHandler
     //private readonly InternalSheetsService _sheetsService;
     private readonly ILogger<InlineResultHandler> _logger;
     private readonly ApplicationDbContext _dataContext;
+    private readonly DocumentsStorageService _documentsStorage;
 
-    public InlineResultHandler(MetadataStorage metadataStorage, ILogger<InlineResultHandler> logger, ApplicationDbContext dataContext)
+    public InlineResultHandler(MetadataStorage metadataStorage, ILogger<InlineResultHandler> logger, ApplicationDbContext dataContext, DocumentsStorageService documentsStorage)
     {
         _metadataStorage = metadataStorage;
         _logger = logger;
         _dataContext = dataContext;
+        _documentsStorage = documentsStorage;
     }
 
     public static bool ShouldHandle(Update update)
@@ -110,7 +112,8 @@ public class InlineResultHandler : IUpdatesHandler
         adPost = await _dataContext.TelegramAdPosts
                 .Include(a => a.Channel)
                     .ThenInclude(c => c.Administrators)
-            
+                    .Include(q => q.MediaGroup)
+                    .ThenInclude(m => m.Documents)
                 .FirstAsync(a => a.Id == adPostId, cancellationToken: cancellationToken);
 
         _metadataStorage.PostMetadataStorage.TryRemove(data.From.Id, out var resultQuery);
@@ -337,6 +340,9 @@ public class InlineResultHandler : IUpdatesHandler
                 return;
             }
 
+           
+            
+            
             await botClient.EditMessageTextAsync(data.InlineMessageId, adPost.Text, entities: adPost.Entities.ToArray(),
                 replyMarkup: keyboard is null ? null : new InlineKeyboardMarkup(keyboard),
                 cancellationToken: cancellationToken);
