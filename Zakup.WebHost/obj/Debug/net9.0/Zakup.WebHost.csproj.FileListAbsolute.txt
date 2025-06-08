@@ -159,3 +159,6 @@ C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.WebHost\bin\Debug\net9.0\Minio.dll
 C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.WebHost\bin\Debug\net9.0\System.IO.Hashing.dll
 C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.WebHost\bin\Debug\net9.0\System.Reactive.dll
 C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.WebHost\bin\Debug\net9.0\oferta.docx
+C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.WebHost\bin\Debug\net9.0\Quartz.dll
+C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.WebHost\bin\Debug\net9.0\Quartz.Extensions.DependencyInjection.dll
+C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.WebHost\bin\Debug\net9.0\Quartz.Extensions.Hosting.dll

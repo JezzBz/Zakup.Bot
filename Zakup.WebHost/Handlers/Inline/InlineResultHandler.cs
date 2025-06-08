@@ -339,8 +339,6 @@ public class InlineResultHandler : IUpdatesHandler
                 _logger.LogWarning("Попытка отредактировать сообщение с пустым текстом. InlineMessageId: {InlineMessageId}", data.InlineMessageId);
                 return;
             }
-
-           
             
             
             await botClient.EditMessageTextAsync(data.InlineMessageId, adPost.Text, entities: adPost.Entities.ToArray(),

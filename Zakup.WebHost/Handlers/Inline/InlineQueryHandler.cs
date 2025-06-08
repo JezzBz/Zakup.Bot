@@ -113,7 +113,7 @@ public class InlineQueryHandler : IUpdatesHandler
             {
                 var file = site.MediaGroup.Documents.First();
                 var kind = file.Kind;
-
+               
                 results.Add(kind switch
                 {
                     TelegramDocumentKind.IMAGE => new InlineQueryResultCachedPhoto($"{site.Id}", file.FileId)
@@ -170,7 +170,7 @@ public class InlineQueryHandler : IUpdatesHandler
             }
         }
     // }
-
+   
     await botClient.AnswerInlineQueryAsync(inlineQuery.Id, results, cacheTime: 0, isPersonal: true, cancellationToken: cancellationToken);
     }
 

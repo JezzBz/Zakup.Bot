@@ -424,6 +424,22 @@
           }
         }
       },
+      "Quartz/3.14.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "2.1.1"
+        },
+        "compile": {
+          "lib/net9.0/Quartz.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Quartz.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "System.CodeDom/7.0.0": {
         "type": "package",
         "compile": {
@@ -1228,6 +1244,29 @@
         "postgresql.png"
       ]
     },
+    "Quartz/3.14.0": {
+      "sha512": "j8mY6S0FWbtuEFbStUEZAkkGpZLbSuTT0us1w0DUQqhi+vwg/7XXS36TeH3o34zZoqYGyXvk6jrKnW/p6kS8sg==",
+      "type": "package",
+      "path": "quartz/3.14.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net462/Quartz.dll",
+        "lib/net462/Quartz.xml",
+        "lib/net472/Quartz.dll",
+        "lib/net472/Quartz.xml",
+        "lib/net8.0/Quartz.dll",
+        "lib/net8.0/Quartz.xml",
+        "lib/net9.0/Quartz.dll",
+        "lib/net9.0/Quartz.xml",
+        "lib/netstandard2.0/Quartz.dll",
+        "lib/netstandard2.0/Quartz.xml",
+        "quartz-logo-small.png",
+        "quartz.3.14.0.nupkg.sha512",
+        "quartz.nuspec",
+        "quick-start.md"
+      ]
+    },
     "System.CodeDom/7.0.0": {
       "sha512": "GLltyqEsE5/3IE+zYRP5sNa1l44qKl9v+bfdMcwg+M9qnQf47wK3H0SUR/T+3N4JEQXF3vV4CSuuo0rsg+nq2A==",
       "type": "package",
@@ -1387,6 +1426,7 @@
       "Google.Apis.Sheets.v4 >= 1.69.0.3785",
       "Microsoft.EntityFrameworkCore >= 9.0.4",
       "Minio >= 6.0.4",
+      "Quartz >= 3.14.0",
       "Zakup.Common >= 1.0.0",
       "Zakup.Entities >= 1.0.0",
       "Zakup.EntityFramework >= 1.0.0"
@@ -1471,6 +1511,10 @@
           "Minio": {
             "target": "Package",
             "version": "[6.0.4, )"
+          },
+          "Quartz": {
+            "target": "Package",
+            "version": "[3.14.0, )"
           }
         },
         "imports": [

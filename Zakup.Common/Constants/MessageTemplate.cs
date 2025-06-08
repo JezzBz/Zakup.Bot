@@ -168,14 +168,9 @@ public static class MessageTemplate
     private const string AutoApproveIsEnabled =
         "✅ **Автоприём заявок:** ВКЛЮЧЕН. Задержка {0} минут.";
     
-    private const string PremiumEmogiText =  "Для того, чтобы получить готовый рекламный пост* с премиум emoji* вы должны вызвать бота через inline *в переписке с ботом*(если вызывать в диалоге с людьми будут обычные смайлики), т.е. написав запрос в этот чат, как на скрине.\n\n" +
-                                             "Не обязательно заполнять все данные через меню, как вы сейчас это сделали. Достаточно просто написать в диалоге с этим ботом *@zakup_robot Понятное вам название канала, где вас опубликуют Стоимость(только число) Метка канала(вы её установили ранее)* и выберите ваш крео \n\n" + 
-                                             "Например '`@zakup_robot {0} {1} {2} {3}`' нажмите на эту фразу, она скопируется, и вы сможете вставить её в поле ввода ниже";
-
-    public static string PremiumEmogiTextMessage(string platform, decimal price, string alias, string title)
-    {
-        return string.Format(PremiumEmogiText, platform, price, alias, title);
-    }
+    public const string PremiumEmogiText =  "Для того, чтобы получить готовый рекламный пост* с премиум emoji* вы должны вызвать бота через inline *в переписке с ботом*(если вызывать в диалоге с людьми будут обычные смайлики), т.е. написав запрос в этот чат, как на скрине.\n\n" +
+                                             "Не обязательно заполнять все данные через меню, как вы сейчас это сделали. Достаточно просто написать в диалоге с этим ботом *@zakup_robot Понятное вам название канала, где вас опубликуют Стоимость(только число) Метка канала(вы её установили ранее)* и выберите ваш крео";
+    
     public static string AutoApproveEnabled(long minutes) => string.Format(AutoApproveIsEnabled, minutes);
 
     public const string AutoApproveDisabled = "❌ **Автоприём заявок:** ВЫКЛЮЧЕН.";

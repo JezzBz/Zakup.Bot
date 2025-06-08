@@ -1,6 +1,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
 using Zakup.Common.DTO.Zakup;
 using Zakup.Common.Enums;
@@ -31,12 +32,17 @@ public class PremiumEmojiCallbackHandler : ICallbackHandler<PremiumEmojiCallback
         var imageUrl =
             new Uri(
                 "https://i.imgur.com/Q81nxWe.png");
+
+        var buttons = new InlineKeyboardButton[]
+        {
+            InlineKeyboardButton.WithSwitchInlineQueryCurrentChat(ButtonsTextTemplate.CreateFromInline, $"{zakup.Platform} {zakup.Price} {zakup.Channel!.Alias!} {zakup.AdPost.Title}"),
+        };
         await botClient.SendPhotoAsync(
             
             callbackQuery.From.Id,
             new InputFileUrl(imageUrl),
-            caption: MessageTemplate.PremiumEmogiTextMessage(zakup.Platform!, zakup.Price, zakup.Channel!.Alias!,
-                zakup.AdPost.Title),
+            caption: MessageTemplate.PremiumEmogiText,
+            replyMarkup:new InlineKeyboardMarkup(buttons),
             parseMode: ParseMode.Markdown,
             cancellationToken: cancellationToken);
     }

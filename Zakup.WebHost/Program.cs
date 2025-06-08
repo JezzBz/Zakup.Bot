@@ -1,5 +1,7 @@
 
 using Amazon.S3;
+using app.Services.Handlers;
+using app.Services.Handlers.Chat;
 using Bot.Core;
 using Bot.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +47,9 @@ builder.Services.AddTelegramBot(builder.Configuration["Telegram:BotToken"]!, con
     });
    
    
-    //config.AddHandler<TestHandler>();
+    config.AddHandler<TestHandler>();
+    config.AddHandler<CommentsHandler>();
+    config.AddHandler<JoinRequestHandler>();
     config.AddHandler<StartMessageHandler>();
     config.AddHandler<InlineQueryHandler>();
     config.AddHandler<InlineResultHandler>();
@@ -92,7 +96,7 @@ builder.Services.AddScoped<IBigCallbackDataService, BigCallbackDataService>();
 #endregion
 
 builder.Services.AddHostedService<AbstractWorker<TelegramBotWorker>>();
-
+builder.ConfigureQuartz();
 var app = builder.Build();
 
 

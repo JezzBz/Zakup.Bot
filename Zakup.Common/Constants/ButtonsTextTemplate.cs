@@ -47,4 +47,5 @@ public static class ButtonsTextTemplate
     public const string ChangePrice ="💰 Изменить цену";
     public const string AcceptPDP = "Подтвердить сверку";
     public const string MarkAsLead = "Отметить как лид";
+    public const string CreateFromInline = "Создать через inline";
 }

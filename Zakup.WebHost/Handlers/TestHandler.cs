@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.EntityFramework;
 using Zakup.Services;
@@ -22,32 +23,14 @@ public class TestHandler : IUpdatesHandler
 
     public static bool ShouldHandle(Update update)
     {
-        return false;
+        return false; //TODO: баг с алиасом в закупе с премиумом
     }
 
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        var documents = await _context.TelegramDocuments.AsQueryable()
-            .Take(2)
-            .ToListAsync(cancellationToken: cancellationToken);
 
-        var fileStream = await _storageService.GetDocument(documents[0].Id);
-        var fileStream2 = await _storageService.GetDocument(documents[1].Id);
-        var markUp = new InlineKeyboardMarkup(
-            InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace"));
-        var media = new List<IAlbumInputMedia>();
-        var first = new InputMediaPhoto(InputFile.FromStream(fileStream, documents[0].Id.ToString()))
-        {
-            Caption = "AAA",
-            ParseMode = ParseMode.MarkdownV2
-        };
-        var second = new InputMediaPhoto(InputFile.FromStream(fileStream2, documents[1].Id.ToString()))
-        {
-        };
-        media.Add(first);
-        media.Add(second);
-        var message2 = await botClient.SendTextMessageAsync(update.Message.From.Id, "Замена ссылок", replyMarkup:markUp); 
-        var message = await botClient.SendMediaGroupAsync(update.Message.From.Id, media, replyToMessageId:message2.MessageId);
-        
+        //var message = await botClient.Send(-1002792996108, update.Message.Text, entities: update.Message.Entities );
+        // await botClient.ForwardMessageAsync(512083234, -1002792996108,message.MessageId
+        //     ,cancellationToken: cancellationToken);
     }
 }
