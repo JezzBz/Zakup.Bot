@@ -50,8 +50,6 @@ public class ConfirmAddChannelHandler : IStateHandler
       
        // Если канал уже существовал, проверяем Alias
        await CheckChannelAlias(botClient, existChannel, message.From.Id, message, cancellationToken);
-       state.Clear();
-       await _userService.SetUserState(state, cancellationToken);
     }
 
 

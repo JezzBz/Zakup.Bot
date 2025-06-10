@@ -13,6 +13,19 @@ namespace Zakup.EntityFramework.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "BigCallbackData",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CallbackData = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BigCallbackData", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ChannelRatings",
                 columns: table => new
                 {
@@ -45,6 +58,17 @@ namespace Zakup.EntityFramework.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MediaGroups",
+                columns: table => new
+                {
+                    MediaGroupId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MediaGroups", x => x.MediaGroupId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "MessageForwards",
                 columns: table => new
                 {
@@ -66,7 +90,7 @@ namespace Zakup.EntityFramework.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     FileId = table.Column<string>(type: "text", nullable: false),
                     Kind = table.Column<string>(type: "text", nullable: false),
-                    ThumbnailId = table.Column<string>(type: "text", nullable: false)
+                    ThumbnailId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -104,12 +128,12 @@ namespace Zakup.EntityFramework.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Text = table.Column<string>(type: "character varying(4096)", maxLength: 4096, nullable: false),
-                    FileId = table.Column<Guid>(type: "uuid", nullable: true),
                     Entities = table.Column<string>(type: "text", nullable: false),
                     Buttons = table.Column<string>(type: "text", nullable: false),
                     HasDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    ChannelId = table.Column<long>(type: "bigint", nullable: false)
+                    ChannelId = table.Column<long>(type: "bigint", nullable: false),
+                    MediaGroupId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -121,10 +145,34 @@ namespace Zakup.EntityFramework.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TelegramAdPosts_TelegramDocuments_FileId",
+                        name: "FK_TelegramAdPosts_MediaGroups_MediaGroupId",
+                        column: x => x.MediaGroupId,
+                        principalTable: "MediaGroups",
+                        principalColumn: "MediaGroupId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FileMediaGroups",
+                columns: table => new
+                {
+                    FileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MediaGroupId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FileMediaGroups", x => new { x.FileId, x.MediaGroupId });
+                    table.ForeignKey(
+                        name: "FK_FileMediaGroups_MediaGroups_MediaGroupId",
+                        column: x => x.MediaGroupId,
+                        principalTable: "MediaGroups",
+                        principalColumn: "MediaGroupId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FileMediaGroups_TelegramDocuments_FileId",
                         column: x => x.FileId,
                         principalTable: "TelegramDocuments",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -378,6 +426,11 @@ namespace Zakup.EntityFramework.Migrations
                 column: "SpreadSheetId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FileMediaGroups_MediaGroupId",
+                table: "FileMediaGroups",
+                column: "MediaGroupId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SpreadSheets_UserId",
                 table: "SpreadSheets",
                 column: "UserId");
@@ -388,9 +441,9 @@ namespace Zakup.EntityFramework.Migrations
                 column: "ChannelId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TelegramAdPosts_FileId",
+                name: "IX_TelegramAdPosts_MediaGroupId",
                 table: "TelegramAdPosts",
-                column: "FileId");
+                column: "MediaGroupId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TelegramZakups_AdPostId",
@@ -470,6 +523,9 @@ namespace Zakup.EntityFramework.Migrations
                 table: "UserStates");
 
             migrationBuilder.DropTable(
+                name: "BigCallbackData");
+
+            migrationBuilder.DropTable(
                 name: "ChannelAdministrators");
 
             migrationBuilder.DropTable(
@@ -485,6 +541,9 @@ namespace Zakup.EntityFramework.Migrations
                 name: "ChannelSheets");
 
             migrationBuilder.DropTable(
+                name: "FileMediaGroups");
+
+            migrationBuilder.DropTable(
                 name: "MessageForwards");
 
             migrationBuilder.DropTable(
@@ -492,6 +551,9 @@ namespace Zakup.EntityFramework.Migrations
 
             migrationBuilder.DropTable(
                 name: "SpreadSheets");
+
+            migrationBuilder.DropTable(
+                name: "TelegramDocuments");
 
             migrationBuilder.DropTable(
                 name: "ChannelMembers");
@@ -506,7 +568,7 @@ namespace Zakup.EntityFramework.Migrations
                 name: "Channels");
 
             migrationBuilder.DropTable(
-                name: "TelegramDocuments");
+                name: "MediaGroups");
 
             migrationBuilder.DropTable(
                 name: "Users");

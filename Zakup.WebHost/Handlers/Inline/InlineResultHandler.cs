@@ -362,13 +362,14 @@ public class InlineResultHandler : IUpdatesHandler
         messageBuilder.AppendLine($"📅Дата публикации: {postTime}");
         messageBuilder.AppendLine($"Креатив: {adPost.Title}");
         messageBuilder.AppendLine("Оплачено: Нет❌");
-
-        // var markUp = new List<InlineKeyboardButton>()
-        // {
-        //     InlineKeyboardButton.WithCallbackData("⚙️Изменить", $"zakup:post:{ZakupPostFlowType.UPDATE}:{zakup.Id}"),
-        //     InlineKeyboardButton.WithCallbackData("🗑Удалить", $"zakup:post:{ZakupPostFlowType.DELETE}:{zakup.Id}"),
-        //     InlineKeyboardButton.WithCallbackData("✅Оплачено", $"zakup:post:{ZakupPostFlowType.PAY}:{zakup.Id}")
-        // };
+        
+        
+        var markUp = new List<InlineKeyboardButton>()
+        { 
+            InlineKeyboardButton.WithCallbackData("⚙️Изменить", $"zakup:post:{ZakupPostFlowType.UPDATE}:{zakup.Id}"),
+            InlineKeyboardButton.WithCallbackData("🗑Удалить", $"zakup:post:{ZakupPostFlowType.DELETE}:{zakup.Id}"),
+            InlineKeyboardButton.WithCallbackData("✅Оплачено", $"zakup:post:{ZakupPostFlowType.PAY}:{zakup.Id}")
+        };
 
         var resultMessage = messageBuilder.ToString();
         {

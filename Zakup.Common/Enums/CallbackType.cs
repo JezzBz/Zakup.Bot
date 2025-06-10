@@ -48,5 +48,7 @@ public enum CallbackType
     MarkAsLead,
     PremiumEmoji,
     PremiumEmojiChooseAdPost,
-    GetZakupLink
+    GetZakupLink,
+    ZakupPayed,
+    DeleteZakupRequest
 }

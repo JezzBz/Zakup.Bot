@@ -70,14 +70,17 @@ public static class MessageTemplate
 
     private const string YourLink =
         "⚡️Ваша ссылка - {0} , используйте её для привлечения аудитории и её дальнейшего анализа через бота.";
-    
+
+    public const string ZakupPayed = "Оплачено: Да✅";
+    public const string ZakupNotPayed = "Оплачено: Нет❌";
+
     public static string ZakupSummaryMessage(string channelTitle, decimal price, DateTime? date, string? adPostTitle, bool isPaid) => $"""
-         🔥 Запланировано размещение для [{channelTitle}]
-         💸Цена: {price}
-         📅Дата: {date?.ToString("dd.MM.yyyy HH:mm") ?? "Не установлено"}
-         Креатив: {adPostTitle ?? "Просто ссылка"}
-         Оплачено: {(isPaid ? "Да✅" : "Нет❌")}
-         """;
+                                                                                                                                       🔥 Запланировано размещение для [{channelTitle}]
+                                                                                                                                       💸Цена: {price}
+                                                                                                                                       📅Дата: {date?.ToString("dd.MM.yyyy HH:mm") ?? "Не установлено"}
+                                                                                                                                       Креатив: {adPostTitle ?? "Просто ссылка"}
+                                                                                                                                       """ + "\n"
+                                                                                                                                        + (isPaid ? ZakupPayed : ZakupNotPayed);
     
     public static string YouLinkMessage(string link)
     {
