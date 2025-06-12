@@ -203,7 +203,7 @@
         },
         "runtime": {
           "Zakup.Abstractions.dll": {
-            "assemblyVersion": "1.0.0.0",
+            "assemblyVersion": "1.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -214,7 +214,7 @@
         },
         "runtime": {
           "Zakup.Common.dll": {
-            "assemblyVersion": "1.0.0.0",
+            "assemblyVersion": "1.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -225,7 +225,7 @@
         },
         "runtime": {
           "Zakup.Entities.dll": {
-            "assemblyVersion": "1.0.0.0",
+            "assemblyVersion": "1.0.0",
             "fileVersion": "1.0.0.0"
           }
         }

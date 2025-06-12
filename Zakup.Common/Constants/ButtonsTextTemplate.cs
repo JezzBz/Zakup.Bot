@@ -25,7 +25,7 @@ public static class ButtonsTextTemplate
     public const string Closed = "Закрытая";
     public const string WithRequests = "По заявкам";
     public const string Later = "Позже";
-    public const string Delete = "\u274c Удалить";
+    public const string Delete = "🗑 Удалить";
     public const string AcceptAllRequests = "✅ Принять все заявки";
     public const string Administrators = "👨‍💻Администраторы";
     public const string TrackComments = "\ud83d\udcdd Отслеживать комментарии";
@@ -44,8 +44,11 @@ public static class ButtonsTextTemplate
     public const string ChannelMenu = "⬅️Меню канала";
     public const string ShowMembers = "👀 Посмотреть вступивших";
     public const string CheckSubscribers = "🤝 Сверка подписчиков";
-    public const string ChangePrice ="💰 Изменить цену";
+    public const string ChangePrice = "💰 Изменить цену";
+    public const string ChangeDate = "📅 Изменить дату";
     public const string AcceptPDP = "Подтвердить сверку";
     public const string MarkAsLead = "Отметить как лид";
     public const string CreateFromInline = "Создать через inline";
+    public const string MarkAsPaid = "✅ Оплачено";
+    public const string Edit = "✏️ Изменить";
 }

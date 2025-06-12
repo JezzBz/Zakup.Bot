@@ -33,9 +33,15 @@ public class ZakupPayedCallbackHandler : ICallbackHandler<ZakupPayedCallbackData
         {
             ZakupId = data.ZakupId
         });
+        
+        var updateData = await _handlersManager.ToCallback(new UpdateZakupCallbackData
+        {
+            ZakupId = data.ZakupId
+        });
+        
         var markUp = new List<InlineKeyboardButton>()
         { 
-            InlineKeyboardButton.WithCallbackData("⚙️Изменить", $"zakup:post:{ZakupPostFlowType.UPDATE}:{zakup.Id}"),
+            InlineKeyboardButton.WithCallbackData("⚙️Изменить", updateData),
             InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Delete, deleteData)
         };
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId,

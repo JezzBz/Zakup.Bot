@@ -36,6 +36,7 @@ public enum CallbackType
     HelpQuestion,
     HelpAnOffer,
     ChooseZakupDate,
+    ChangeZakupDate,
     DeleteZakup,
     AddZakupPrice,
     ZakupChannelPrivate,
@@ -50,5 +51,6 @@ public enum CallbackType
     PremiumEmojiChooseAdPost,
     GetZakupLink,
     ZakupPayed,
-    DeleteZakupRequest
+    DeleteZakupRequest,
+    UpdateZakup
 }

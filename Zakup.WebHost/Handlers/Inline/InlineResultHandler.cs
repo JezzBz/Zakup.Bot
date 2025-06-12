@@ -7,15 +7,20 @@ using System.Text.RegularExpressions;
 using Bot.Core;
 using Google;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using Zakup.Abstractions.Handlers;
+using Zakup.Common.DTO.Zakup;
 using Zakup.Common.Enums;
 using Zakup.Entities;
 using Zakup.EntityFramework;
 using Zakup.Services;
 using Zakup.Services.Extensions;
+using Zakup.WebHost.Constants;
+using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.Inline;
 
@@ -26,13 +31,15 @@ public class InlineResultHandler : IUpdatesHandler
     private readonly ILogger<InlineResultHandler> _logger;
     private readonly ApplicationDbContext _dataContext;
     private readonly DocumentsStorageService _documentsStorage;
+    private readonly HandlersManager _handlersManager;
 
-    public InlineResultHandler(MetadataStorage metadataStorage, ILogger<InlineResultHandler> logger, ApplicationDbContext dataContext, DocumentsStorageService documentsStorage)
+    public InlineResultHandler(MetadataStorage metadataStorage, ILogger<InlineResultHandler> logger, ApplicationDbContext dataContext, DocumentsStorageService documentsStorage, HandlersManager handlersManager)
     {
         _metadataStorage = metadataStorage;
         _logger = logger;
         _dataContext = dataContext;
         _documentsStorage = documentsStorage;
+        _handlersManager = handlersManager;
     }
 
     public static bool ShouldHandle(Update update)
@@ -363,20 +370,34 @@ public class InlineResultHandler : IUpdatesHandler
         messageBuilder.AppendLine($"Креатив: {adPost.Title}");
         messageBuilder.AppendLine("Оплачено: Нет❌");
         
+        var updateData = await _handlersManager.ToCallback(new UpdateZakupCallbackData
+        {
+            ZakupId = zakup.Id
+        });
+        
+        var deleteData = await _handlersManager.ToCallback(new DeleteZakupRequestCallbackData
+        {
+            ZakupId = zakup.Id
+        });
+        
+        var payData = await _handlersManager.ToCallback(new ZakupPayedCallbackData
+        {
+            ZakupId = zakup.Id
+        });
         
         var markUp = new List<InlineKeyboardButton>()
         { 
-            InlineKeyboardButton.WithCallbackData("⚙️Изменить", $"zakup:post:{ZakupPostFlowType.UPDATE}:{zakup.Id}"),
-            InlineKeyboardButton.WithCallbackData("🗑Удалить", $"zakup:post:{ZakupPostFlowType.DELETE}:{zakup.Id}"),
-            InlineKeyboardButton.WithCallbackData("✅Оплачено", $"zakup:post:{ZakupPostFlowType.PAY}:{zakup.Id}")
+            InlineKeyboardButton.WithCallbackData("⚙️Изменить", updateData),
+            InlineKeyboardButton.WithCallbackData("🗑Удалить", deleteData),
+            InlineKeyboardButton.WithCallbackData("✅Оплачено", payData)
         };
 
         var resultMessage = messageBuilder.ToString();
         {
             try
             {
-                await botClient.SendTextMessageAsync(data.From.Id, resultMessage
-                    // replyMarkup: new InlineKeyboardMarkup(markUp)
+                await botClient.SendTextMessageAsync(data.From.Id, resultMessage,
+                replyMarkup: new InlineKeyboardMarkup(markUp)
                     );
             }
             catch (Exception e)
