@@ -15,5 +15,10 @@ public enum UserStateType
     ZakupChannelAlias,
     ChangeZakupPrice,
     PdpCheck,
-    ChangeZakupDate
+    ChangeZakupDate,
+    AdminMute,
+    AdminUnmute,
+    AdminScam,
+    AdminUnscam,
+    AdminDelete
 }

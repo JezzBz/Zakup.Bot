@@ -234,4 +234,11 @@ public class ChannelService
             .Where(q => !q.Positive)
             .CountAsync(cancellationToken);
     }
+
+    public async Task DeleteChannel(long channelId, CancellationToken cancellationToken)
+    {
+        var channel = await _context.Channels.FirstOrDefaultAsync(c => c.Id == channelId, cancellationToken);
+        _context.Channels.Remove(channel);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

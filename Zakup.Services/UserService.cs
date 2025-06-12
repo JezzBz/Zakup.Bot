@@ -270,4 +270,10 @@ public class UserService
         await _context.AddRangeAsync(clientsQuery, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task UpdateUser(TelegramUser user, CancellationToken cancellationToken)
+    {
+        _context.Update(user);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

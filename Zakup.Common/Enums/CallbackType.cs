@@ -53,5 +53,13 @@ public enum CallbackType
     ZakupPayed,
     DeleteZakupRequest,
     UpdateZakup,
-    ReturnToZakupMainMenu
+    ReturnToZakupMainMenu,
+    AdminStatistics,
+    AdminMute,
+    AdminUnmute,
+    AdminScam,
+    AdminUnscam,
+    AdminDelete,
+    AdminCustom,
+    AdminBroadcast
 }
