@@ -52,5 +52,6 @@ public enum CallbackType
     GetZakupLink,
     ZakupPayed,
     DeleteZakupRequest,
-    UpdateZakup
+    UpdateZakup,
+    ReturnToZakupMainMenu
 }

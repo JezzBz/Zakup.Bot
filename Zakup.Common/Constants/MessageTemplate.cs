@@ -73,6 +73,7 @@ public static class MessageTemplate
 
     public const string ZakupPayed = "Оплачено: Да✅";
     public const string ZakupNotPayed = "Оплачено: Нет❌";
+    public const string DeleteZakupAlert = "Вы действительно хотите удалить размещение?";
 
     public static string ZakupSummaryMessage(string channelTitle, decimal price, DateTime? date, string? adPostTitle, bool isPaid) => $"""
                                                                                                                                        🔥 Запланировано размещение для [{channelTitle}]
@@ -80,7 +81,7 @@ public static class MessageTemplate
                                                                                                                                        📅Дата: {date?.ToString("dd.MM.yyyy HH:mm") ?? "Не установлено"}
                                                                                                                                        Креатив: {adPostTitle ?? "Просто ссылка"}
                                                                                                                                        """ + "\n"
-                                                                                                                                        + (isPaid ? ZakupPayed : ZakupNotPayed);
+                                                                                                                                           + (isPaid ? ZakupPayed : ZakupNotPayed);
     
     public static string YouLinkMessage(string link)
     {

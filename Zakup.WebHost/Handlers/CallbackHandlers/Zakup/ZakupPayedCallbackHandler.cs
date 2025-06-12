@@ -41,7 +41,7 @@ public class ZakupPayedCallbackHandler : ICallbackHandler<ZakupPayedCallbackData
         
         var markUp = new List<InlineKeyboardButton>()
         { 
-            InlineKeyboardButton.WithCallbackData("⚙️Изменить", updateData),
+            InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Edit, updateData),
             InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Delete, deleteData)
         };
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId,

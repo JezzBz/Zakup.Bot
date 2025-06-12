@@ -387,9 +387,9 @@ public class InlineResultHandler : IUpdatesHandler
         
         var markUp = new List<InlineKeyboardButton>()
         { 
-            InlineKeyboardButton.WithCallbackData("⚙️Изменить", updateData),
-            InlineKeyboardButton.WithCallbackData("🗑Удалить", deleteData),
-            InlineKeyboardButton.WithCallbackData("✅Оплачено", payData)
+            InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Edit, updateData),
+            InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Delete, deleteData),
+            InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.MarkAsPaid, payData)
         };
 
         var resultMessage = messageBuilder.ToString();

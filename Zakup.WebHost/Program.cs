@@ -1,4 +1,3 @@
-
 using Amazon.S3;
 using app.Services.Handlers;
 using app.Services.Handlers.Chat;
@@ -18,6 +17,7 @@ using Zakup.WebHost.Handlers.Inline;
 using Zakup.WebHost.Handlers.MessageHandlers;
 using Zakup.WebHost.Handlers.SystemHandlers;
 using Zakup.WebHost.Helpers;
+using Zakup.WebHost.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,6 +92,7 @@ builder.Services.AddScoped<FileStorageService>();
 builder.Services.AddScoped<DocumentsStorageService>();
 builder.Services.AddScoped<AdPostsService>();
 builder.Services.AddScoped<IBigCallbackDataService, BigCallbackDataService>();
+builder.Services.AddScoped<ZakupMessageService>();
 
 #endregion
 

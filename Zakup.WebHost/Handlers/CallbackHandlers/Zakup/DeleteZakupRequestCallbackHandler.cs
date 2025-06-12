@@ -27,14 +27,19 @@ public class DeleteZakupRequestCallbackHandler : ICallbackHandler<DeleteZakupReq
        {
            ZakupId = data.ZakupId
        });
+
+       var backData = await _handlersManager.ToCallback(new ReturnToMainMenuCallbackData
+       {
+           ZakupId = data.ZakupId
+       });
        
-       //TODO: add back button
        var keyboard = new List<InlineKeyboardButton>()
        {
-           InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Delete, deleteData)
+           InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Delete, deleteData),
+           InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Back, backData),
        };
 
-       await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId, callbackQuery.Message.Text,
+       await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId, MessageTemplate.DeleteZakupAlert,
            replyMarkup: new InlineKeyboardMarkup(keyboard), cancellationToken: cancellationToken);
     }
 }

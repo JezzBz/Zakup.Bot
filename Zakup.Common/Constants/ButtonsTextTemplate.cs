@@ -50,5 +50,5 @@ public static class ButtonsTextTemplate
     public const string MarkAsLead = "Отметить как лид";
     public const string CreateFromInline = "Создать через inline";
     public const string MarkAsPaid = "✅ Оплачено";
-    public const string Edit = "✏️ Изменить";
+    public const string Edit = "️⚙️Изменить";
 }
