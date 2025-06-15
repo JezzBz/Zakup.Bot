@@ -69,7 +69,8 @@ public class ChannelService
     }
     
     public async Task<TelegramChannel?> CreateOrUpdateChannel(
-        Chat channelChat, 
+        long channelId,
+        string channelName,
         List<TelegramUser> admins,
         TelegramChannel? existChannel = null, CancellationToken cancellationToken = default)
     {
@@ -104,8 +105,8 @@ public class ChannelService
             {
                 AdPosts = new List<TelegramAdPost>(),
                 Administrators = admins,
-                Id = channelChat.Id,
-                Title = channelChat.Title ?? "",
+                Id = channelId,
+                Title = channelName ?? "",
                 Alias = "",
             };
             await _context.Channels.AddAsync(channel, cancellationToken);

@@ -82,6 +82,7 @@ public static class MessageTemplate
     public static string GoogleSheetsText(string sheetId) =>$"*♻️ ДЛЯ ОБНОВЛЕНИЯ ДАННЫХ НАЖМИТЕ НА КНОПКУ НИЖЕ*\n\nВот ваша таблица: [Перейти](https://docs.google.com/spreadsheets/d/{sheetId})";
 
     public static string MuteRequestConfirm(string userName) => $"Вы уверены, что хотите замутить пользователя [{userName}] и очистить историю его оценок?";
+    public static string BotChatMemberText(string channelName) => $"⚡️ Робот обнаружил новый канал *{channelName}*\\. Вы подтверждаете его добавление в сервис? Пересылать сообщение из него будет не нужно\\!";
 
     public static string ScamRequestConfirm(string channelName)
     {

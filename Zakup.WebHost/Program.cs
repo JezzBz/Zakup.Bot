@@ -54,6 +54,7 @@ builder.Services.AddTelegramBot(builder.Configuration["Telegram:BotToken"]!, con
     config.AddHandler<CommentsHandler>();
     config.AddHandler<JoinRequestHandler>();
     config.AddHandler<ChatMemberHandler>();
+    config.AddHandler<BotChatMemberHandler>();
     config.AddHandler<StartMessageHandler>();
     config.AddHandler<InlineQueryHandler>();
     config.AddHandler<InlineResultHandler>();

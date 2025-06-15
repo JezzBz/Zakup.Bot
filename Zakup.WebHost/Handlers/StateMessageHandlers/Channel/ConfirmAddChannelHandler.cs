@@ -133,7 +133,7 @@ public class ConfirmAddChannelHandler : IStateHandler
     {
         var adminsList = await _userService.GetOrCreateAdminUsers(admins, cancellationToken);
      
-        var channel = await _channelService.CreateOrUpdateChannel(message!.ForwardFromChat!, adminsList, existChannel, cancellationToken);
+        var channel = await _channelService.CreateOrUpdateChannel(message!.ForwardFromChat!.Id, message.ForwardFromChat.Title, adminsList, existChannel, cancellationToken);
         
          await _sheetsService.CreateSheet(
              channel.Id,

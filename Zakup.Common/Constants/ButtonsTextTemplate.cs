@@ -52,6 +52,7 @@ public static class ButtonsTextTemplate
     public const string CreateFromInline = "Создать через inline";
     public const string MarkAsPaid = "✅ Оплачено";
     public const string Edit = "️⚙️Изменить";
+    public const string Approve = "️ПОДТВЕРДИТЬ";
 
     // Admin panel buttons
     public const string Broadcast = "Рассылка";
