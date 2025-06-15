@@ -1,3 +1,4 @@
+
 namespace Zakup.Common.Enums;
 
 //Нужно для передачи типа callback в данные callback с минимальной длиной строки
@@ -64,5 +65,7 @@ public enum CallbackType
     AdminBroadcast,
     AdminConfirmMute,
     AdminScamConfirm,
-    RefreshGoogleSheets
+    RefreshGoogleSheets,
+    AddChannelChatDirectly,
+    AddChannelDirectly
 }

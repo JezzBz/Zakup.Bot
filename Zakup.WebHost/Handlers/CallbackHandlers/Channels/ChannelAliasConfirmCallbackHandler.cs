@@ -56,44 +56,33 @@ public class ChannelAliasConfirmCallbackHandler :  ICallbackHandler<ConfirmChann
         var channel = await _channelService.GetChannel(data.ChannelId, cancellationToken);
         channel!.Alias = data.Alias;
         await _channelService.UpdateChannel(channel, cancellationToken: cancellationToken);
+        await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId, MessageTemplate.LabelChanged, cancellationToken: cancellationToken);
 
-        if (data.RequestFirstPost)
-            await SendFirstPostMessage(botClient, user.UserState.UserId, data.ChannelId);
-        else
+        if (channel.ChannelChatId == null)
         {
-            await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message!.MessageId, MessageTemplate.LabelChanged, cancellationToken: cancellationToken);
-            await _messagesService.SendMenu(botClient, user, cancellationToken);
+            var yesData = await _handlersManager.ToCallback(new AddChannelChatDirectlyCallbackData
+            {
+                ChannelId = channel.Id,
+                Add = true,
+                RequestFirstPost = false
+            });
+            
+            var noData = await _handlersManager.ToCallback(new AddChannelChatDirectlyCallbackData
+            {
+                ChannelId = channel.Id,
+                Add = false,
+                RequestFirstPost = false
+            });
+            var keyboard = new InlineKeyboardMarkup(new List<InlineKeyboardButton>()
+            {
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Yes, yesData),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.No, noData)
+            });
+            
+            await botClient.SendTextMessageAsync(callbackQuery.From.Id, MessageTemplate.AddChannelChatText, replyMarkup:keyboard, cancellationToken: cancellationToken);
         }
             
     }
     
-    private async Task SendFirstPostMessage(ITelegramBotClient botClient, long userId, long channelId)
-    {
-        var yesData = await _handlersManager.ToCallback(new FirstAdPostCallbackData
-        {
-            ChannelId = channelId,
-            Create = true
-        });
-        
-        var noData = await _handlersManager.ToCallback(new FirstAdPostCallbackData
-        {
-            ChannelId = channelId,
-            Create = false
-        });
-        
-        var keyboard = new InlineKeyboardMarkup(new[]
-        {
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Yes, yesData),
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Later, noData)
-            }
-        });
-
-        await botClient.SendTextMessageAsync(
-            userId,
-            MessageTemplate.CreateFirstPostRequest,
-            replyMarkup: keyboard
-        );
-    }
+   
 }

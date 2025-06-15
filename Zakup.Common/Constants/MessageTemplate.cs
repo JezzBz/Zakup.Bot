@@ -84,7 +84,9 @@ public static class MessageTemplate
     public const string UserUnMuted = "Пользователь размучен!";
     public const string ChannelScamRemoved = "Метка скама снята!";
     public const string SheetNotExist = "У вас нет Гугл Таблицы. Попробуйте добавить канал или обратитесь к @gandalfTG.";
-    public const string AddChannelChatText ="Добавьте меня в качестве администратора в чат вашего канала и перешлите сообщение ОТ ЛИЦА чата, чтобы я мог отслеживать статистику по комментаторам.";
+    public const string AddChannelChatText = "Добавьте меня в качестве администратора в чат вашего канала, чтобы я мог отслеживать статистику по комментаторам.";
+    public const string AddedChannelChat = "Успешно добавлен чат канала";
+
     public static string GoogleSheetsText(string sheetId) =>$"*♻️ ДЛЯ ОБНОВЛЕНИЯ ДАННЫХ НАЖМИТЕ НА КНОПКУ НИЖЕ*\n\nВот ваша таблица: [Перейти](https://docs.google.com/spreadsheets/d/{sheetId})";
 
     public static string MuteRequestConfirm(string userName) => $"Вы уверены, что хотите замутить пользователя [{userName}] и очистить историю его оценок?";
@@ -130,6 +132,7 @@ public static class MessageTemplate
     public const string ChannelAliasStateNotification = "Метка должна быть одним словом и не длиннее 15 символов. Пожалуйста, введите снова.";
 
     public const string FirstPostDecline = "**Без проблем\\!** вы всегда сможете сделать это через меню канала";
+    public const string AddNewChannelChatRequest = "Желаете ли включить подсчёт комментариев для канала? Данные будут отображены в статистике пригласительных ссылок";
     public const string MemberNotFound = "Пользователь не обнаржуен ни в одном из ваших каналов";
     public const string CreativeInstructionText = "⚛️ Установка креатива" +
                                                   "\nОтправьте или перешлите мне рекламный пост." +

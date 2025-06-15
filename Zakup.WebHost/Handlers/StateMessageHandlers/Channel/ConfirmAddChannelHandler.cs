@@ -2,7 +2,9 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
+using Zakup.Common.DTO.Channel;
 using Zakup.Common.Enums;
 using Zakup.Common.Models;
 using Zakup.Entities;
@@ -18,12 +20,14 @@ public class ConfirmAddChannelHandler : IStateHandler
     private readonly ChannelService _channelService;
     private readonly UserService _userService;
     private readonly InternalSheetsService _sheetsService;
+    private readonly HandlersManager _handlersManager;
 
-    public ConfirmAddChannelHandler(ChannelService channelService, UserService userService, InternalSheetsService sheetsService)
+    public ConfirmAddChannelHandler(ChannelService channelService, UserService userService, InternalSheetsService sheetsService, HandlersManager handlersManager)
     {
         _channelService = channelService;
         _userService = userService;
         _sheetsService = sheetsService;
+        _handlersManager = handlersManager;
     }
 
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -123,7 +127,30 @@ public class ConfirmAddChannelHandler : IStateHandler
         
         if (string.IsNullOrEmpty(existChannel.Alias))
         {
-            await ToCreateAliasState(message, existChannel, msg.MessageId,userState, cancellationToken);
+            await ToCreateAliasState(message, existChannel, msg.MessageId,userState, cancellationToken); 
+        }
+        else if(existChannel.ChannelChatId == null)
+        {
+            var yesData = await _handlersManager.ToCallback(new AddChannelChatDirectlyCallbackData
+            {
+                ChannelId = existChannel.Id,
+                Add = true,
+                RequestFirstPost = false
+            });
+            
+            var noData = await _handlersManager.ToCallback(new AddChannelChatDirectlyCallbackData
+            {
+                ChannelId = existChannel.Id,
+                Add = false,
+                RequestFirstPost = false
+            });
+            var keyboard = new InlineKeyboardMarkup(new List<InlineKeyboardButton>()
+            {
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Yes, yesData),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.No, noData)
+            });
+            
+            await botClient.SendTextMessageAsync(message.From.Id, MessageTemplate.AddChannelChatText, replyMarkup:keyboard, cancellationToken: cancellationToken);
         }
     
         return existChannel;

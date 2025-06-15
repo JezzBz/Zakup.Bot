@@ -41,7 +41,6 @@ public class CreateChannelAliasHandler : IStateHandler
         await botClient.SafeDelete(state!.UserId, state.PreviousMessageId, cancellationToken);
         var data = CacheHelper.ToData<CreateChannelCacheData>(state!.CachedValue!);
         var channel = await _channelService.GetChannel(data!.ChannelId, cancellationToken);
-            
         
         alias = alias.ToLowerInvariant();
         var callbackData = await _handlersManager.ToCallback(new ConfirmChannelAlias
@@ -63,6 +62,7 @@ public class CreateChannelAliasHandler : IStateHandler
                 InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Yes, callbackData), 
                 InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.No, emptyData)
             }), cancellationToken: cancellationToken);
+        state.Clear();
         state.PreviousMessageId = msg.MessageId;
         await _userService.SetUserState(state.UserId, state, cancellationToken);
     }

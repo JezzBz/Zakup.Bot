@@ -1,5 +1,6 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
 using Zakup.Common.DTO.Channel;
 using Zakup.Common.Enums;
@@ -32,19 +33,11 @@ public class AddChannelChatCallbackHandler : ICallbackHandler<AddChannelChatCall
             return;
         }
         
-        var message = await botClient.SafeEdit(
-            callbackQuery.From.Id,
-            callbackQuery.Message.MessageId,
-            MessageTemplate.AddChannelChatText, cancellationToken: cancellationToken);
-
-        var state = await _userService.GetUserState(callbackQuery.From.Id, cancellationToken);
-        state!.State = UserStateType.AddChannelChat;
-        state.PreviousMessageId = message.MessageId;
-        state.CachedValue = CacheHelper.ToCache(new ChannelIdCache()
+        var keyboard = new InlineKeyboardMarkup(new List<InlineKeyboardButton>
         {
-            ChannelId = data.ChannelId
+            InlineKeyboardButton.WithUrl(ButtonsTextTemplate.AddBot,"https://t.me/zakup_robot?startgroup&admin=invite_users"),
         });
-        
-        await _userService.SetUserState(state, cancellationToken);
+            
+        await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId, MessageTemplate.AddChannelChatText, replyMarkup:keyboard, cancellationToken: cancellationToken);
     }
 }

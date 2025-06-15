@@ -12,6 +12,7 @@ using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.CallbackHandlers;
 
+[CallbackType(CallbackType.AddChannelDirectly)]
 public class AddChannelDirectlyCallbackHandler : ICallbackHandler<AddChannelDirectlyCallbackData>
 {
     private readonly UserService _userService;
