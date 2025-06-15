@@ -22,8 +22,4 @@
       <None Remove="Extensions\**" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="DTO\Data\" />
-    </ItemGroup>
-
 </Project>

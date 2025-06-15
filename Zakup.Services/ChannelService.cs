@@ -216,9 +216,19 @@ public class ChannelService
     
     public async Task<ChannelRating?> AddRating(ChannelRating rating, CancellationToken cancellationToken)
     {
-        var entity = await _context.AddAsync(rating, cancellationToken);
+        var existsRating = await _context.ChannelRatings.FindAsync(rating.ChannelId, cancellationToken);
+        if (existsRating == null)
+        {
+            var entity = await _context.AddAsync(rating, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return entity.Entity;
+        }
+        
+        existsRating.BadDeals += rating.BadDeals;
+        existsRating.Rate = rating.Rate;
+        _context.Update(existsRating);
         await _context.SaveChangesAsync(cancellationToken);
-        return entity.Entity;
+        return existsRating;
     }
 
     public async Task<long> GetPositiveFeedbackCount(long channelId, CancellationToken cancellationToken = default)

@@ -25,7 +25,8 @@ public class AdminScamCallbackHandler : ICallbackHandler<AdminScamCallbackData>
         var state = new TelegramUserState
         {
             UserId = callbackQuery.From.Id,
-            State = UserStateType.AdminScam
+            State = UserStateType.AdminScam,
+            PreviousMessageId = callbackQuery.Message.MessageId
         };
         await _userService.SetUserState(callbackQuery.From.Id, state, cancellationToken);
         await botClient.SendTextMessageAsync(

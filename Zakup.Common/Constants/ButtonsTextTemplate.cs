@@ -51,4 +51,13 @@ public static class ButtonsTextTemplate
     public const string CreateFromInline = "Создать через inline";
     public const string MarkAsPaid = "✅ Оплачено";
     public const string Edit = "️⚙️Изменить";
+
+    // Admin panel buttons
+    public const string Broadcast = "Рассылка";
+    public const string Mute = "Мут на оценки";
+    public const string Scam = "Скам-метка";
+    public const string Unmute = "Размут";
+    public const string Unscam = "Снять скам";
+    public const string Custom = "Custom";
+    public const string SimilarChannels = "Похожие каналы";
 }

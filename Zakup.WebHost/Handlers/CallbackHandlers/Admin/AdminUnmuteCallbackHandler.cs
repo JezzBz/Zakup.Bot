@@ -22,16 +22,19 @@ public class AdminUnmuteCallbackHandler : ICallbackHandler<AdminUnmuteCallbackDa
     public async Task Handle(ITelegramBotClient botClient, AdminUnmuteCallbackData data, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
-        var state = new TelegramUserState
-        {
-            UserId = callbackQuery.From.Id,
-            State = UserStateType.AdminUnmute
-        };
-        await _userService.SetUserState(callbackQuery.From.Id, state, cancellationToken);
-        await botClient.SendTextMessageAsync(
+       
+        var msg = await botClient.SendTextMessageAsync(
             callbackQuery.Message.Chat.Id,
             "Пришлите id пользователя или перешлите сообщение от него, чтобы снять мут.",
             cancellationToken: cancellationToken
         );
+        var state = new TelegramUserState
+        {
+            UserId = callbackQuery.From.Id,
+            State = UserStateType.AdminUnmute,
+            PreviousMessageId = msg.MessageId
+        };
+        await _userService.SetUserState(callbackQuery.From.Id, state, cancellationToken);
+        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
     }
 } 

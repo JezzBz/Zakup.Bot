@@ -5,6 +5,8 @@ using Zakup.Common.DTO.Admin;
 using Zakup.Common.Enums;
 using Zakup.Entities;
 using Zakup.Services;
+using Zakup.Services.Extensions;
+using Zakup.WebHost.Constants;
 using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.CallbackHandlers.Admin;
@@ -25,12 +27,15 @@ public class AdminMuteCallbackHandler : ICallbackHandler<AdminMuteCallbackData>
         var state = new TelegramUserState
         {
             UserId = callbackQuery.From.Id,
-            State = UserStateType.AdminMute
+            State = UserStateType.AdminMute,
+            PreviousMessageId = callbackQuery.Message.MessageId
         };
         await _userService.SetUserState(callbackQuery.From.Id, state, cancellationToken);
-        await botClient.SendTextMessageAsync(
+        
+        await botClient.SafeEdit(
             callbackQuery.Message.Chat.Id,
-            "Пришлите id пользователя или перешлите сообщение от него, чтобы выдать мут.",
+            callbackQuery.Message.MessageId,
+            MessageTemplate.SendMuteRequest,
             cancellationToken: cancellationToken
         );
     }

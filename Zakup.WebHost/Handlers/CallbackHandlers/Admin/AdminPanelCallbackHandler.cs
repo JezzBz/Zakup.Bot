@@ -6,6 +6,7 @@ using Zakup.Common.Enums;
 using Zakup.Abstractions.Data;
 using Zakup.Common.DTO.Admin;
 using Zakup.WebHost.Helpers;
+using Zakup.WebHost.Constants;
 
 namespace Zakup.WebHost.Handlers.CallbackHandlers.Admin;
 
@@ -18,23 +19,23 @@ public class AdminPanelCallbackHandler : ICallbackHandler<AdminPanelCallbackData
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Мут на оценки", ((int)CallbackType.AdminMute).ToString()),
-                InlineKeyboardButton.WithCallbackData("Статистика", ((int)CallbackType.AdminStatistics).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Statistic, ((int)CallbackType.AdminStatistics).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Broadcast, ((int)CallbackType.AdminBroadcast).ToString()),
             },
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Скам-метка", ((int)CallbackType.AdminScam).ToString()),
-                InlineKeyboardButton.WithCallbackData("Удалить канал", ((int)CallbackType.AdminDelete).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Mute, ((int)CallbackType.AdminMute).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Scam, ((int)CallbackType.AdminScam).ToString()),
             },
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Размут", ((int)CallbackType.AdminUnmute).ToString()),
-                InlineKeyboardButton.WithCallbackData("Снять скам", ((int)CallbackType.AdminUnscam).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Unmute, ((int)CallbackType.AdminUnmute).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Unscam, ((int)CallbackType.AdminUnscam).ToString()),
             },
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Рассылка", ((int)CallbackType.AdminBroadcast).ToString()),
-                InlineKeyboardButton.WithCallbackData("Custom", ((int)CallbackType.AdminCustom).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Custom, ((int)CallbackType.AdminCustom).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.SimilarChannels, ((int)CallbackType.AdminCustom).ToString()),
             }
         });
 

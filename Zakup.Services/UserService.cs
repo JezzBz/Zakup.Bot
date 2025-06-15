@@ -276,4 +276,28 @@ public class UserService
         _context.Update(user);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<long> DeleteUserFeedbacks(long userId, CancellationToken cancellationToken = default)
+    {
+        var feedBacks = _context.ChannelFeedback
+            .Where(f => f.FromUserId == userId);
+        var feedBacksCount = await feedBacks.CountAsync(cancellationToken: cancellationToken);
+        _context.RemoveRange(feedBacks);
+        await _context.SaveChangesAsync(cancellationToken);
+        return feedBacksCount;
+    }
+
+    public async Task MuteUser(long userId,DateTime mutedToUtc, CancellationToken cancellationToken = default)
+    {
+        var user = await GetUser(userId, cancellationToken);
+        user.MutedToUtc = mutedToUtc;
+        await UpdateUser(user, cancellationToken);
+    }
+
+    public async Task UnMute(long userId, CancellationToken cancellationToken)
+    {
+       var user = await GetUser(userId, cancellationToken);
+       user.MutedToUtc = null;
+       await UpdateUser(user, cancellationToken);
+    }
 }

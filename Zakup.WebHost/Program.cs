@@ -95,12 +95,8 @@ builder.Services.AddScoped<AdPostsService>();
 builder.Services.AddScoped<IBigCallbackDataService, BigCallbackDataService>();
 builder.Services.AddScoped<ZakupMessageService>();
 builder.Services.AddScoped<StatisticsService>();
-builder.Services.AddScoped<AdminStatisticsCallbackHandler>();
-builder.Services.AddScoped<AdminMuteCallbackHandler>();
-builder.Services.AddScoped<AdminUnmuteCallbackHandler>();
-builder.Services.AddScoped<AdminScamCallbackHandler>();
-builder.Services.AddScoped<AdminUnscamCallbackHandler>();
-builder.Services.AddScoped<AdminDeleteCallbackHandler>();
+
+
 
 #endregion
 

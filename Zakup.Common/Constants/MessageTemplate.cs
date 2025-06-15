@@ -74,6 +74,17 @@ public static class MessageTemplate
     public const string ZakupPayed = "Оплачено: Да✅";
     public const string ZakupNotPayed = "Оплачено: Нет❌";
     public const string DeleteZakupAlert = "Вы действительно хотите удалить размещение?";
+    public const string SendMuteRequest = "Пришлите id пользователя или перешлите сообщение от него, чтобы выдать мут.";
+    public const string MarkedAsScam = "Канал отмечен как мошеннический!";
+    public const string UserUnMuted = "Пользователь размучен!";
+    public const string ChannelScamRemoved = "Метка скама снята!";
+
+    public static string MuteRequestConfirm(string userName) => $"Вы уверены, что хотите замутить пользователя [{userName}] и очистить историю его оценок?";
+
+    public static string ScamRequestConfirm(string channelName)
+    {
+        return string.IsNullOrEmpty(channelName) ? $"Вы уверены, что хотите отметить канал как скамерский?" : $"Вы уверены, что хотите отметить канал [{channelName}] как скамерский?";
+    }
 
     public static string ZakupSummaryMessage(string channelTitle, decimal price, DateTime? date, string? adPostTitle, bool isPaid) => $"""
                                                                                                                                        🔥 Запланировано размещение для [{channelTitle}]
@@ -266,6 +277,9 @@ public static class MessageTemplate
         }
         return text;
     }
+
+    public static string UserMuted(long userId, long feedbacksCount) =>
+        $"Пользователь [{userId}] замучен! Удалено {feedbacksCount} отзывов.";
 }
 
 public  class HelpMessageTemplate

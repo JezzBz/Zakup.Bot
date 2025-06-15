@@ -61,5 +61,7 @@ public enum CallbackType
     AdminUnscam,
     AdminDelete,
     AdminCustom,
-    AdminBroadcast
+    AdminBroadcast,
+    AdminConfirmMute,
+    AdminScamConfirm
 }
