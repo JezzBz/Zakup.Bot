@@ -32,12 +32,7 @@ public class StatelessHandler : IUpdatesHandler
         _handlersManager = handlersManager;
         _userService = userService;
     }
-
-    public static bool ShouldHandle(Update update)
-    {
-        return false;
-    }
-
+    
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         if (update.Message?.ForwardFromChat != null)
@@ -45,23 +40,38 @@ public class StatelessHandler : IUpdatesHandler
             await ChannelRating(botClient,update,cancellationToken);
             return;
         }
-
+    
         if (update.Message?.ForwardFrom != null && !update.Message.ForwardFrom.IsBot)
         {
-            await PrintUserInfo(botClient, update, cancellationToken);
+            await PrintUserInfo(botClient, update.Message.From!.Id,update.Message?.ForwardFrom!, cancellationToken);
+        }
+        
+        //Информация по @нику
+        if (( (update.Message?.Text?.StartsWith("@") ?? false) &&
+             CommandsHelper.WordsCount(update.Message?.Text) == 1))
+        {
+            var username = update.Message!.Text!.Replace("@","");
+            var member = await _userService.GetMemberByUsername(username);
+            if (member == null)
+            {
+                await botClient.SendTextMessageAsync(update.Message.From!.Id,
+                    MessageTemplate.MemberNotFound , cancellationToken: cancellationToken);
+                return;
+            }
+            var memberInfo = await botClient.GetChatMemberAsync(member.ChannelId, member.UserId, cancellationToken: cancellationToken);
+            await PrintUserInfo(botClient, update.Message.From!.Id, memberInfo.User, cancellationToken);
         }
     }
     
     
-      private async Task PrintUserInfo(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private async Task PrintUserInfo(ITelegramBotClient botClient, long requesterId, User user, CancellationToken cancellationToken)
      {
-         var message = update.Message;
          var messageBuilder = new StringBuilder();
 
-         var resultQuery = await _userService.GetForwardInfo(botClient, message.ForwardFrom.Id, message.ForwardFrom.IsPremium ?? false,
-             message.ForwardFrom.Username!, cancellationToken);
-         
-  
+         var resultQuery = await _userService.GetUserInfo(botClient, user.Id, requesterId, user.IsPremium ?? false,
+             user.Username!, cancellationToken);
+
+         await _userService.UpdateUntrackedMemberChanges(botClient, requesterId, user.Id, cancellationToken: cancellationToken);
          await resultQuery.ForEachAsync(member =>
          {
              messageBuilder.AppendLine(
@@ -86,25 +96,25 @@ public class StatelessHandler : IUpdatesHandler
          var responseText = messageBuilder.ToString();
          if (responseText.Length == 0)
          {
-             await botClient.SendTextMessageAsync(message.Chat.Id,
-                 "Пользователь не обнаржуен ни в одном из ваших каналов", cancellationToken: cancellationToken);
+             await botClient.SendTextMessageAsync(requesterId,
+                 MessageTemplate.MemberNotFound, cancellationToken: cancellationToken);
              return;
          }
 
          var callbackData =  await _handlersManager.ToCallback(new MarkAsLeadCallbackData
          {
-             LeadUserId = message.ForwardFrom.Id
+             LeadUserId = user.Id
          });
          var buttons = new List<InlineKeyboardButton>()
          {
              InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.MarkAsLead, callbackData)
          };
   
-         await botClient.SendTextMessageAsync(message.Chat.Id, responseText,
+         await botClient.SendTextMessageAsync(requesterId, responseText,
              replyMarkup: new InlineKeyboardMarkup(buttons), cancellationToken: cancellationToken);
      }
 
-    public async Task ChannelRating(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private async Task ChannelRating(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         var channelId = update.Message!.ForwardFromChat!.Id;
         var rating = await _channelService.GetRating(channelId, cancellationToken);
@@ -163,5 +173,11 @@ public class StatelessHandler : IUpdatesHandler
         
         await botClient.SendTextMessageAsync(update.Message.From!.Id, messageBuilder.ToString(),
             replyMarkup: new InlineKeyboardMarkup(keyBoard), cancellationToken: cancellationToken);
+    }
+    
+    
+    public static bool ShouldHandle(Update update)
+    {
+        throw new Exception();
     }
 }

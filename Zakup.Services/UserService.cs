@@ -184,14 +184,12 @@ public class UserService
         return adminList;
     }
 
-    public async Task<IQueryable<ForwardUserInfo>> GetForwardInfo(ITelegramBotClient botClient, long userId, bool isPremium, string userName, CancellationToken cancellationToken = default)
+    public async Task<IQueryable<ForwardUserInfo>> GetUserInfo(ITelegramBotClient botClient, long userId, long adminId, bool isPremium, string userName, CancellationToken cancellationToken = default)
     {
         var memberInfoQuery = _context.ChannelMembers
              .Include(m => m.Channel)
-             .Where(m => m.UserId == userId && m.Channel.Administrators.Any(a => a.Id == userId));
-             // .Where(m => m.UserId == message.ForwardFrom!.Id)
-             // // Добавляем условие, что текущий пользователь является администратором этого канала
-             // .Where(m => m.Channel.Administrators.Any(a => a.Id == message.From!.Id));
+             .Where(m => m.UserId == userId)
+              .Where(m => m.Channel.Administrators.Any(a => a.Id == adminId));
          var forwardMessage = new MessageForward
          {
              UserId = userId,
@@ -299,5 +297,56 @@ public class UserService
        var user = await GetUser(userId, cancellationToken);
        user.MutedToUtc = null;
        await UpdateUser(user, cancellationToken);
+    }
+
+    public async Task UpdateUntrackedMemberChanges(ITelegramBotClient botClient, long userId, long requesterId,
+        CancellationToken cancellationToken = default)
+    {
+        var untrackedChannelsMember = await _context.Channels
+            .Where(tc => tc.Administrators.Any(c => c.Id == requesterId))
+            .Where(tc => tc.Members.All(m => m.UserId != userId))
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        var untrackedMemberList = new List<ChannelMember>();
+
+        foreach (var c in untrackedChannelsMember)
+        {
+            try
+            {
+                var memberInfo = await botClient.GetChatMemberAsync(c.Id, userId, cancellationToken: cancellationToken);
+
+                if (memberInfo.Status is ChatMemberStatus.Kicked or ChatMemberStatus.Left)
+                {
+                    continue;
+                }
+
+                var newMember = new ChannelMember()
+                {
+                    UserId = userId,
+                    IsPremium = memberInfo.User.IsPremium,
+                    UserName = memberInfo.User.Username,
+                    ChannelId = c.Id,
+                    Status = true,
+                    Refer = "origin",
+                    JoinCount = 1,
+                };
+
+                untrackedMemberList.Add(newMember);
+            }
+            catch (ApiRequestException ex)
+                // when (ex.Message.Contains("chat not found") 
+                //    || ex.Message.Contains("bot is not a member")
+                //    || ex.Message.Contains("PARTICIPANT_ID_INVALID")
+                //    || ex.Message.Contains("member list is inaccessible"))
+            {
+                Console.WriteLine($"Не удалось получить информацию о пользователе в чате {c.Id}: {ex.Message}");
+                continue;
+            }
+        }
+    }
+
+    public async Task<ChannelMember?> GetMemberByUsername(string username)
+    {
+        return await _context.ChannelMembers.FirstOrDefaultAsync(m => m.UserName == username);
     }
 }

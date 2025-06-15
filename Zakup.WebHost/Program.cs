@@ -53,11 +53,13 @@ builder.Services.AddTelegramBot(builder.Configuration["Telegram:BotToken"]!, con
     config.AddHandler<TestHandler>();
     config.AddHandler<CommentsHandler>();
     config.AddHandler<JoinRequestHandler>();
+    config.AddHandler<ChatMemberHandler>();
     config.AddHandler<StartMessageHandler>();
     config.AddHandler<InlineQueryHandler>();
     config.AddHandler<InlineResultHandler>();
     config.AddHandler<MessageHandler>();
     config.AddHandler<CallbackHandler>();
+ 
     config.AddHandler<MediaGroupUploadHandler>();
     
     config.WithPreHandler<PreHandler>();

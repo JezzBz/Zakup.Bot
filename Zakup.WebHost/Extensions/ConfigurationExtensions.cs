@@ -86,6 +86,10 @@ public static class ConfigurationExtensions
 
     public static WebApplicationBuilder ConfigureQuartz(this WebApplicationBuilder builder)
     {
+        builder.Services.AddTransient<DailyReportJob>();
+        builder.Services.AddTransient<RequestsApproveJob>();
+        builder.Services.AddQuartzHostedService(options =>
+            options.WaitForJobsToComplete = false);
         builder.Services.AddQuartz(q =>
         {
             q.SchedulerId = "Request Approve bot";
@@ -105,7 +109,7 @@ public static class ConfigurationExtensions
             // Добавляем ежедневный отчет в 9:00 по Москве
             q.ScheduleJob<DailyReportJob>(trigger => trigger
                 .WithIdentity("Daily report at 9:00 AM MSK")
-                .WithCronSchedule("0 0 9 * * ?", x => x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow")))
+                //.WithCronSchedule("0 0 9 * * ?", x => x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow")))
                 .WithDescription("Send daily subscriber report at 9:00 AM Moscow time")
             );
         });

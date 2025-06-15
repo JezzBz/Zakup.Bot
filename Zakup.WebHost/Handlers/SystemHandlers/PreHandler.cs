@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -37,6 +38,6 @@ public class PreHandler : IPreHandler
             channelId = updates.EditedChannelPost!.Chat.Id;
         }
 
-        return channelId == default; //|| await _dataContext.TelegramChannels.AnyAsync(x => x.Id == channelId);
+        return channelId == default || await _dataContext.Channels.AnyAsync(x => x.Id == channelId);
     }
 }

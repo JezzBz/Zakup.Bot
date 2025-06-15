@@ -123,6 +123,7 @@ public static class MessageTemplate
     public const string ChannelAliasStateNotification = "Метка должна быть одним словом и не длиннее 15 символов. Пожалуйста, введите снова.";
 
     public const string FirstPostDecline = "**Без проблем\\!** вы всегда сможете сделать это через меню канала";
+    public const string MemberNotFound = "Пользователь не обнаржуен ни в одном из ваших каналов";
     public const string CreativeInstructionText = "⚛️ Установка креатива" +
                                                   "\nОтправьте или перешлите мне рекламный пост." +
                                                   "\nМожно прикрепить фотографии/гифки/видео." +
