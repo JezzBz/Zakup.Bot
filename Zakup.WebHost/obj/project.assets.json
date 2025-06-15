@@ -852,7 +852,7 @@
           "System.CodeDom": "6.0.0"
         },
         "compile": {
-          "lib/net6.0/_._": {}
+          "lib/net6.0/Mono.TextTemplating.dll": {}
         },
         "runtime": {
           "lib/net6.0/Mono.TextTemplating.dll": {}
@@ -1429,6 +1429,7 @@
           "Google.Apis.Sheets.v4": "1.69.0.3785",
           "Microsoft.EntityFrameworkCore": "9.0.4",
           "Minio": "6.0.4",
+          "Mono.TextTemplating": "3.0.0",
           "Quartz": "3.14.0",
           "Zakup.Common": "1.0.0",
           "Zakup.Entities": "1.0.0",
