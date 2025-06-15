@@ -29,6 +29,11 @@ public static class MessageTemplate
 
     public const string CreateFirstPostRequest = "Вы хотите добавить первый рекламный пост для вашего канала?";
     public const string AutoApproveAcctuallyEnabled = "Автоприём заявок уже включен!";
+    public const string Success = "Успех!";
+    public const string ForwardWhenAdChatError ="Перешлите мне сообщение из чата, куда вы меня добавили. Сообщение должно быть отправлено от лица чата!";
+    public const string ForwardWhenAdChatBotError = "Я не являюсь членом этого чата. Убедитесь, что добавили меня в качестве администратора и попробуйте еще раз.";
+    public const string ChatNotConnectedToChannelError = "Этот чат не привязан к комментариям выбранного канала.";
+    public const string BotNotAdminInChatError = "Я не администратор в этом чате.";
 
     public const string WriteAutoApproveMinutes =
         "Введите, через сколько минут нужно автоматически принимать заявки на вступление в канал";
@@ -79,6 +84,7 @@ public static class MessageTemplate
     public const string UserUnMuted = "Пользователь размучен!";
     public const string ChannelScamRemoved = "Метка скама снята!";
     public const string SheetNotExist = "У вас нет Гугл Таблицы. Попробуйте добавить канал или обратитесь к @gandalfTG.";
+    public const string AddChannelChatText ="Добавьте меня в качестве администратора в чат вашего канала и перешлите сообщение ОТ ЛИЦА чата, чтобы я мог отслеживать статистику по комментаторам.";
     public static string GoogleSheetsText(string sheetId) =>$"*♻️ ДЛЯ ОБНОВЛЕНИЯ ДАННЫХ НАЖМИТЕ НА КНОПКУ НИЖЕ*\n\nВот ваша таблица: [Перейти](https://docs.google.com/spreadsheets/d/{sheetId})";
 
     public static string MuteRequestConfirm(string userName) => $"Вы уверены, что хотите замутить пользователя [{userName}] и очистить историю его оценок?";

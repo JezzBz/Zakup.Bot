@@ -20,5 +20,6 @@ public enum UserStateType
     AdminUnmute,
     AdminScam,
     AdminUnscam,
-    AdminDelete
+    AdminDelete,
+    AddChannelChat
 }

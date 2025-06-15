@@ -248,4 +248,12 @@ public class ChannelService
         _context.Channels.Remove(channel);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task AddChannelChat(long channelId, long chatId, CancellationToken cancellationToken = default)
+    {
+        var channel = await _context.Channels.FirstAsync(q => q.Id == channelId, cancellationToken: cancellationToken);
+        channel.ChannelChatId = chatId;
+        _context.Update(channel);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
