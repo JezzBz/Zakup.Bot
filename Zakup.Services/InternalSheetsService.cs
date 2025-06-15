@@ -1,1262 +1,1321 @@
-// namespace app.Services;
-//
-// using Google.Apis.Drive.v3;
-// using Google.Apis.Drive.v3.Data;
-// using Google.Apis.Sheets.v4;
-// using Google.Apis.Sheets.v4.Data;
-// using Google;
-//
-// using Mono.TextTemplating;
-//
-// public class InternalSheetsService(SheetsService sheetsService, DriveService driveService,  IServiceProvider provider)
-// {
-//     
-//     public async Task<string> UploadFile(Stream stream)
-//     {
-//         var fileMetadata = new Google.Apis.Drive.v3.Data.File()
-//         {
-//             Name = "image.jpg",
-//             MimeType = "image/jpeg"
-//         };
-//             var request = driveService.Files.Create(fileMetadata, stream, "image/jpeg");
-//             request.Fields = "id";
-//             var file = await request.UploadAsync();
-//
-//             if (file.Status == Google.Apis.Upload.UploadStatus.Failed)
-//             {
-//                 throw new Exception($"Error uploading file: {file.Exception.Message}");
-//             }
-//
-//             Console.WriteLine($"File ID: {request.ResponseBody.Id}");
-//         
-//             // Set permissions for public access
-//             await DriveShareFile(request.ResponseBody.Id);
-//             return request.ResponseBody.Id;
-//         
-//     }
-//     
-//     public async Task ClearAndUpdateInviteLinks()
-//     {
-//         
-//         await using var scope = provider.CreateAsyncScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//
-//         var sheets = await database.ChannelSheets
-//             .Include(s => s.SpreadSheet)
-//             .Include(s => s.Channel)
-//             .ToListAsync();
-//
-//         foreach (var sheet in sheets)
-//         {
-//             if (string.IsNullOrEmpty(sheet.SpreadSheetId))
-//             {
-//                 Console.WriteLine($"Spreadsheet ID is null or empty for channel {sheet.ChannelId}.");
-//                 continue;
-//             }
-//
-//             // Очистка 13-го столбца, начиная со 2-й строки
-//             var clearRequest = new Request
-//             {
-//                 UpdateCells = new UpdateCellsRequest
-//                 {
-//                     Range = new GridRange
-//                     {
-//                         SheetId = sheet.Id,
-//                         StartColumnIndex = 12, // Колонка M (начиная с 0)
-//                         EndColumnIndex = 13,
-//                         StartRowIndex = 1, // Начиная со второй строки
-//                     },
-//                     Fields = "userEnteredValue"
-//                 }
-//             };
-//
-//             // Сбор пригласительных ссылок для заполнения
-//             var inviteLinks = await database.ZakupEntities
-// 				.Where(z => z.ChannelId == sheet.ChannelId && !string.IsNullOrEmpty(z.InviteLink))
-// 				.OrderBy(z => z.CreatedUtc) // Сортировка по дате создания
-// 				.Select(z => new { z.InviteLink })
-// 				.Distinct()
-// 				.ToListAsync();
-//
-//             var updateRequests = inviteLinks.Select((link, index) => new Request
-//             {
-//                 UpdateCells = new UpdateCellsRequest
-//                 {
-//                     Start = new GridCoordinate
-//                     {
-//                         SheetId = sheet.Id,
-//                         RowIndex = 1 + index, // Игнорируем шапку
-//                         ColumnIndex = 12
-//                     },
-//                     Rows = new List<RowData>
-//                     {
-//                         new RowData
-//                         {
-//                             Values = new List<CellData>
-//                             {
-//                                 new CellData
-//                                 {
-//                                     UserEnteredValue = new ExtendedValue { StringValue = link.InviteLink }
-//                                 }
-//                             }
-//                         }
-//                     },
-//                     Fields = "userEnteredValue"
-//                 }
-//             }).ToList();
-//
-//             var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
-//             {
-//                 Requests = new List<Request> { clearRequest }.Concat(updateRequests).ToList()
-//             };
-//
-//             try
-//             {
-//                 await sheetsService.Spreadsheets.BatchUpdate(batchUpdateRequest, sheet.SpreadSheetId).ExecuteAsync();
-//                 Console.WriteLine($"Updated invite links for sheet {sheet.Id} in spreadsheet {sheet.SpreadSheetId}.");
-//             }
-//             catch (Exception ex)
-//             {
-//                 Console.WriteLine($"Failed to update invite links for sheet {sheet.Id}: {ex.Message}");
-//             }
-//         }
-//     }
-//
-//
-//     public async Task RenameHeaderColumnsAsync()
-//     {
-//         await using var scope = provider.CreateAsyncScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//
-//         // 1) Получаем все листы (ChannelSheets) вместе с родительскими SpreadSheets
-//         //    Если у вас много одинаковых SpreadSheetId, мы сгруппируем запросы по SpreadSheetId,
-//         //    чтобы не делать лишних запросов.
-//         var allSheets = await database.ChannelSheets
-//             .Include(s => s.SpreadSheet)
-//             .ToListAsync();
-//
-//         // Группируем по SpreadSheetId
-//         var sheetsBySpreadsheet = allSheets
-//             .Where(cs => !string.IsNullOrEmpty(cs.SpreadSheetId)) // отсекаем пустые
-//             .GroupBy(cs => cs.SpreadSheetId)
-//             .ToList();
-//
-//         // 2) Проходим по каждой группе (одна Google-таблица)
-//         foreach (var group in sheetsBySpreadsheet)
-//         {
-//             var spreadsheetId = group.Key!; // точно не null из фильтра выше
-//             var channelSheets = group.ToList();
-//
-//             Console.WriteLine($"Обрабатываем таблицу: {spreadsheetId}");
-//
-//             // Скачиваем Spreadsheet целиком с данными, 
-//             // чтобы получить контент первой строки каждого листа
-//             var getRequest = sheetsService.Spreadsheets.Get(spreadsheetId);
-//             getRequest.IncludeGridData = true;  // нужно включить данные
-//             Spreadsheet spreadsheet;
-//             try
-//             {
-//                 spreadsheet = await getRequest.ExecuteAsync();
-//             }
-//             catch (Exception ex)
-//             {
-//                 Console.WriteLine($"Ошибка при запросе Spreadsheet {spreadsheetId}: {ex.Message}");
-//                 continue;
-//             }
-//
-//             // Мапим sheetId -> Sheet (Google)
-//             var googleSheetsDict = spreadsheet.Sheets
-//                 .Where(s => s.Properties != null)
-//                 .ToDictionary(
-//                     s => s.Properties.SheetId,
-//                     s => s
-//                 );
-//
-//             // Собираем все запросы (Request) в один общий список, потом сделаем один BatchUpdate
-//             var allRequests = new List<Request>();
-//
-//             // 3) Идём по листам (ChannelSheets), которые относятся к данной Google-таблице
-//             foreach (var chSheet in channelSheets)
-//             {
-//                 var sheetId = chSheet.Id; // числовой ID листа
-//                 if (!googleSheetsDict.TryGetValue(sheetId, out var googleSheet))
-//                 {
-//                     // Лист был удалён/переименован и т.д.
-//                     Console.WriteLine($" В таблице {spreadsheetId} не найден sheetId={sheetId}");
-//                     continue;
-//                 }
-//
-//                 // Берем данные (GridData) из googleSheet
-//                 var sheetData = googleSheet.Data?.FirstOrDefault();
-//                 if (sheetData?.RowData == null || !sheetData.RowData.Any())
-//                 {
-//                     Console.WriteLine($" Лист {sheetId} пуст, пропускаем.");
-//                     continue;
-//                 }
-//
-//                 // Первая строка шапки
-//                 var headerRow = sheetData.RowData.FirstOrDefault();
-//                 if (headerRow?.Values == null || !headerRow.Values.Any())
-//                 {
-//                     Console.WriteLine($" Лист {sheetId} (шапка пустая) пропускаем.");
-//                     continue;
-//                 }
-//
-//                 var headerCells = headerRow.Values; // IList<CellData>
-//
-//                 // Нам нужно искать два старых названия:
-//                 // 1) "Цена за подписчика(оставшихся)" → "Цена за подписчика(оставшегося)"
-//                 // 2) "Отписываемость первые 48ч, в % от отписавшихся" → "Отписываемость первые 48ч(% от отписавшихся)"
-//                 // Соберём словарь "старое -> новое"
-//                 var renameMap = new Dictionary<string, string>()
-//                 {
-//                     { "Цена за подписчика(оставшихся)", "Цена за подписчика(оставшегося)" },
-//                     { "Отписываемость первые 48ч, в % от отписавшихся", "Отписываемость первые 48ч(% от отписавшихся)" },
-//                 };
-//
-//                 // Пройдёмся по ячейкам шапки и ищем совпадения
-//                 for (int colIndex = 0; colIndex < headerCells.Count; colIndex++)
-//                 {
-//                     var cell = headerCells[colIndex];
-//                     var currentValue = cell?.FormattedValue ?? ""; // что отображается в ячейке
-//                     if (renameMap.TryGetValue(currentValue, out var newValue))
-//                     {
-//                         Console.WriteLine($"  Лист {sheetId}: колонка '{currentValue}' переименуем в '{newValue}'");
-//
-//                         // Формируем запрос на UpdateCells для одной ячейки (row=0, col=colIndex)
-//                         var updateReq = new Request
-//                         {
-//                             UpdateCells = new UpdateCellsRequest
-//                             {
-//                                 Range = new GridRange
-//                                 {
-//                                     SheetId = sheetId,
-//                                     StartRowIndex = 0,
-//                                     EndRowIndex = 1,        // только первую строку
-//                                     StartColumnIndex = colIndex,
-//                                     EndColumnIndex = colIndex + 1
-//                                 },
-//                                 Rows = new List<RowData>
-//                                 {
-//                                     new RowData
-//                                     {
-//                                         Values = new List<CellData>
-//                                         {
-//                                             new CellData
-//                                             {
-//                                                 UserEnteredValue = new ExtendedValue
-//                                                 {
-//                                                     StringValue = newValue
-//                                                 }
-//                                             }
-//                                         }
-//                                     }
-//                                 },
-//                                 Fields = "userEnteredValue"
-//                             }
-//                         };
-//                         allRequests.Add(updateReq);
-//                     }
-//                 }
-//             }
-//
-//             // 4) Если накопились запросы — выполняем batchUpdate
-//             if (allRequests.Any())
-//             {
-//                 var batchUpdate = new BatchUpdateSpreadsheetRequest
-//                 {
-//                     Requests = allRequests
-//                 };
-//
-//                 try
-//                 {
-//                     await sheetsService.Spreadsheets.BatchUpdate(batchUpdate, spreadsheetId).ExecuteAsync();
-//                     Console.WriteLine($"В таблице {spreadsheetId} успешно переименованы нужные колонки.");
-//                 }
-//                 catch (Exception ex)
-//                 {
-//                     Console.WriteLine($"Ошибка batchUpdate для {spreadsheetId}: {ex.Message}");
-//                 }
-//             }
-//             else
-//             {
-//                 Console.WriteLine($"Нет колонок для переименования в таблице {spreadsheetId}.");
-//             }
-//         }
-//
-//         Console.WriteLine("RenameHeaderColumnsAsync: Done.");
-//     }
-//
-//
-//     public async Task FixSheetColumns()
-//     {
-//         await using var scope = provider.CreateAsyncScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//
-//         var sheets = await database.ChannelSheets.ToListAsync();
-//
-//         foreach (var sheet in sheets)
-//         {
-//             Console.WriteLine($"Checking sheet: SpreadsheetId={sheet.SpreadSheetId}, SheetId={sheet.Id}");
-//
-//             try
-//             {
-//                 // 1) Получаем Spreadsheet c данными (IncludeGridData = true),
-//                 //    чтобы видеть, какие значения в шапке (RowData)
-//                 var getRequest = sheetsService.Spreadsheets.Get(sheet.SpreadSheetId);
-//                 getRequest.IncludeGridData = true;
-//                 var spreadsheet = await getRequest.ExecuteAsync();
-//
-//                 var targetSheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.SheetId == sheet.Id);
-//                 if (targetSheet == null)
-//                 {
-//                     Console.WriteLine("Sheet not found with the given SheetId.");
-//                     continue;
-//                 }
-//
-//                 // Берем Data из нужного листа:
-//                 var sheetData = targetSheet.Data?.FirstOrDefault();
-//                 if (sheetData?.RowData == null || !sheetData.RowData.Any())
-//                 {
-//                     Console.WriteLine("No row data found in sheet.");
-//                     continue;
-//                 }
-//
-//                 // Первая строка (шапка)
-//                 var headerRow = sheetData.RowData.FirstOrDefault();
-//                 if (headerRow?.Values == null)
-//                 {
-//                     Console.WriteLine("Header row is empty.");
-//                     continue;
-//                 }
-//
-//                 // Массив ячеек первой строки (шапка)
-//                 var headerCells = headerRow.Values;
-//
-//                 // Сформируем список запросов
-//                 var requests = new List<Request>();
-//
-//                 /********************************************************************
-//                 * 1) Переименовать столбец E (index=4),
-//                 *    если в нем сейчас "Подписчиков 7+ дней(% от всего вступивших)".
-//                 ********************************************************************/
-//                 if (headerCells.Count > 4)
-//                 {
-//                     var cellE = headerCells[4]; // 0-based => E
-//                     var currentEValue = cellE?.FormattedValue ?? "";
-//                     if (currentEValue == "Подписчиков 7+ дней(% от всего вступивших)")
-//                     {
-//                         // Переименовываем в "Креатив"
-//                         requests.Add(new Request
-//                         {
-//                             UpdateCells = new UpdateCellsRequest
-//                             {
-//                                 Range = new GridRange
-//                                 {
-//                                     SheetId = sheet.Id,
-//                                     StartRowIndex = 0,
-//                                     EndRowIndex = 1,       // Только первая строка
-//                                     StartColumnIndex = 4,  // E
-//                                     EndColumnIndex = 5
-//                                 },
-//                                 Rows = new List<RowData>
-//                                 {
-//                                     new RowData
-//                                     {
-//                                         Values = new List<CellData>
-//                                         {
-//                                             new CellData
-//                                             {
-//                                                 UserEnteredValue = new ExtendedValue { StringValue = "Креатив" }
-//                                             }
-//                                         }
-//                                     }
-//                                 },
-//                                 Fields = "userEnteredValue"
-//                             }
-//                         });
-//                         Console.WriteLine("Will rename column E back to 'Креатив'.");
-//                     }
-//                 }
-//
-//                 /********************************************************************
-//                 * 2) Удалить столбец 8 (I) при условии, что в шапке (row=0)
-//                 *    там пустая ячейка (или вообще нет ячейки).
-//                 ********************************************************************/
-//                 bool canDeleteCol8 = false;
-//                 if (headerCells.Count > 8) // значит столбец 8 хотя бы есть
-//                 {
-//                     var cell8 = headerCells[8];
-//                     var cell8Value = cell8?.FormattedValue ?? "";
-//                     // Считаем "пустым", если ячейка null или пустая строка
-//                     if (string.IsNullOrWhiteSpace(cell8Value))
-//                     {
-//                         canDeleteCol8 = true;
-//                     }
-//                 }
-//
-//                 if (canDeleteCol8)
-//                 {
-//                     requests.Add(new Request
-//                     {
-//                         DeleteDimension = new DeleteDimensionRequest
-//                         {
-//                             Range = new DimensionRange
-//                             {
-//                                 SheetId = sheet.Id,
-//                                 Dimension = "COLUMNS",
-//                                 StartIndex = 8,
-//                                 EndIndex = 9
-//                             }
-//                         }
-//                     });
-//                     Console.WriteLine("Will remove the empty column at index 8 (I).");
-//                 }
-//
-//                 /********************************************************************
-//                 * 3) Добавить новую колонку между L(11) и M(12), то есть на index=12
-//                 *    и назвать ее "Подписчиков 7+ дней(% от всего вступивших)".
-//                 ********************************************************************/
-//
-//                 // Вставка новой колонки (между L и M)
-//                 requests.Add(new Request
-//                 {
-//                     InsertDimension = new InsertDimensionRequest
-//                     {
-//                         Range = new DimensionRange
-//                         {
-//                             SheetId = sheet.Id,
-//                             Dimension = "COLUMNS",
-//                             StartIndex = 12,
-//                             EndIndex = 13
-//                         }
-//                     }
-//                 });
-//
-//                 // Обновляем верхнюю ячейку (row=0, col=12)
-//                 requests.Add(new Request
-//                 {
-//                     UpdateCells = new UpdateCellsRequest
-//                     {
-//                         Start = new GridCoordinate
-//                         {
-//                             SheetId = sheet.Id,
-//                             RowIndex = 0,
-//                             ColumnIndex = 12
-//                         },
-//                         Rows = new List<RowData>
-//                         {
-//                             new RowData
-//                             {
-//                                 Values = new List<CellData>
-//                                 {
-//                                     new CellData
-//                                     {
-//                                         UserEnteredValue = new ExtendedValue
-//                                         {
-//                                             StringValue = "Подписчиков 7+ дней(% от всего вступивших)"
-//                                         }
-//                                     }
-//                                 }
-//                             }
-//                         },
-//                         Fields = "userEnteredValue"
-//                     }
-//                 });
-//                 Console.WriteLine("Will insert new column at index=12 with header 'Подписчиков 7+ дней(% от всего вступивших)'.");
-//
-//                 // Если нет запросов — пропустим
-//                 if (!requests.Any())
-//                 {
-//                     Console.WriteLine("No changes needed for this sheet.");
-//                     continue;
-//                 }
-//
-//                 // Отправляем batchUpdate
-//                 var batchUpdateRequest = new BatchUpdateSpreadsheetRequest { Requests = requests };
-//                 await sheetsService.Spreadsheets.BatchUpdate(batchUpdateRequest, sheet.SpreadSheetId).ExecuteAsync();
-//                 Console.WriteLine("Batch update successfully executed.");
-//             }
-//             catch (Google.GoogleApiException ex)
-//             {
-//                 Console.WriteLine($"Failed to fix columns: {ex.Message}");
-//             }
-//         }
-//     }
-//     
-//     public async Task AddColumnToSheets()
-//     {
-//         await using var scope = provider.CreateAsyncScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//         var sheets = await database.ChannelSheets.ToListAsync();
-//
-//         foreach (var sheet in sheets)
-//         {
-//             Console.WriteLine($"Checking sheet: SpreadsheetId={sheet.SpreadSheetId}, SheetId={sheet.Id}");
-//
-//             try
-//             {
-//                 var spreadsheet = await sheetsService.Spreadsheets.Get(sheet.SpreadSheetId).ExecuteAsync();
-//                 var targetSheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.SheetId == sheet.Id);
-//                 if (targetSheet == null)
-//                 {
-//                     Console.WriteLine("Sheet not found with the given SheetId.");
-//                     continue;
-//                 }
-//
-//                 // Проверяем, существует ли уже столбец "Креатив"
-//                 bool columnExists = targetSheet.Data != null && targetSheet.Data.Any(d =>
-//                     d.RowData != null && d.RowData.Any(r =>
-//                         r.Values != null && r.Values.Any(v =>
-//                             v.FormattedValue != null && v.FormattedValue == "Подписчиков 7+ дней(% от всего вступивших)")));
-//
-//                 if (columnExists)
-//                 {
-//                     Console.WriteLine("Column 'Подписчиков 7+ дней(% от всего вступивших)' already exists.");
-//                     continue;
-//                 }
-//
-//                 // Если столбец не существует, добавляем его
-//                 var requests = new List<Request>
-//                 {
-//                     new Request
-//                     {
-//                         InsertDimension = new InsertDimensionRequest
-//                         {
-//                             Range = new DimensionRange
-//                             {
-//                                 SheetId = sheet.Id,
-//                                 Dimension = "COLUMNS",
-//                                 StartIndex = 8,  // Индекс, где должен быть добавлен столбец
-//                                 EndIndex = 9
-//                             }
-//                         }
-//                     },
-//                     new Request
-//                     {
-//                         UpdateCells = new UpdateCellsRequest
-//                         {
-//                             Start = new GridCoordinate
-//                             {
-//                                 SheetId = sheet.Id,
-//                                 RowIndex = 0,
-//                                 ColumnIndex = 4
-//                             },
-//                             Rows = new List<RowData>
-//                             {
-//                                 new RowData
-//                                 {
-//                                     Values = new List<CellData>
-//                                     {
-//                                         new CellData
-//                                         {
-//                                             UserEnteredValue = new ExtendedValue { StringValue = "Подписчиков 7+ дней(% от всего вступивших)" }
-//                                         }
-//                                     }
-//                                 }
-//                             },
-//                             Fields = "userEnteredValue"
-//                         }
-//                     }
-//                 };
-//
-//                 var batchUpdateRequest = new BatchUpdateSpreadsheetRequest { Requests = requests };
-//                 await sheetsService.Spreadsheets.BatchUpdate(batchUpdateRequest, sheet.SpreadSheetId).ExecuteAsync();
-//                 Console.WriteLine("Column 'Подписчиков 7+ дней(% от всего вступивших)' added successfully.");
-//             }
-//             catch (GoogleApiException ex)
-//             {
-//                 Console.WriteLine($"Failed to check or update sheet: {ex.Message}");
-//             }
-//         }
-//     }
-//
-//
-//     public async Task CreateSheet(long channelId, string sheetName, string spreadSheetName, long userId)
-//     {
-//         await using var scope = provider.CreateAsyncScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//
-//
-//         if (database.ChannelSheets.Any(s => s.ChannelId == channelId && s.SpreadSheet.UserId == userId))
-//         {
-//             return;
-//         }
-//         
-//         var spreadSheetEntity = await database.SpreadSheets.FirstOrDefaultAsync(s => s.UserId == userId);
-//         var addSheetRequest = new AddSheetRequest
-//         {
-//             Properties = new SheetProperties
-//             {
-//                 Title = sheetName
-//             }
-//         };
-//         var batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest
-//             {
-//                 Requests = new List<Request>()
-//             };
-//         batchUpdateSpreadsheetRequest.Requests.Add(new Request
-//         {
-//             AddSheet = addSheetRequest
-//         });
-//         
-//         if (spreadSheetEntity is null)
-//         {
-//             var spreadSheetRequest = sheetsService.Spreadsheets.Create(new Spreadsheet()
-//             {
-//                 Properties = new SpreadsheetProperties()
-//                 {
-//                     Title = $"zakup_{spreadSheetName}"
-//                 }
-//             });
-//             
-//             var spreadSheet = await spreadSheetRequest.ExecuteAsync();
-//             await DriveShareFile(spreadSheet.SpreadsheetId);
-//             spreadSheetEntity = new TelegramUser__SpreadSheet
-//             {
-//                 Id = spreadSheet.SpreadsheetId,
-//                 UserId = userId,
-//             };
-//         }
-//         var sheetRequest =
-//             sheetsService.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, spreadSheetEntity.Id);
-//         var sheet = await sheetRequest.ExecuteAsync();
-//         
-//         var sheetEntity = new TelegramChannel_Sheet
-//         {
-//             Id = sheet.Replies.First().AddSheet!.Properties!.SheetId!.Value,
-//             ChannelId = channelId,
-//             SpreadSheet = spreadSheetEntity
-//         };
-//         
-//         await database.AddAsync(sheetEntity);
-//         await database.SaveChangesAsync();
-// 		
-// 		await AppendRow(userId, channelId, new List<object> { 
-//             "Дата создания закупа",
-//             "Платформа",
-//             "Цена",
-//             "Админ",
-//             "Креатив",
-//             "Реквизиты",
-//             "Оплачено",
-//             "Сейчас в канале",
-//             "Покинуло канал",
-//             "Цена за подписчика(оставшегося)",
-//             "Отписываемость первые 48ч(% от отписавшихся)",
-//             "Подписчиков 7+ дней(% от всего вступивших)",
-//             "Премиум пользователей",
-//             "Пригласительная ссылка (не удалять)",
-//             "Клиентов по ссылке",
-//             "Комментирует из подписавшихся(%)" 
-//         });
-//     }
-//
-//     public async Task AppendRow(long userId, long channelId, List<object> cells)
-//     {
-//         await using var scope = provider.CreateAsyncScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//         
-//         var sheetEntity = await database.ChannelSheets
-//             .Include(s => s.SpreadSheet)
-//             .Include(s => s.Channel)
-//             .Where(s => s.SpreadSheet.UserId == userId)
-//             .FirstOrDefaultAsync(s => s.ChannelId == channelId);
-//
-//         var channel = await database.TelegramChannels.FirstOrDefaultAsync(q => q.Id == channelId);
-//         
-//         if (channel is null)
-//         {
-//             return;
-//         }
-//         
-//         if (sheetEntity is null)
-//         {
-//            await CreateSheet(channelId,channel.Title,"stat",userId);
-//         }
-//         
-//         sheetEntity = await database.ChannelSheets
-//             .Include(s => s.SpreadSheet)
-//             .Include(s => s.Channel)
-//             .Where(s => s.SpreadSheet.UserId == userId)
-//             .FirstOrDefaultAsync(s => s.ChannelId == channelId);
-//
-//         if (sheetEntity is null) 
-//         {
-//             return;
-//         }
-//         
-//         var data = new ValueRange()
-//         {
-//             Values = new List<IList<object>> { cells }
-//         };
-//         var r =  sheetsService.Spreadsheets.Values.Append(data, sheetEntity!.SpreadSheetId, sheetEntity.Channel.Title);
-//         
-//         r.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-//         await r.ExecuteAsync();
-//     }
-//     
-//     public async Task AppendRowByHeaders(long userId, long channelId, Dictionary<string, object> dataByColumnName)
-//     {
-//         // 1) Ищем нужный лист (Sheet) в БД
-//         using var scope = provider.CreateScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//
-//         var sheetEntity = await database.ChannelSheets
-//             .Include(s => s.SpreadSheet)
-//             .Include(s => s.Channel)
-//             .Where(s => s.SpreadSheet.UserId == userId)
-//             .FirstOrDefaultAsync(s => s.ChannelId == channelId);
-//
-//         if (sheetEntity == null)
-//         {
-//             Console.WriteLine($"SheetEntity of user {userId} not found for this user/channel(channelId = {channelId}). Possibly no spreadsheet exists yet?");
-//             return;
-//         }
-//
-//         // 2) Читаем первую строку (A1:Z1), чтобы узнать названия столбцов
-//         var sheetTitle = sheetEntity.Channel.Title; // Имя листа = название канала
-//         var headerRange = $"{sheetTitle}!A1:Z1";
-//
-//         var getRequest = sheetsService.Spreadsheets.Values.Get(sheetEntity.SpreadSheetId, headerRange);
-//         ValueRange? headerResponse;
-//         try
-//         {
-//             headerResponse = await getRequest.ExecuteAsync();
-//         }
-//         catch (Exception ex)
-//         {
-//             Console.WriteLine($"Error reading header row: {ex.Message}");
-//             return;
-//         }
-//
-//         if (headerResponse.Values == null || headerResponse.Values.Count == 0)
-//         {
-//             Console.WriteLine("Sheet seems empty (no header row found).");
-//             // В таком случае можно либо создавать заголовок, либо бросать исключение
-//             return;
-//         }
-//
-//         // Предполагаем, что headerResponse.Values[0] — это список названий столбцов
-//         var headerRow = headerResponse.Values[0];
-//
-//         // 3) Определяем максимальное число столбцов (по факту, можно взять headerRow.Count или 26)
-//         //    Чтобы если у нас 15 столбцов в шапке, можно сформировать массив на 15
-//         int maxColumnCount = headerRow.Count;
-//
-//         // Найдём индексы для всех требуемых колонок
-//         // Пример: dataByColumnName["Цена"] => значение 100
-//         // Нужно понять, в каком индексе (0-based) "Цена" находится в шапке
-//         var columnIndexDict = new Dictionary<string, int>();
-//         for (int i = 0; i < headerRow.Count; i++)
-//         {
-//             var colName = headerRow[i]?.ToString()?.Trim();
-//             if (!string.IsNullOrEmpty(colName))
-//             {
-//                 // Если в словаре dataByColumnName есть такой ключ, запомним индекс
-//                 if (dataByColumnName.ContainsKey(colName))
-//                 {
-//                     columnIndexDict[colName] = i;
-//                 }
-//             }
-//         }
-//
-//         // 4) Строим новую строку, где нужные столбцы заполнены, а остальные — пусты
-//         var newRow = new object[maxColumnCount];
-//         for (int i = 0; i < maxColumnCount; i++)
-//         {
-//             newRow[i] = ""; // по умолчанию пустая строка
-//         }
-//
-//         // Заполняем те ячейки, для которых мы нашли индекс
-//         foreach (var pair in dataByColumnName)
-//         {
-//             var colName = pair.Key;
-//             var value = pair.Value;
-//             if (columnIndexDict.TryGetValue(colName, out var idx))
-//             {
-//                 newRow[idx] = value;
-//             }
-//             // Если столбец не найден — игнорируем
-//         }
-//
-//         // 5) Делаем Append именно одного ряда
-//         var data = new ValueRange
-//         {
-//             Values = new List<IList<object>> { newRow }
-//         };
-//
-//         var appendRequest = sheetsService.Spreadsheets.Values.Append(data, sheetEntity.SpreadSheetId, sheetTitle);
-//         appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-//
-//         try
-//         {
-//             await appendRequest.ExecuteAsync();
-//             Console.WriteLine("Row appended successfully by header names.");
-//         }
-//         catch (Exception ex)
-//         {
-//             Console.WriteLine($"Error appending row: {ex.Message}");
-//         }
-//     }
-//
-//
-//     public IQueryable<TelegramChannel_Member> GetMembersByInviteLink(string inviteLink)
-//     {
-//         using var scope = provider.CreateScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//         return database.TelegramChannel_Members.Where(m => m.InviteLink == inviteLink);
-//     }
-//
-//     public async Task UpdateCreativeTitles()
-//     {
-//         await using var scope = provider.CreateAsyncScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//         
-//         var sheets = await database.ChannelSheets
-//             .Include(s => s.SpreadSheet)
-//             .Include(s => s.Channel)
-//             .ToListAsync();
-//
-//         foreach (var sheet in sheets)
-//         {
-//             var range = $"{sheet.Channel.Title}!A2:O"; // Предполагаем, что данные начинаются со 2-й строки
-//             ValueRange response;
-//
-//             try
-//             {
-//                 response = await sheetsService.Spreadsheets.Values.Get(sheet.SpreadSheet.Id, range).ExecuteAsync();
-//             }
-//             catch (Exception ex)
-//             {
-//                 Console.WriteLine($"Error retrieving data: {ex.Message}");
-//                 continue;
-//             }
-//
-//             if (response.Values == null || !response.Values.Any())
-//             {
-//                 Console.WriteLine("No data available.");
-//                 continue;
-//             }
-//
-//             var updates = new List<ValueRange>();
-//             for (int i = 0; i < response.Values.Count; i++)
-//             {
-//                 var row = response.Values[i];
-//                 if (row.Count < 13 || row[12] == null) // Предполагаем, что инвайт линк находится в столбце M
-//                 {
-//                     Console.WriteLine($"Row {i + 2} has insufficient data.");
-//                     continue;
-//                 }
-//
-//                 var inviteLink = row[12].ToString();
-//                 var zakup = await database.ZakupEntities
-//                     .Include(z => z.AdPost)
-//                     .FirstOrDefaultAsync(z => z.InviteLink == inviteLink);
-//
-//                 if (zakup?.AdPost?.Title != null && (row.Count <= 4 || string.IsNullOrEmpty(row[4]?.ToString())))
-//                 {
-//                     // Update the fifth column (index 4) if it's empty
-//                     var updateValues = new List<object>(row);
-//                     while (updateValues.Count <= 4) updateValues.Add(null); // Ensure the list is long enough
-//                     updateValues[4] = zakup.AdPost.Title; // Set the creative title
-//
-//                     var updateRange = $"{sheet.Channel.Title}!A{2 + i}:O{2 + i}";
-//                     updates.Add(new ValueRange { Range = updateRange, Values = new List<IList<object>> { updateValues } });
-//                 }
-//             }
-//
-//             // Perform the batch update if there are any updates
-//             if (updates.Count > 0)
-//             {
-//                 var requestBody = new BatchUpdateValuesRequest
-//                 {
-//                     ValueInputOption = "USER_ENTERED",
-//                     Data = updates
-//                 };
-//                 var batchUpdateRequest = sheetsService.Spreadsheets.Values.BatchUpdate(requestBody, sheet.SpreadSheet.Id);
-//                 await batchUpdateRequest.ExecuteAsync();
-//                 Console.WriteLine($"Updated creative titles in '{sheet.Channel.Title}'");
-//             }
-//         }
-//     }
-//
-//
-//     public async Task UpdateStatistic(long userId)
-//     {
-//         await using var scope = provider.CreateAsyncScope();
-//         var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-//
-//         // 1) Собираем все листы (ChannelSheets) пользователя
-//         var sheets = await database.ChannelSheets
-//             .Include(s => s.SpreadSheet)
-//             .Include(s => s.Channel)
-//             .Where(s => s.SpreadSheet.UserId == userId)
-//             .ToListAsync();
-//
-//         if (!sheets.Any())
-//         {
-//             Console.WriteLine($"No sheets found for userId={userId}.");
-//             return;
-//         }
-//
-//         // Берём SpreadsheetId (если у пользователя только одна таблица)
-//         var spreadsheetId = sheets.First().SpreadSheetId;
-//         if (string.IsNullOrEmpty(spreadsheetId))
-//         {
-//             Console.WriteLine("Spreadsheet ID is empty. Cannot proceed.");
-//             return;
-//         }
-//
-//         // 2) Считываем метаданные о таблице, чтобы узнать актуальные названия листов
-//         Spreadsheet spreadsheet;
-//         try
-//         {
-//             spreadsheet = await sheetsService.Spreadsheets.Get(spreadsheetId).ExecuteAsync();
-//         }
-//         catch (Exception ex)
-//         {
-//             Console.WriteLine($"Cannot fetch spreadsheet {spreadsheetId}: {ex.Message}");
-//             return;
-//         }
-//
-//         // Собираем набор существующих названий листов
-//         var googleSheetTitles = spreadsheet.Sheets
-//             .Select(s => s.Properties.Title)
-//             .Where(t => !string.IsNullOrEmpty(t))
-//             .ToHashSet();
-//
-//         // 3) Формируем два параллельных списка: validSheets и validRanges
-//         //    — только для тех ChannelSheets, чьи названия листов действительно есть в Google
-//         var validSheets = new List<TelegramChannel_Sheet>();
-//         var validRanges = new List<string>();
-//
-//         foreach (var sheetEntity in sheets)
-//         {
-//             var sheetTitle = sheetEntity.Channel.Title;
-//             if (!googleSheetTitles.Contains(sheetTitle))
-//             {
-//                 Console.WriteLine($"Sheet '{sheetTitle}' was removed or renamed in Google. Skipping...");
-//                 continue;
-//             }
-//
-//             validSheets.Add(sheetEntity);
-//             validRanges.Add($"{sheetTitle}!A1:Z1000");
-//         }
-//
-//         if (!validSheets.Any())
-//         {
-//             Console.WriteLine("No valid sheets found to update. All were removed or renamed.");
-//             return;
-//         }
-//
-//         // 4) Делаем один общий запрос BatchGet только по validRanges
-//         var batchGetRequest = sheetsService.Spreadsheets.Values.BatchGet(spreadsheetId);
-//         batchGetRequest.Ranges = validRanges;
-//         BatchGetValuesResponse batchGetResponse;
-//         try
-//         {
-//             batchGetResponse = await batchGetRequest.ExecuteAsync();
-//         }
-//         catch (Exception ex)
-//         {
-//             Console.WriteLine($"BatchGet failed: {ex.Message}");
-//             return;
-//         }
-//
-//         // 5) Собираем все ссылки (inviteLink) — единая выборка из БД
-//         var allInviteLinks = new HashSet<string>();
-//
-//         // Словарь для «range → sheetEntity» можно не делать,
-//         // так как индексы batchGetResponse.ValueRanges[i] теперь
-//         // соответствуют validSheets[i].
-//         for (int i = 0; i < batchGetResponse.ValueRanges.Count; i++)
-//         {
-//             var valueRange = batchGetResponse.ValueRanges[i];
-//             var sheetEntity = validSheets[i];
-//
-//             // Если на листе вообще ничего нет, пропускаем
-//             if (valueRange.Values == null || !valueRange.Values.Any())
-//                 continue;
-//
-//             // Первая строка — заголовки
-//             var headerRow = valueRange.Values[0];
-//             int inviteLinkIndex = FindColumnIndex(headerRow, "Пригласительная ссылка (не удалять)");
-//             if (inviteLinkIndex == -1)
-//             {
-//                 Console.WriteLine($"Sheet '{sheetEntity.Channel.Title}' does not contain invite-link column. Skipped.");
-//                 continue;
-//             }
-//
-//             // Собираем inviteLinks
-//             for (int rowIndex = 1; rowIndex < valueRange.Values.Count; rowIndex++)
-//             {
-//                 var row = valueRange.Values[rowIndex];
-//                 if (row.Count <= inviteLinkIndex) 
-//                     continue;
-//
-//                 var linkObj = row[inviteLinkIndex];
-//                 if (linkObj == null) 
-//                     continue;
-//
-//                 var inviteLink = linkObj.ToString();
-//                 if (!string.IsNullOrEmpty(inviteLink))
-//                     allInviteLinks.Add(inviteLink);
-//             }
-//         }
-//
-//         // 6) Грузим статистику из БД для всех inviteLinks
-//         var statsDictionary = await GatherStatsForInviteLinks(database, allInviteLinks.ToList());
-//
-//         // 7) Формируем список обновлений (ValueRange) и потом один BatchUpdate
-//         var allUpdates = new List<ValueRange>();
-//
-//         for (int i = 0; i < batchGetResponse.ValueRanges.Count; i++)
-//         {
-//             var valueRange = batchGetResponse.ValueRanges[i];
-//             var sheetEntity = validSheets[i];
-//             
-//             if (valueRange.Values == null || valueRange.Values.Count < 1)
-//                 continue;
-//
-//             var headerRow = valueRange.Values[0];
-//             int inviteLinkIndex = FindColumnIndex(headerRow, "Пригласительная ссылка (не удалять)");
-//             if (inviteLinkIndex == -1)
-//                 continue;
-//
-//             // Карта «название столбца → ключ из stats»
-//             var columnsMap = new Dictionary<string, string>()
-//             {
-//                 { "Сейчас в канале", "currentInChannel" },
-//                 { "Покинуло канал", "leftChannel" },
-//                 { "Цена за подписчика(оставшегося)", "pricePerSubscriber" },
-//                 { "Отписываемость первые 48ч(% от отписавшихся)", "leftRateFirst48H" },
-//                 { "Премиум пользователей", "premiumUsers" },
-//                 { "Клиентов по ссылке", "clientCount" },
-//                 { "Комментирует из подписавшихся(%)", "commentersCount" },
-//                 { "Подписчиков 7+ дней(% от всего вступивших)", "spent7DaysPercent" },
-//             };
-//
-//             // Ищем индекс «Цена», если нужен
-//             int priceIndex = FindColumnIndex(headerRow, "Цена");
-//
-//             // Составляем карту «название столбца → индекс колонки»
-//             var columnIndexDict = new Dictionary<string, int>();
-//             foreach (var colName in columnsMap.Keys)
-//             {
-//                 var idx = FindColumnIndex(headerRow, colName);
-//                 columnIndexDict[colName] = idx; // -1 если отсутствует
-//             }
-//
-//             // Идём по строкам (реальные данные)
-//             for (int rowIndex = 1; rowIndex < valueRange.Values.Count; rowIndex++)
-//             {
-//                 var row = valueRange.Values[rowIndex];
-//                 if (row.Count <= inviteLinkIndex) 
-//                     continue;
-//
-//                 var linkObj = row[inviteLinkIndex];
-//                 if (linkObj == null) 
-//                     continue;
-//
-//                 var inviteLink = linkObj.ToString();
-//                 if (string.IsNullOrEmpty(inviteLink))
-//                     continue;
-//
-//                 if (!statsDictionary.TryGetValue(inviteLink, out var stats))
-//                     continue; // нет статистики
-//
-//                 // Считаем «цену»
-//                 decimal price = 0;
-//                 if (priceIndex >= 0 && row.Count > priceIndex)
-//                     decimal.TryParse(row[priceIndex]?.ToString(), out price);
-//
-//                 var currentInChannel = stats["currentInChannel"];
-//                 var leftTotal = stats["leftTotal"];
-//                 var pricePerSubscriber = (currentInChannel > 0) ? (price / currentInChannel) : 0m;
-//                 var leftRate48H = (leftTotal > 0) 
-//                     ? (double)stats["leftWithin48Hours"] / leftTotal * 100 
-//                     : 0;
-//
-//                 var rowValuesForUpdate = new Dictionary<string, object>()
-//                 {
-//                     { "currentInChannel",   currentInChannel },
-//                     { "leftChannel",        stats["leftChannel"] },
-//                     { "pricePerSubscriber", pricePerSubscriber },
-//                     { "leftRateFirst48H",   leftRate48H },
-//                     { "premiumUsers",       stats["premiumUsers"] },
-//                     { "clientCount",        stats["clientCount"] },
-//                     { "commentersCount",    stats["commentersCount"] },
-//                     { "spent7DaysPercent",  stats["spent7DaysPercent"] },
-//                 };
-//
-//                 // Формируем ValueRange'ы
-//                 foreach (var (colName, statKey) in columnsMap)
-//                 {
-//                     int idx = columnIndexDict[colName];
-//                     if (idx < 0) // столбец удалён
-//                         continue;
-//
-//                     var newValue = rowValuesForUpdate[statKey];
-//                     var realRowNumber = rowIndex + 1; // 1-based
-//                     var columnLetter = ColumnIndexToLetter(idx);
-//                     var cellRange = $"{sheetEntity.Channel.Title}!{columnLetter}{realRowNumber}";
-//
-//                     var singleCellValueRange = new ValueRange
-//                     {
-//                         Range = cellRange,
-//                         Values = new List<IList<object>> { new List<object> { newValue } }
-//                     };
-//                     allUpdates.Add(singleCellValueRange);
-//                 }
-//             }
-//         }
-//
-//         if (allUpdates.Any())
-//         {
-//             var requestBody = new BatchUpdateValuesRequest
-//             {
-//                 ValueInputOption = "USER_ENTERED",
-//                 Data = allUpdates
-//             };
-//
-//             var batchUpdateRequest = sheetsService.Spreadsheets.Values.BatchUpdate(requestBody, spreadsheetId);
-//             await batchUpdateRequest.ExecuteAsync();
-//             Console.WriteLine("Statistics updated by column names successfully.");
-//         }
-//         else
-//         {
-//             Console.WriteLine("No updates needed.");
-//         }
-//     }
-//
-//     /// <summary>
-//     /// Ищет индекс столбца в headerRow по его названию (точное совпадение).
-//     /// Возвращает -1, если столбец не найден.
-//     /// </summary>
-//     private int FindColumnIndex(IList<object> headerRow, string columnName)
-//     {
-//         for (int i = 0; i < headerRow.Count; i++)
-//         {
-//             if (headerRow[i] != null && headerRow[i].ToString().Trim() == columnName)
-//             {
-//                 return i;
-//             }
-//         }
-//         return -1;
-//     }
-//
-//     /// <summary>
-//     /// Преобразование 0-based индекса в буквенное обозначение столбца (A,B,...Z,AA,AB,...)
-//     /// </summary>
-//     private string ColumnIndexToLetter(int columnIndex)
-//     {
-//         // Простейшая реализация: перебираем буквы от A до Z, потом AA, AB...
-//         columnIndex++; // переходим из 0-based в 1-based
-//         string columnLetter = "";
-//         while (columnIndex > 0)
-//         {
-//             int remainder = (columnIndex - 1) % 26;
-//             columnLetter = (char)(remainder + 'A') + columnLetter;
-//             columnIndex = (columnIndex - 1) / 26;
-//         }
-//         return columnLetter;
-//     }
-//
-//     /// <summary>
-//     /// Пример групповой выборки статистики по InviteLink.
-//     /// Возвращаем словарь: inviteLink
-//     /// </summary>
-//     private async Task<Dictionary<string, Dictionary<string, int>>> GatherStatsForInviteLinks(
-//         AppDatabase database,
-//         List<string> inviteLinks)
-//     {
-//         var result = new Dictionary<string, Dictionary<string, int>>();
-//         if (!inviteLinks.Any()) return result;
-//         
-//         var now = DateTime.UtcNow;
-//
-//         // Считаем TelegramChannel_Members сгруппированно
-//         var memberStats = await database.TelegramChannel_Members
-//             .Where(m => inviteLinks.Contains(m.InviteLink))
-//             .GroupBy(m => m.InviteLink)
-//             .Select(g => new
-//             {
-//                 InviteLink = g.Key,
-//                 CurrentInChannel = g.Count(m => m.LeftUtc == null || m.JoinedUtc > m.LeftUtc),
-//                 LeftChannel = g.Count(m => m.LeftUtc != null && m.JoinedUtc < m.LeftUtc),
-//                 PremiumUsers = g.Count(m => m.IsPremium == true && (m.LeftUtc == null || m.JoinedUtc > m.LeftUtc)),
-//                 LeftWithin48Hours = g.Count(m => m.JoinedUtc.HasValue && m.LeftUtc.HasValue &&
-//                                         (m.LeftUtc.Value - m.JoinedUtc.Value).TotalHours <= 48),
-//                 TotalMembers = g.Count(),
-//                 Spent7DaysOrMore = g.Count(m =>
-//                     m.JoinedUtc != null && 
-//                     m.LeftUtc == null && // Не отписался
-//                     (now - m.JoinedUtc) >= TimeSpan.FromDays(7) // Пробыл более 7 дней
-//                 ),
-//                 CommentersCount = g.Count(m => m.IsCommenter ?? false)
-//             })
-//             .ToListAsync();
-//
-//         // Считаем клиентов тоже группировано
-//         var clientCounts = await database.Zakup_Clients
-//             .Where(z => inviteLinks.Contains(z.Zakup.InviteLink))
-//             .GroupBy(z => z.Zakup.InviteLink)
-//             .Select(g => new
-//             {
-//                 InviteLink = g.Key,
-//                 ClientCount = g.Count()
-//             })
-//             .ToListAsync();
-//
-//         // Преобразуем в словарь для быстрого поиска ClientCount
-//         var clientCountDict = clientCounts.ToDictionary(c => c.InviteLink, c => c.ClientCount);
-//
-//         // Собираем финальные данные
-//         foreach (var stat in memberStats)
-//         {   
-//             int spent7DaysPct = 0;
-//             if (stat.TotalMembers > 0)
-//             {
-//                 var fraction = (stat.Spent7DaysOrMore / (double)stat.TotalMembers) * 100.0;
-//                 spent7DaysPct = (int)Math.Round(fraction);
-//             }
-//
-//             var stats = new Dictionary<string, int>
-//             {
-//                 ["currentInChannel"]   = stat.CurrentInChannel,
-//                 ["leftChannel"]        = stat.LeftChannel,
-//                 ["premiumUsers"]       = stat.PremiumUsers,
-//                 ["leftWithin48Hours"]  = stat.LeftWithin48Hours,
-//                 ["leftTotal"]          = stat.LeftChannel,
-//                 ["commentersCount"]    = stat.TotalMembers > 0 
-//                     ? (int)Math.Round((stat.CommentersCount / (double)stat.TotalMembers) * 100)
-//                     : 0,
-//                 ["clientCount"]        = clientCountDict.TryGetValue(stat.InviteLink, out var c) ? c : 0,
-//                 ["spent7DaysPercent"]  = spent7DaysPct
-//             };
-//
-//             result[stat.InviteLink] = stats;
-//         }
-//
-//         return result;
-//     }
-//
-//     private async Task DriveShareFile(string fileId)
-//     {
-//         var permission = new Permission()
-//         {
-//             Role = "writer",
-//             Type = "anyone"
-//         };
-//
-//         var request = driveService.Permissions.Create(permission, fileId);
-//         await request.ExecuteAsync();
-//     }
-//
-//
-//     private async Task EnsureTableExists()
-//     {
-//         
-//     }
-// }
+using Zakup.Entities;
+using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
+using Google.Apis.Sheets.v4;
+using Google.Apis.Sheets.v4.Data;
+using Google;
+using Microsoft.EntityFrameworkCore;
+using Zakup.EntityFramework;
+using Microsoft.Extensions.Logging;
+
+namespace Zakup.Services;
+
+public class InternalSheetsService
+{
+    private readonly SheetsService _sheetsService;
+    private readonly DriveService _driveService;
+    private readonly ApplicationDbContext _context;
+    private readonly ILogger<InternalSheetsService> _logger;
+
+    private const string INVITE_LINK_COLUMN = "Пригласительная ссылка (не удалять)";
+    private const string CREATIVE_COLUMN = "Креатив";
+    private const string PRICE_COLUMN = "Цена";
+    private const int DEFAULT_ROW_START = 1;
+    private const int MAX_COLUMNS = 26;
+
+    private static readonly Dictionary<string, string> ColumnStatsMap = new()
+    {
+        { "Сейчас в канале", "currentInChannel" },
+        { "Покинуло канал", "leftChannel" },
+        { "Цена за подписчика(оставшегося)", "pricePerSubscriber" },
+        { "Отписываемость первые 48ч(% от отписавшихся)", "leftRateFirst48H" },
+        { "Премиум пользователей", "premiumUsers" },
+        { "Клиентов по ссылке", "clientCount" },
+        { "Комментирует из подписавшихся(%)", "commentersCount" },
+        { "Подписчиков 7+ дней(% от всего вступивших)", "spent7DaysPercent" }
+    };
+
+    public InternalSheetsService(
+        SheetsService sheetsService,
+        DriveService driveService,
+        ApplicationDbContext context,
+        ILogger<InternalSheetsService> logger)
+    {
+        _sheetsService = sheetsService;
+        _driveService = driveService;
+        _context = context;
+        _logger = logger;
+    }
+
+    public async Task<string> UploadFile(Stream stream)
+    {
+        var fileMetadata = new Google.Apis.Drive.v3.Data.File
+        {
+            Name = "image.jpg",
+            MimeType = "image/jpeg"
+        };
+
+        var request = _driveService.Files.Create(fileMetadata, stream, "image/jpeg");
+        request.Fields = "id";
+        var file = await request.UploadAsync();
+
+        if (file.Status == Google.Apis.Upload.UploadStatus.Failed)
+        {
+            throw new Exception($"Error uploading file: {file.Exception.Message}");
+        }
+
+        await DriveShareFile(request.ResponseBody.Id);
+        return request.ResponseBody.Id;
+    }
+
+    public async Task ClearAndUpdateInviteLinks()
+    {
+        var sheets = await GetChannelSheetsWithIncludes();
+        
+        foreach (var sheet in sheets)
+        {
+            if (string.IsNullOrEmpty(sheet.SpreadSheetId))
+            {
+                _logger.LogWarning("Spreadsheet ID is null or empty for channel {ChannelId}", sheet.ChannelId);
+                continue;
+            }
+
+            await UpdateInviteLinksForSheet(sheet);
+        }
+    }
+    
+    public async Task<bool> CheckIfSheetExists(long userId, long channelId)
+    {
+        // Проверяем, есть ли запись, связывающая канал, лист и таблицу пользователя
+        var sheetExists = await _context.ChannelSheets
+            .Include(s => s.SpreadSheet)
+            .Include(s => s.Channel)
+            .AnyAsync(s => s.ChannelId == channelId && s.SpreadSheet.UserId == userId);
+        return sheetExists;
+    }
+
+    private async Task UpdateInviteLinksForSheet(ChannelSheet sheet)
+    {
+        if (!await EnsureSheetExists(sheet)) return;
+
+        var clearRequest = CreateClearRequest(sheet.Id);
+        var inviteLinks = await GetInviteLinksForChannel(sheet.ChannelId);
+        var updateRequests = CreateUpdateRequests(sheet.Id, inviteLinks);
+        
+        var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+        {
+            Requests = new List<Request> { clearRequest }.Concat(updateRequests).ToList()
+        };
+
+        try
+        {
+            await _sheetsService.Spreadsheets.BatchUpdate(batchUpdateRequest, sheet.SpreadSheetId).ExecuteAsync();
+            _logger.LogInformation("Updated invite links for sheet {SheetId} in spreadsheet {SpreadSheetId}", 
+                sheet.Id, sheet.SpreadSheetId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update invite links for sheet {SheetId}", sheet.Id);
+        }
+    }
+
+    private Request CreateClearRequest(int sheetId) => new()
+    {
+        UpdateCells = new UpdateCellsRequest
+        {
+            Range = new GridRange
+            {
+                SheetId = sheetId,
+                StartColumnIndex = 12,
+                EndColumnIndex = 13,
+                StartRowIndex = DEFAULT_ROW_START
+            },
+            Fields = "userEnteredValue"
+        }
+    };
+
+    private async Task<List<string>> GetInviteLinksForChannel(long channelId)
+    {
+        return await _context.TelegramZakups
+            .Where(z => z.ChannelId == channelId && !string.IsNullOrEmpty(z.InviteLink))
+            .OrderBy(z => z.CreatedUtc)
+            .Select(z => z.InviteLink)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    private List<Request> CreateUpdateRequests(int sheetId, List<string> inviteLinks)
+    {
+        return inviteLinks.Select((link, index) => new Request
+        {
+            UpdateCells = new UpdateCellsRequest
+            {
+                Start = new GridCoordinate
+                {
+                    SheetId = sheetId,
+                    RowIndex = DEFAULT_ROW_START + index,
+                    ColumnIndex = 12
+                },
+                Rows = new List<RowData>
+                {
+                    new()
+                    {
+                        Values = new List<CellData>
+                        {
+                            new() { UserEnteredValue = new ExtendedValue { StringValue = link } }
+                        }
+                    }
+                },
+                Fields = "userEnteredValue"
+            }
+        }).ToList();
+    }
+
+    private async Task<List<ChannelSheet>> GetChannelSheetsWithIncludes()
+    {
+        return await _context.ChannelSheets
+            .Include(s => s.SpreadSheet)
+            .Include(s => s.Channel)
+            .ToListAsync();
+    }
+
+    public async Task RenameHeaderColumnsAsync()
+    {
+        var sheetsBySpreadsheet = await GroupSheetsBySpreadsheet();
+        
+        foreach (var group in sheetsBySpreadsheet)
+        {
+            await ProcessSpreadsheetGroup(group);
+        }
+    }
+
+    private async Task<List<IGrouping<string, ChannelSheet>>> GroupSheetsBySpreadsheet()
+    {
+        var allSheets = await GetChannelSheetsWithIncludes();
+        return allSheets
+            .Where(cs => !string.IsNullOrEmpty(cs.SpreadSheetId))
+            .GroupBy(cs => cs.SpreadSheetId)
+            .ToList();
+    }
+
+    private async Task ProcessSpreadsheetGroup(IGrouping<string, ChannelSheet> group)
+    {
+        var spreadsheetId = group.Key;
+        var channelSheets = group.ToList();
+
+        _logger.LogInformation("Processing spreadsheet: {SpreadsheetId}", spreadsheetId);
+
+        var spreadsheet = await GetSpreadsheet(spreadsheetId);
+        if (spreadsheet == null) return;
+
+        var googleSheetsDict = CreateGoogleSheetsDictionary(spreadsheet);
+        var allRequests = new List<Request>();
+
+        foreach (var chSheet in channelSheets)
+        {
+            var requests = await ProcessChannelSheet(chSheet, googleSheetsDict);
+            allRequests.AddRange(requests);
+        }
+
+        await ExecuteBatchUpdate(spreadsheetId, allRequests);
+    }
+
+    private async Task<Spreadsheet> GetSpreadsheet(string spreadsheetId)
+    {
+        try
+        {
+            var getRequest = _sheetsService.Spreadsheets.Get(spreadsheetId);
+            getRequest.IncludeGridData = true;
+            return await getRequest.ExecuteAsync();
+        }
+        catch (GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _logger.LogWarning("Spreadsheet {SpreadsheetId} не найден, восстанавливаю...", spreadsheetId);
+            return await RestoreSpreadsheet(spreadsheetId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching spreadsheet {SpreadsheetId}", spreadsheetId);
+            return null;
+        }
+    }
+
+    private async Task<bool> EnsureSheetExists(ChannelSheet sheet)
+    {
+        try
+        {
+            var spreadsheet = await GetSpreadsheet(sheet.SpreadSheetId);
+            if (spreadsheet == null) return false;
+
+            // Проверяем, существует ли лист в таблице
+            var sheetExists = spreadsheet.Sheets.Any(s => s.Properties.SheetId == sheet.Id);
+            if (sheetExists) return true;
+
+            _logger.LogWarning("Sheet {SheetId} не найден в таблице {SpreadsheetId}, восстанавливаю...", 
+                sheet.Id, sheet.SpreadSheetId);
+
+            // Создаем новый лист
+            var newSheet = await CreateSheetInSpreadsheet(sheet.SpreadSheetId, sheet.Channel.Title);
+            sheet.Id = newSheet.Replies.First().AddSheet!.Properties!.SheetId!.Value;
+            
+            // Добавляем заголовки
+            await AppendRow(sheet.SpreadSheet.UserId, sheet.ChannelId, GetDefaultHeaders());
+            
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to restore sheet {SheetId} in spreadsheet {SpreadsheetId}", 
+                sheet.Id, sheet.SpreadSheetId);
+            return false;
+        }
+    }
+
+    private async Task<Spreadsheet> RestoreSpreadsheet(string spreadsheetId)
+    {
+        try
+        {
+            // Получаем информацию о таблице из БД
+            var spreadSheetEntity = await _context.SpreadSheets
+                .FirstOrDefaultAsync(s => s.Id == spreadsheetId);
+
+            if (spreadSheetEntity == null)
+            {
+                _logger.LogError("Spreadsheet {SpreadsheetId} not found in database", spreadsheetId);
+                return null;
+            }
+
+            // Получаем все листы, связанные с этой таблицей
+            var channelSheets = await _context.ChannelSheets
+                .Include(cs => cs.Channel)
+                .Where(cs => cs.SpreadSheetId == spreadsheetId)
+                .ToListAsync();
+
+            // Создаем новую таблицу
+            var newSpreadsheet = await CreateNewSpreadsheet(spreadSheetEntity.UserId.ToString());
+            
+            // Обновляем ID в БД
+            spreadSheetEntity.Id = newSpreadsheet.SpreadsheetId;
+            await _context.SaveChangesAsync();
+
+            // Восстанавливаем все листы
+            foreach (var channelSheet in channelSheets)
+            {
+                var sheet = await CreateSheetInSpreadsheet(newSpreadsheet.SpreadsheetId, channelSheet.Channel.Title);
+                channelSheet.Id = sheet.Replies.First().AddSheet!.Properties!.SheetId!.Value;
+                
+                // Добавляем заголовки
+                await AppendRow(channelSheet.SpreadSheet.UserId, channelSheet.ChannelId, GetDefaultHeaders());
+            }
+
+            await _context.SaveChangesAsync();
+            return newSpreadsheet;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to restore spreadsheet {SpreadsheetId}", spreadsheetId);
+            return null;
+        }
+    }
+
+    private Dictionary<int, Sheet> CreateGoogleSheetsDictionary(Spreadsheet spreadsheet)
+    {
+        return spreadsheet.Sheets
+            .Where(s => s.Properties != null)
+            .ToDictionary(
+                s => s.Properties.SheetId ?? 0,
+                s => s
+            );
+    }
+
+    private async Task<List<Request>> ProcessChannelSheet(ChannelSheet chSheet, Dictionary<int, Sheet> googleSheetsDict)
+    {
+        var requests = new List<Request>();
+        
+        if (!googleSheetsDict.TryGetValue(chSheet.Id, out var googleSheet))
+        {
+            _logger.LogWarning("Sheet {SheetId} not found in spreadsheet", chSheet.Id);
+            return requests;
+        }
+
+        var sheetData = googleSheet.Data?.FirstOrDefault();
+        if (sheetData?.RowData == null || !sheetData.RowData.Any())
+        {
+            _logger.LogWarning("Sheet {SheetId} is empty", chSheet.Id);
+            return requests;
+        }
+
+        var headerRow = sheetData.RowData.FirstOrDefault();
+        if (headerRow?.Values == null || !headerRow.Values.Any())
+        {
+            _logger.LogWarning("Sheet {SheetId} has empty header", chSheet.Id);
+            return requests;
+        }
+
+        return CreateRenameRequests(chSheet.Id, headerRow.Values);
+    }
+
+    private List<Request> CreateRenameRequests(int sheetId, IList<CellData> headerCells)
+    {
+        var requests = new List<Request>();
+        var renameMap = new Dictionary<string, string>
+        {
+            { "Цена за подписчика(оставшихся)", "Цена за подписчика(оставшегося)" },
+            { "Отписываемость первые 48ч, в % от отписавшихся", "Отписываемость первые 48ч(% от отписавшихся)" }
+        };
+
+        for (int colIndex = 0; colIndex < headerCells.Count; colIndex++)
+        {
+            var cell = headerCells[colIndex];
+            var currentValue = cell?.FormattedValue ?? "";
+            
+            if (renameMap.TryGetValue(currentValue, out var newValue))
+            {
+                requests.Add(CreateRenameRequest(sheetId, colIndex, newValue));
+            }
+        }
+
+        return requests;
+    }
+
+    private Request CreateRenameRequest(int sheetId, int colIndex, string newValue)
+    {
+        return new Request
+        {
+            UpdateCells = new UpdateCellsRequest
+            {
+                Range = new GridRange
+                {
+                    SheetId = sheetId,
+                    StartRowIndex = 0,
+                    EndRowIndex = 1,
+                    StartColumnIndex = colIndex,
+                    EndColumnIndex = colIndex + 1
+                },
+                Rows = new List<RowData>
+                {
+                    new()
+                    {
+                        Values = new List<CellData>
+                        {
+                            new() { UserEnteredValue = new ExtendedValue { StringValue = newValue } }
+                        }
+                    }
+                },
+                Fields = "userEnteredValue"
+            }
+        };
+    }
+
+    private async Task ExecuteBatchUpdate(string spreadsheetId, List<Request> requests)
+    {
+        if (!requests.Any())
+        {
+            _logger.LogInformation("No updates needed for spreadsheet {SpreadsheetId}", spreadsheetId);
+            return;
+        }
+
+        try
+        {
+            var batchUpdate = new BatchUpdateSpreadsheetRequest { Requests = requests };
+            await _sheetsService.Spreadsheets.BatchUpdate(batchUpdate, spreadsheetId).ExecuteAsync();
+            _logger.LogInformation("Successfully updated columns in spreadsheet {SpreadsheetId}", spreadsheetId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to execute batch update for spreadsheet {SpreadsheetId}", spreadsheetId);
+        }
+    }
+
+    public async Task<UserSpreadSheet?> GetUserSheet(long userId)
+    {
+        return await _context.SpreadSheets.FirstOrDefaultAsync(s => s.UserId == userId);
+    }
+    
+    public async Task FixSheetColumns()
+    {
+        var sheets = await _context.ChannelSheets.ToListAsync();
+
+        foreach (var sheet in sheets)
+        {
+            _logger.LogInformation("Checking sheet: SpreadsheetId={SpreadsheetId}, SheetId={SheetId}", 
+                sheet.SpreadSheetId, sheet.Id);
+
+            try
+            {
+                await ProcessSheetColumns(sheet);
+            }
+            catch (GoogleApiException ex)
+            {
+                _logger.LogError(ex, "Failed to fix columns for sheet {SheetId}", sheet.Id);
+            }
+        }
+    }
+
+    private async Task ProcessSheetColumns(ChannelSheet sheet)
+    {
+        var spreadsheet = await GetSpreadsheetWithData(sheet.SpreadSheetId);
+        if (spreadsheet == null) return;
+
+        var targetSheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.SheetId == sheet.Id);
+        if (targetSheet == null)
+        {
+            _logger.LogWarning("Sheet not found with the given SheetId {SheetId}", sheet.Id);
+            return;
+        }
+
+        var sheetData = targetSheet.Data?.FirstOrDefault();
+        if (sheetData?.RowData == null || !sheetData.RowData.Any())
+        {
+            _logger.LogWarning("No row data found in sheet {SheetId}", sheet.Id);
+            return;
+        }
+
+        var headerRow = sheetData.RowData.FirstOrDefault();
+        if (headerRow?.Values == null)
+        {
+            _logger.LogWarning("Header row is empty in sheet {SheetId}", sheet.Id);
+            return;
+        }
+
+        var requests = new List<Request>();
+        
+        // Process column E
+        if (headerRow.Values.Count > 4)
+        {
+            var cellE = headerRow.Values[4];
+            if (cellE?.FormattedValue == "Подписчиков 7+ дней(% от всего вступивших)")
+            {
+                requests.Add(CreateColumnERenameRequest(sheet.Id));
+            }
+        }
+
+        // Process column 8
+        if (headerRow.Values.Count > 8 && string.IsNullOrWhiteSpace(headerRow.Values[8]?.FormattedValue))
+        {
+            requests.Add(CreateDeleteColumnRequest(sheet.Id, 8));
+        }
+
+        // Add new column
+        requests.Add(CreateInsertColumnRequest(sheet.Id, 12));
+        requests.Add(CreateNewColumnHeaderRequest(sheet.Id, 12));
+
+        if (requests.Any())
+        {
+            await ExecuteBatchUpdate(sheet.SpreadSheetId, requests);
+        }
+    }
+
+    private async Task<Spreadsheet> GetSpreadsheetWithData(string spreadsheetId)
+    {
+        try
+        {
+            var getRequest = _sheetsService.Spreadsheets.Get(spreadsheetId);
+            getRequest.IncludeGridData = true;
+            return await getRequest.ExecuteAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get spreadsheet {SpreadsheetId}", spreadsheetId);
+            return null;
+        }
+    }
+
+    private Request CreateColumnERenameRequest(int sheetId) => new()
+    {
+        UpdateCells = new UpdateCellsRequest
+        {
+            Range = new GridRange
+            {
+                SheetId = sheetId,
+                StartRowIndex = 0,
+                EndRowIndex = 1,
+                StartColumnIndex = 4,
+                EndColumnIndex = 5
+            },
+            Rows = new List<RowData>
+            {
+                new()
+                {
+                    Values = new List<CellData>
+                    {
+                        new() { UserEnteredValue = new ExtendedValue { StringValue = "Креатив" } }
+                    }
+                }
+            },
+            Fields = "userEnteredValue"
+        }
+    };
+
+    private Request CreateDeleteColumnRequest(int sheetId, int columnIndex) => new()
+    {
+        DeleteDimension = new DeleteDimensionRequest
+        {
+            Range = new DimensionRange
+            {
+                SheetId = sheetId,
+                Dimension = "COLUMNS",
+                StartIndex = columnIndex,
+                EndIndex = columnIndex + 1
+            }
+        }
+    };
+
+    private Request CreateInsertColumnRequest(int sheetId, int columnIndex) => new()
+    {
+        InsertDimension = new InsertDimensionRequest
+        {
+            Range = new DimensionRange
+            {
+                SheetId = sheetId,
+                Dimension = "COLUMNS",
+                StartIndex = columnIndex,
+                EndIndex = columnIndex + 1
+            }
+        }
+    };
+
+    private Request CreateNewColumnHeaderRequest(int sheetId, int columnIndex) => new()
+    {
+        UpdateCells = new UpdateCellsRequest
+        {
+            Start = new GridCoordinate
+            {
+                SheetId = sheetId,
+                RowIndex = 0,
+                ColumnIndex = columnIndex
+            },
+            Rows = new List<RowData>
+            {
+                new()
+                {
+                    Values = new List<CellData>
+                    {
+                        new()
+                        {
+                            UserEnteredValue = new ExtendedValue
+                            {
+                                StringValue = "Подписчиков 7+ дней(% от всего вступивших)"
+                            }
+                        }
+                    }
+                }
+            },
+            Fields = "userEnteredValue"
+        }
+    };
+
+    public async Task CreateSheet(long channelId, string sheetName, string spreadSheetName, long userId)
+    {
+        if (await SheetExists(channelId, userId))
+        {
+            return;
+        }
+
+        var spreadSheetEntity = await GetOrCreateSpreadSheet(userId, spreadSheetName);
+        var sheet = await CreateSheetInSpreadsheet(spreadSheetEntity.Id, sheetName);
+        
+        var sheetEntity = new ChannelSheet
+        {
+            Id = sheet.Replies.First().AddSheet!.Properties!.SheetId!.Value,
+            ChannelId = channelId,
+            SpreadSheet = spreadSheetEntity
+        };
+
+        await _context.AddAsync(sheetEntity);
+        await _context.SaveChangesAsync();
+
+        await AppendRow(userId, channelId, GetDefaultHeaders());
+    }
+
+    private async Task<bool> SheetExists(long channelId, long userId)
+    {
+        return await _context.ChannelSheets
+            .AnyAsync(s => s.ChannelId == channelId && s.SpreadSheet.UserId == userId);
+    }
+
+    private async Task<UserSpreadSheet> GetOrCreateSpreadSheet(long userId, string spreadSheetName)
+    {
+        var spreadSheetEntity = await _context.SpreadSheets
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+
+        if (spreadSheetEntity != null)
+        {
+            return spreadSheetEntity;
+        }
+
+        var spreadSheet = await CreateNewSpreadsheet(spreadSheetName);
+        spreadSheetEntity = new UserSpreadSheet
+        {
+            Id = spreadSheet.SpreadsheetId,
+            UserId = userId,
+        };
+
+        return spreadSheetEntity;
+    }
+
+    private async Task<Spreadsheet> CreateNewSpreadsheet(string spreadSheetName)
+    {
+        var spreadSheetRequest = _sheetsService.Spreadsheets.Create(new Spreadsheet
+        {
+            Properties = new SpreadsheetProperties
+            {
+                Title = $"zakup_{spreadSheetName}"
+            }
+        });
+
+        var spreadSheet = await spreadSheetRequest.ExecuteAsync();
+        await DriveShareFile(spreadSheet.SpreadsheetId);
+        return spreadSheet;
+    }
+
+    private async Task<BatchUpdateSpreadsheetResponse> CreateSheetInSpreadsheet(string spreadSheetId, string sheetName)
+    {
+        var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+        {
+            Requests = new List<Request>
+            {
+                new()
+                {
+                    AddSheet = new AddSheetRequest
+                    {
+                        Properties = new SheetProperties
+                        {
+                            Title = sheetName
+                        }
+                    }
+                }
+            }
+        };
+
+        return await _sheetsService.Spreadsheets
+            .BatchUpdate(batchUpdateRequest, spreadSheetId)
+            .ExecuteAsync();
+    }
+
+    private List<object> GetDefaultHeaders() => new()
+    {
+        "Дата создания закупа",
+        "Платформа",
+        "Цена",
+        "Админ",
+        "Креатив",
+        "Реквизиты",
+        "Оплачено",
+        "Сейчас в канале",
+        "Покинуло канал",
+        "Цена за подписчика(оставшегося)",
+        "Отписываемость первые 48ч(% от отписавшихся)",
+        "Подписчиков 7+ дней(% от всего вступивших)",
+        "Премиум пользователей",
+        "Пригласительная ссылка (не удалять)",
+        "Клиентов по ссылке",
+        "Комментирует из подписавшихся(%)"
+    };
+
+    private async Task DriveShareFile(string fileId)
+    {
+        var permission = new Permission()
+        {
+            Role = "writer",
+            Type = "anyone"
+        };
+
+        var request = _driveService.Permissions.Create(permission, fileId);
+        await request.ExecuteAsync();
+    }
+
+    private async Task EnsureTableExists()
+    {
+        
+    }
+
+    public async Task AppendRow(long userId, long channelId, List<object> cells)
+    {
+        var sheetEntity = await GetChannelSheet(userId, channelId);
+        if (sheetEntity == null)
+        {
+            var channel = await _context.Channels.FirstOrDefaultAsync(q => q.Id == channelId);
+            if (channel == null) return;
+
+            await CreateSheet(channelId, channel.Title, "stat", userId);
+            sheetEntity = await GetChannelSheet(userId, channelId);
+            if (sheetEntity == null) return;
+        }
+
+        if (!await EnsureSheetExists(sheetEntity)) return;
+
+        var data = new ValueRange
+        {
+            Values = new List<IList<object>> { cells }
+        };
+
+        var request = _sheetsService.Spreadsheets.Values.Append(data, sheetEntity.SpreadSheetId, sheetEntity.Channel.Title);
+        request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+        await request.ExecuteAsync();
+    }
+
+    private async Task<ChannelSheet> GetChannelSheet(long userId, long channelId)
+    {
+        return await _context.ChannelSheets
+            .Include(s => s.SpreadSheet)
+            .Include(s => s.Channel)
+            .Where(s => s.SpreadSheet.UserId == userId)
+            .FirstOrDefaultAsync(s => s.ChannelId == channelId);
+    }
+
+    public async Task AppendRowByHeaders(long userId, long channelId, Dictionary<string, object> dataByColumnName)
+    {
+        var sheetEntity = await GetChannelSheet(userId, channelId);
+        if (sheetEntity == null)
+        {
+            _logger.LogWarning("SheetEntity not found for user {UserId} and channel {ChannelId}", userId, channelId);
+            return;
+        }
+
+        if (!await EnsureSheetExists(sheetEntity)) return;
+
+        var headerRow = await GetHeaderRow(sheetEntity);
+        if (headerRow == null) return;
+
+        var columnIndexDict = CreateColumnIndexDictionary(headerRow, dataByColumnName);
+        var newRow = CreateNewRow(headerRow.Count, dataByColumnName, columnIndexDict);
+
+        await AppendRowToSheet(sheetEntity, newRow);
+    }
+
+    private async Task<IList<object>> GetHeaderRow(ChannelSheet sheetEntity)
+    {
+        var headerRange = $"{sheetEntity.Channel.Title}!A1:Z1";
+        try
+        {
+            var headerResponse = await _sheetsService.Spreadsheets.Values
+                .Get(sheetEntity.SpreadSheetId, headerRange)
+                .ExecuteAsync();
+
+            if (headerResponse.Values == null || !headerResponse.Values.Any())
+            {
+                _logger.LogWarning("Sheet {SheetTitle} is empty", sheetEntity.Channel.Title);
+                return null;
+            }
+
+            return headerResponse.Values[0];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reading header row for sheet {SheetTitle}", sheetEntity.Channel.Title);
+            return null;
+        }
+    }
+
+    private Dictionary<string, int> CreateColumnIndexDictionary(IList<object> headerRow, Dictionary<string, object> dataByColumnName)
+    {
+        var columnIndexDict = new Dictionary<string, int>();
+        for (int i = 0; i < headerRow.Count; i++)
+        {
+            var colName = headerRow[i]?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(colName) && dataByColumnName.ContainsKey(colName))
+            {
+                columnIndexDict[colName] = i;
+            }
+        }
+        return columnIndexDict;
+    }
+
+    private object[] CreateNewRow(int maxColumnCount, Dictionary<string, object> dataByColumnName, Dictionary<string, int> columnIndexDict)
+    {
+        var newRow = new object[maxColumnCount];
+        for (int i = 0; i < maxColumnCount; i++)
+        {
+            newRow[i] = "";
+        }
+
+        foreach (var pair in dataByColumnName)
+        {
+            if (columnIndexDict.TryGetValue(pair.Key, out var idx))
+            {
+                newRow[idx] = pair.Value;
+            }
+        }
+
+        return newRow;
+    }
+
+    private async Task AppendRowToSheet(ChannelSheet sheetEntity, object[] newRow)
+    {
+        var data = new ValueRange
+        {
+            Values = new List<IList<object>> { newRow }
+        };
+
+        try
+        {
+            var appendRequest = _sheetsService.Spreadsheets.Values
+                .Append(data, sheetEntity.SpreadSheetId, sheetEntity.Channel.Title);
+            appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+            await appendRequest.ExecuteAsync();
+            _logger.LogInformation("Row appended successfully to sheet {SheetTitle}", sheetEntity.Channel.Title);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error appending row to sheet {SheetTitle}", sheetEntity.Channel.Title);
+        }
+    }
+
+    public IQueryable<ChannelMember> GetMembersByInviteLink(string inviteLink)
+    {
+        return _context.ChannelMembers.Where(m => m.InviteLink == inviteLink);
+    }
+
+    public async Task UpdateCreativeTitles()
+    {
+        var sheets = await GetChannelSheetsWithIncludes();
+        
+        foreach (var sheet in sheets)
+        {
+            await UpdateCreativeTitlesForSheet(sheet);
+        }
+    }
+
+    private async Task UpdateCreativeTitlesForSheet(ChannelSheet sheet)
+    {
+        if (!await EnsureSheetExists(sheet)) return;
+
+        var range = $"{sheet.Channel.Title}!A2:O";
+        ValueRange response;
+
+        try
+        {
+            response = await _sheetsService.Spreadsheets.Values
+                .Get(sheet.SpreadSheet.Id, range)
+                .ExecuteAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving data for sheet {SheetTitle}", sheet.Channel.Title);
+            return;
+        }
+
+        if (response.Values == null || !response.Values.Any())
+        {
+            _logger.LogWarning("No data available in sheet {SheetTitle}", sheet.Channel.Title);
+            return;
+        }
+
+        var updates = await ProcessCreativeTitleUpdates(sheet, response.Values);
+        if (updates.Any())
+        {
+            await ExecuteBatchUpdate(sheet.SpreadSheet.Id, updates);
+        }
+    }
+
+    private async Task<List<ValueRange>> ProcessCreativeTitleUpdates(ChannelSheet sheet, IList<IList<object>> values)
+    {
+        var updates = new List<ValueRange>();
+        
+        for (int i = 0; i < values.Count; i++)
+        {
+            var row = values[i];
+            if (row.Count < 13 || row[12] == null)
+            {
+                _logger.LogWarning("Row {RowIndex} has insufficient data in sheet {SheetTitle}", 
+                    i + 2, sheet.Channel.Title);
+                continue;
+            }
+
+            var inviteLink = row[12].ToString();
+            var zakup = await _context.TelegramZakups
+                .Include(z => z.AdPost)
+                .FirstOrDefaultAsync(z => z.InviteLink == inviteLink);
+
+            if (zakup?.AdPost?.Title != null && (row.Count <= 4 || string.IsNullOrEmpty(row[4]?.ToString())))
+            {
+                var updateValues = new List<object>(row);
+                while (updateValues.Count <= 4) updateValues.Add(null);
+                updateValues[4] = zakup.AdPost.Title;
+
+                var updateRange = $"{sheet.Channel.Title}!A{2 + i}:O{2 + i}";
+                updates.Add(new ValueRange 
+                { 
+                    Range = updateRange, 
+                    Values = new List<IList<object>> { updateValues } 
+                });
+            }
+        }
+
+        return updates;
+    }
+
+    public async Task UpdateStatistic(long userId)
+    {
+        var sheets = await GetUserSheets(userId);
+        if (!sheets.Any())
+        {
+            _logger.LogWarning("No sheets found for userId={UserId}", userId);
+            return;
+        }
+
+        var spreadsheetId = sheets.First().SpreadSheetId;
+        if (string.IsNullOrEmpty(spreadsheetId))
+        {
+            _logger.LogWarning("Spreadsheet ID is empty for userId={UserId}", userId);
+            return;
+        }
+
+        var spreadsheet = await GetSpreadsheet(spreadsheetId);
+        if (spreadsheet == null) return;
+
+        var validSheets = await GetValidSheets(sheets, spreadsheet);
+        if (!validSheets.Any())
+        {
+            _logger.LogWarning("No valid sheets found for userId={UserId}", userId);
+            return;
+        }
+
+        var batchGetResponse = await GetSheetValues(spreadsheetId, validSheets);
+        if (batchGetResponse == null) return;
+
+        var allInviteLinks = CollectInviteLinks(batchGetResponse, validSheets);
+        var statsDictionary = await GatherStatsForInviteLinks(allInviteLinks.ToList());
+        
+        await UpdateSheetStatistics(spreadsheetId, batchGetResponse, validSheets, statsDictionary);
+    }
+
+    private async Task<List<ChannelSheet>> GetUserSheets(long userId)
+    {
+        return await _context.ChannelSheets
+            .Include(s => s.SpreadSheet)
+            .Include(s => s.Channel)
+            .Where(s => s.SpreadSheet.UserId == userId)
+            .ToListAsync();
+    }
+
+    private async Task<List<ChannelSheet>> GetValidSheets(List<ChannelSheet> sheets, Spreadsheet spreadsheet)
+    {
+        var googleSheetTitles = spreadsheet.Sheets
+            .Select(s => s.Properties.Title)
+            .Where(t => !string.IsNullOrEmpty(t))
+            .ToHashSet();
+
+        return sheets
+            .Where(s => googleSheetTitles.Contains(s.Channel.Title))
+            .ToList();
+    }
+
+    private async Task<BatchGetValuesResponse> GetSheetValues(string spreadsheetId, List<ChannelSheet> validSheets)
+    {
+        var validRanges = validSheets
+            .Select(s => $"{s.Channel.Title}!A1:Z1000")
+            .ToList();
+
+        try
+        {
+            var batchGetRequest = _sheetsService.Spreadsheets.Values.BatchGet(spreadsheetId);
+            batchGetRequest.Ranges = validRanges;
+            return await batchGetRequest.ExecuteAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get sheet values for spreadsheet {SpreadsheetId}", spreadsheetId);
+            return null;
+        }
+    }
+
+    private HashSet<string> CollectInviteLinks(BatchGetValuesResponse batchGetResponse, List<ChannelSheet> validSheets)
+    {
+        var allInviteLinks = new HashSet<string>();
+
+        for (int i = 0; i < batchGetResponse.ValueRanges.Count; i++)
+        {
+            var valueRange = batchGetResponse.ValueRanges[i];
+            var sheetEntity = validSheets[i];
+
+            if (valueRange.Values == null || !valueRange.Values.Any())
+                continue;
+
+            var headerRow = valueRange.Values[0];
+            int inviteLinkIndex = FindColumnIndex(headerRow, INVITE_LINK_COLUMN);
+            if (inviteLinkIndex == -1)
+            {
+                _logger.LogWarning("Sheet '{SheetTitle}' does not contain invite-link column", 
+                    sheetEntity.Channel.Title);
+                continue;
+            }
+
+            CollectInviteLinksFromRows(valueRange.Values, inviteLinkIndex, allInviteLinks);
+        }
+
+        return allInviteLinks;
+    }
+
+    private void CollectInviteLinksFromRows(IList<IList<object>> values, int inviteLinkIndex, HashSet<string> allInviteLinks)
+    {
+        for (int rowIndex = 1; rowIndex < values.Count; rowIndex++)
+        {
+            var row = values[rowIndex];
+            if (row.Count <= inviteLinkIndex) 
+                continue;
+
+            var linkObj = row[inviteLinkIndex];
+            if (linkObj == null) 
+                continue;
+
+            var inviteLink = linkObj.ToString();
+            if (!string.IsNullOrEmpty(inviteLink))
+                allInviteLinks.Add(inviteLink);
+        }
+    }
+
+    private async Task UpdateSheetStatistics(
+        string spreadsheetId, 
+        BatchGetValuesResponse batchGetResponse,
+        List<ChannelSheet> validSheets,
+        Dictionary<string, Dictionary<string, int>> statsDictionary)
+    {
+        var allUpdates = new List<ValueRange>();
+
+        for (int i = 0; i < batchGetResponse.ValueRanges.Count; i++)
+        {
+            var valueRange = batchGetResponse.ValueRanges[i];
+            var sheetEntity = validSheets[i];
+            
+            if (valueRange.Values == null || valueRange.Values.Count < 1)
+                continue;
+
+            var headerRow = valueRange.Values[0];
+            int inviteLinkIndex = FindColumnIndex(headerRow, INVITE_LINK_COLUMN);
+            if (inviteLinkIndex == -1)
+                continue;
+
+            var columnIndexDict = CreateColumnIndexDictionary(headerRow, ColumnStatsMap);
+            int priceIndex = FindColumnIndex(headerRow, PRICE_COLUMN);
+
+            await ProcessSheetRows(
+                valueRange.Values, 
+                sheetEntity, 
+                inviteLinkIndex, 
+                priceIndex, 
+                columnIndexDict, 
+                statsDictionary, 
+                allUpdates);
+        }
+
+        if (allUpdates.Any())
+        {
+            await ExecuteBatchUpdate(spreadsheetId, allUpdates);
+        }
+    }
+
+    private async Task ProcessSheetRows(
+        IList<IList<object>> values,
+        ChannelSheet sheetEntity,
+        int inviteLinkIndex,
+        int priceIndex,
+        Dictionary<string, int> columnIndexDict,
+        Dictionary<string, Dictionary<string, int>> statsDictionary,
+        List<ValueRange> allUpdates)
+    {
+        for (int rowIndex = 1; rowIndex < values.Count; rowIndex++)
+        {
+            var row = values[rowIndex];
+            if (row.Count <= inviteLinkIndex) 
+                continue;
+
+            var linkObj = row[inviteLinkIndex];
+            if (linkObj == null) 
+                continue;
+
+            var inviteLink = linkObj.ToString();
+            if (string.IsNullOrEmpty(inviteLink))
+                continue;
+
+            if (!statsDictionary.TryGetValue(inviteLink, out var stats))
+                continue;
+
+            decimal price = 0;
+            if (priceIndex >= 0 && row.Count > priceIndex)
+                decimal.TryParse(row[priceIndex]?.ToString(), out price);
+
+            var currentInChannel = stats["currentInChannel"];
+            var leftTotal = stats["leftTotal"];
+            var pricePerSubscriber = (currentInChannel > 0) ? (price / currentInChannel) : 0m;
+            var leftRate48H = (leftTotal > 0) 
+                ? (double)stats["leftWithin48Hours"] / leftTotal * 100 
+                : 0;
+
+            var rowValuesForUpdate = new Dictionary<string, object>
+            {
+                { "currentInChannel",   currentInChannel },
+                { "leftChannel",        stats["leftChannel"] },
+                { "pricePerSubscriber", pricePerSubscriber },
+                { "leftRateFirst48H",   leftRate48H },
+                { "premiumUsers",       stats["premiumUsers"] },
+                { "clientCount",        stats["clientCount"] },
+                { "commentersCount",    stats["commentersCount"] },
+                { "spent7DaysPercent",  stats["spent7DaysPercent"] }
+            };
+
+            AddRowUpdates(sheetEntity, rowIndex, columnIndexDict, rowValuesForUpdate, allUpdates);
+        }
+    }
+
+    private void AddRowUpdates(
+        ChannelSheet sheetEntity,
+        int rowIndex,
+        Dictionary<string, int> columnIndexDict,
+        Dictionary<string, object> rowValuesForUpdate,
+        List<ValueRange> allUpdates)
+    {
+        foreach (var (colName, statKey) in ColumnStatsMap)
+        {
+            if (!columnIndexDict.TryGetValue(colName, out var idx) || idx < 0)
+                continue;
+
+            var newValue = rowValuesForUpdate[statKey];
+            var realRowNumber = rowIndex + 1;
+            var columnLetter = ColumnIndexToLetter(idx);
+            var cellRange = $"{sheetEntity.Channel.Title}!{columnLetter}{realRowNumber}";
+
+            allUpdates.Add(new ValueRange
+            {
+                Range = cellRange,
+                Values = new List<IList<object>> { new List<object> { newValue } }
+            });
+        }
+    }
+
+    private int FindColumnIndex(IList<object> headerRow, string columnName)
+    {
+        for (int i = 0; i < headerRow.Count; i++)
+        {
+            if (headerRow[i] != null && headerRow[i].ToString().Trim() == columnName)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private string ColumnIndexToLetter(int columnIndex)
+    {
+        columnIndex++;
+        string columnLetter = "";
+        while (columnIndex > 0)
+        {
+            int remainder = (columnIndex - 1) % 26;
+            columnLetter = (char)(remainder + 'A') + columnLetter;
+            columnIndex = (columnIndex - 1) / 26;
+        }
+        return columnLetter;
+    }
+
+    private async Task ExecuteBatchUpdate(string spreadsheetId, List<ValueRange> updates)
+    {
+        var requestBody = new BatchUpdateValuesRequest
+        {
+            ValueInputOption = "USER_ENTERED",
+            Data = updates
+        };
+
+        try
+        {
+            await _sheetsService.Spreadsheets.Values
+                .BatchUpdate(requestBody, spreadsheetId)
+                .ExecuteAsync();
+            _logger.LogInformation("Successfully updated spreadsheet {SpreadsheetId}", spreadsheetId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to execute batch update for spreadsheet {SpreadsheetId}", spreadsheetId);
+            throw;
+        }
+    }
+
+    private Dictionary<string, int> CreateColumnIndexDictionary(IList<object> headerRow, Dictionary<string, string> columnMap)
+    {
+        var columnIndexDict = new Dictionary<string, int>();
+        for (int i = 0; i < headerRow.Count; i++)
+        {
+            var colName = headerRow[i]?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(colName) && columnMap.ContainsKey(colName))
+            {
+                columnIndexDict[colName] = i;
+            }
+        }
+        return columnIndexDict;
+    }
+
+    private async Task<Dictionary<string, Dictionary<string, int>>> GatherStatsForInviteLinks(List<string> inviteLinks)
+    {
+        var result = new Dictionary<string, Dictionary<string, int>>();
+        if (!inviteLinks.Any()) return result;
+        
+        var now = DateTime.UtcNow;
+
+        // Считаем TelegramChannel_Members сгруппированно
+        var memberStats = await _context.ChannelMembers
+            .Where(m => inviteLinks.Contains(m.InviteLink))
+            .GroupBy(m => m.InviteLink)
+            .Select(g => new
+            {
+                InviteLink = g.Key,
+                CurrentInChannel = g.Count(m => m.LeftUtc == null || m.JoinedUtc > m.LeftUtc),
+                LeftChannel = g.Count(m => m.LeftUtc != null && m.JoinedUtc < m.LeftUtc),
+                PremiumUsers = g.Count(m => m.IsPremium == true && (m.LeftUtc == null || m.JoinedUtc > m.LeftUtc)),
+                LeftWithin48Hours = g.Count(m => m.JoinedUtc.HasValue && m.LeftUtc.HasValue &&
+                                        (m.LeftUtc.Value - m.JoinedUtc.Value).TotalHours <= 48),
+                TotalMembers = g.Count(),
+                Spent7DaysOrMore = g.Count(m =>
+                    m.JoinedUtc != null && 
+                    m.LeftUtc == null && // Не отписался
+                    (now - m.JoinedUtc) >= TimeSpan.FromDays(7) // Пробыл более 7 дней
+                ),
+                CommentersCount = g.Count(m => m.IsCommenter ?? false)
+            })
+            .ToListAsync();
+
+        // Считаем клиентов тоже группировано
+        var clientCounts = await _context.ZakupClients
+            .Where(z => inviteLinks.Contains(z.Zakup.InviteLink))
+            .GroupBy(z => z.Zakup.InviteLink)
+            .Select(g => new
+            {
+                InviteLink = g.Key,
+                ClientCount = g.Count()
+            })
+            .ToListAsync();
+
+        // Преобразуем в словарь для быстрого поиска ClientCount
+        var clientCountDict = clientCounts.ToDictionary(c => c.InviteLink, c => c.ClientCount);
+
+        // Собираем финальные данные
+        foreach (var stat in memberStats)
+        {   
+            int spent7DaysPct = 0;
+            if (stat.TotalMembers > 0)
+            {
+                var fraction = (stat.Spent7DaysOrMore / (double)stat.TotalMembers) * 100.0;
+                spent7DaysPct = (int)Math.Round(fraction);
+            }
+
+            var stats = new Dictionary<string, int>
+            {
+                ["currentInChannel"]   = stat.CurrentInChannel,
+                ["leftChannel"]        = stat.LeftChannel,
+                ["premiumUsers"]       = stat.PremiumUsers,
+                ["leftWithin48Hours"]  = stat.LeftWithin48Hours,
+                ["leftTotal"]          = stat.LeftChannel,
+                ["commentersCount"]    = stat.TotalMembers > 0 
+                    ? (int)Math.Round((stat.CommentersCount / (double)stat.TotalMembers) * 100)
+                    : 0,
+                ["clientCount"]        = clientCountDict.TryGetValue(stat.InviteLink, out var c) ? c : 0,
+                ["spent7DaysPercent"]  = spent7DaysPct
+            };
+
+            result[stat.InviteLink] = stats;
+        }
+
+        return result;
+    }
+}

@@ -11,3 +11,16 @@ C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.Abstractions\obj\Debug\net9.0\Zakup
 C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.Abstractions\obj\Debug\net9.0\refint\Zakup.Abstractions.dll
 C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.Abstractions\obj\Debug\net9.0\Zakup.Abstractions.pdb
 C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.Abstractions\obj\Debug\net9.0\ref\Zakup.Abstractions.dll
+C:\Rekla\rekla\Zakup.Abstractions\bin\Debug\net9.0\Zakup.Abstractions.deps.json
+C:\Rekla\rekla\Zakup.Abstractions\bin\Debug\net9.0\Zakup.Abstractions.dll
+C:\Rekla\rekla\Zakup.Abstractions\bin\Debug\net9.0\Zakup.Abstractions.pdb
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\Zakup.Abstractions.csproj.AssemblyReference.cache
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\Zakup.Abstractions.GeneratedMSBuildEditorConfig.editorconfig
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\Zakup.Abstractions.AssemblyInfoInputs.cache
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\Zakup.Abstractions.AssemblyInfo.cs
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\Zakup.Abstractions.csproj.CoreCompileInputs.cache
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\Zakup.Abstractions.sourcelink.json
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\Zakup.Abstractions.dll
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\refint\Zakup.Abstractions.dll
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\Zakup.Abstractions.pdb
+C:\Rekla\rekla\Zakup.Abstractions\obj\Debug\net9.0\ref\Zakup.Abstractions.dll

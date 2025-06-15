@@ -56,10 +56,6 @@ public class ChannelService
             existChannel.HasDeleted = false;
             _context.Update(existChannel);
             await _context.SaveChangesAsync();
-            
-            //TODO
-            //if (!await CheckIfSheetExists(userId, existChannel.Id))
-                //await sheetsService.CreateSheet(existChannel.Id, existChannel.Title, userMessage.From?.Username ?? "stat", State.UserId);
         }
 
         return existChannel;
@@ -73,7 +69,8 @@ public class ChannelService
     }
     
     public async Task<TelegramChannel?> CreateOrUpdateChannel(
-        Chat channelChat, 
+        long channelId,
+        string channelName,
         List<TelegramUser> admins,
         TelegramChannel? existChannel = null, CancellationToken cancellationToken = default)
     {
@@ -108,8 +105,8 @@ public class ChannelService
             {
                 AdPosts = new List<TelegramAdPost>(),
                 Administrators = admins,
-                Id = channelChat.Id,
-                Title = channelChat.Title ?? "",
+                Id = channelId,
+                Title = channelName ?? "",
                 Alias = "",
             };
             await _context.Channels.AddAsync(channel, cancellationToken);
@@ -216,9 +213,19 @@ public class ChannelService
     
     public async Task<ChannelRating?> AddRating(ChannelRating rating, CancellationToken cancellationToken)
     {
-        var entity = await _context.AddAsync(rating, cancellationToken);
+        var existsRating = await _context.ChannelRatings.FindAsync(rating.ChannelId, cancellationToken);
+        if (existsRating == null)
+        {
+            var entity = await _context.AddAsync(rating, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return entity.Entity;
+        }
+        
+        existsRating.BadDeals += rating.BadDeals;
+        existsRating.Rate = rating.Rate;
+        _context.Update(existsRating);
         await _context.SaveChangesAsync(cancellationToken);
-        return entity.Entity;
+        return existsRating;
     }
 
     public async Task<long> GetPositiveFeedbackCount(long channelId, CancellationToken cancellationToken = default)
@@ -233,5 +240,20 @@ public class ChannelService
         return await _context.ChannelFeedback.Where(f => f.ChannelId == channelId)
             .Where(q => !q.Positive)
             .CountAsync(cancellationToken);
+    }
+
+    public async Task DeleteChannel(long channelId, CancellationToken cancellationToken)
+    {
+        var channel = await _context.Channels.FirstOrDefaultAsync(c => c.Id == channelId, cancellationToken);
+        _context.Channels.Remove(channel);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task AddChannelChat(long channelId, long chatId, CancellationToken cancellationToken = default)
+    {
+        var channel = await _context.Channels.FirstAsync(q => q.Id == channelId, cancellationToken: cancellationToken);
+        channel.ChannelChatId = chatId;
+        _context.Update(channel);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

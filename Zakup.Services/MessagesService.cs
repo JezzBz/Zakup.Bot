@@ -56,13 +56,13 @@ public class MessagesService
         {
             new List<InlineKeyboardButton>
             {
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.ZakupCreate, nameof(CallbackType.ZakupCreate)),
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.MyChannels, nameof(CallbackType.MyChannelsList)),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.ZakupCreate, ((int)CallbackType.ZakupCreate).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.MyChannels, ((int)CallbackType.MyChannelsList).ToString()),
             },
             new List<InlineKeyboardButton>
             {
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.GoogleSheets, nameof(CallbackType.GoogleSheets)),
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Help, nameof(CallbackType.Help))
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.GoogleSheets, ((int)CallbackType.GoogleSheets).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Help, ((int)CallbackType.Help).ToString())
             }
         };
 
@@ -70,7 +70,7 @@ public class MessagesService
         {
             keyboard.Add(new List<InlineKeyboardButton>
             {
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.AdminPanel, nameof(CallbackType.AdminPanel))
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.AdminPanel, ((int)CallbackType.AdminPanel).ToString())
             });
         }
 

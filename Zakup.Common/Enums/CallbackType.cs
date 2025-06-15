@@ -1,3 +1,4 @@
+
 namespace Zakup.Common.Enums;
 
 //Нужно для передачи типа callback в данные callback с минимальной длиной строки
@@ -36,6 +37,7 @@ public enum CallbackType
     HelpQuestion,
     HelpAnOffer,
     ChooseZakupDate,
+    ChangeZakupDate,
     DeleteZakup,
     AddZakupPrice,
     ZakupChannelPrivate,
@@ -48,5 +50,22 @@ public enum CallbackType
     MarkAsLead,
     PremiumEmoji,
     PremiumEmojiChooseAdPost,
-    GetZakupLink
+    GetZakupLink,
+    ZakupPayed,
+    DeleteZakupRequest,
+    UpdateZakup,
+    ReturnToZakupMainMenu,
+    AdminStatistics,
+    AdminMute,
+    AdminUnmute,
+    AdminScam,
+    AdminUnscam,
+    AdminDelete,
+    AdminCustom,
+    AdminBroadcast,
+    AdminConfirmMute,
+    AdminScamConfirm,
+    RefreshGoogleSheets,
+    AddChannelChatDirectly,
+    AddChannelDirectly
 }

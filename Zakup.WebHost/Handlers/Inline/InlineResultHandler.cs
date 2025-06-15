@@ -7,32 +7,40 @@ using System.Text.RegularExpressions;
 using Bot.Core;
 using Google;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using Zakup.Abstractions.Handlers;
+using Zakup.Common.DTO.Zakup;
 using Zakup.Common.Enums;
 using Zakup.Entities;
 using Zakup.EntityFramework;
 using Zakup.Services;
 using Zakup.Services.Extensions;
+using Zakup.WebHost.Constants;
+using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.Inline;
 
 public class InlineResultHandler : IUpdatesHandler
 {
     private readonly MetadataStorage _metadataStorage;
-    //private readonly InternalSheetsService _sheetsService;
+    private readonly InternalSheetsService _sheetsService;
     private readonly ILogger<InlineResultHandler> _logger;
     private readonly ApplicationDbContext _dataContext;
     private readonly DocumentsStorageService _documentsStorage;
+    private readonly HandlersManager _handlersManager;
 
-    public InlineResultHandler(MetadataStorage metadataStorage, ILogger<InlineResultHandler> logger, ApplicationDbContext dataContext, DocumentsStorageService documentsStorage)
+    public InlineResultHandler(MetadataStorage metadataStorage, ILogger<InlineResultHandler> logger, ApplicationDbContext dataContext, DocumentsStorageService documentsStorage, HandlersManager handlersManager, InternalSheetsService sheetsService)
     {
         _metadataStorage = metadataStorage;
         _logger = logger;
         _dataContext = dataContext;
         _documentsStorage = documentsStorage;
+        _handlersManager = handlersManager;
+        _sheetsService = sheetsService;
     }
 
     public static bool ShouldHandle(Update update)
@@ -183,25 +191,24 @@ public class InlineResultHandler : IUpdatesHandler
 
         try
         {
-            //TODO
-            // await _sheetsService.AppendRowByHeaders(data.From.Id, zakup.ChannelId, new Dictionary<string, object>()
-            // {
-            //     ["Дата создания закупа"] = zakup.CreatedUtc,
-            //     ["Платформа"] = zakup.Platform ?? "",
-            //     ["Цена"] = zakup.Price,
-            //     ["Админ"] = zakup.Admin ?? "",
-            //     ["Креатив"] = adPost.Title ?? "",
-            //     ["Оплачено"] = zakup.IsPad ? "Да" : "Нет",
-            //     ["Пригласительная ссылка (не удалять)"] = zakup.InviteLink ?? "",
-            //     ["Сейчас в канале"] = 0,
-            //     ["Покинуло канал"] = 0,
-            //     ["Цена за подписчика(оставшегося)"] = 0,
-            //     ["Отписываемость первые 48ч(% от отписавшихся)"] = 0,
-            //     ["Премиум пользователей"] = 0,
-            //     ["Подписчиков 7+ дней(% от всего вступивших)"] = 0,
-            //     ["Клиентов по ссылке"] = 0,
-            //     ["Комментирует из подписавшихся(%)"] = 0,
-            // });
+             await _sheetsService.AppendRowByHeaders(data.From.Id, zakup.ChannelId, new Dictionary<string, object>()
+             {
+                 ["Дата создания закупа"] = zakup.CreatedUtc,
+                 ["Платформа"] = zakup.Platform ?? "",
+                 ["Цена"] = zakup.Price,
+                 ["Админ"] = zakup.Admin ?? "",
+                 ["Креатив"] = adPost.Title ?? "",
+                 ["Оплачено"] = zakup.IsPad ? "Да" : "Нет",
+                 ["Пригласительная ссылка (не удалять)"] = zakup.InviteLink ?? "",
+                 ["Сейчас в канале"] = 0,
+                 ["Покинуло канал"] = 0,
+                 ["Цена за подписчика(оставшегося)"] = 0,
+                 ["Отписываемость первые 48ч(% от отписавшихся)"] = 0,
+                 ["Премиум пользователей"] = 0,
+                 ["Подписчиков 7+ дней(% от всего вступивших)"] = 0,
+                 ["Клиентов по ссылке"] = 0,
+                 ["Комментирует из подписавшихся(%)"] = 0,
+             });
         }
         catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.BadRequest && ex.Message.Contains("Unable to parse range"))
         {
@@ -219,14 +226,6 @@ public class InlineResultHandler : IUpdatesHandler
         }
 
         var urlType = link?.CreatesJoinRequest ?? false ? "По заявкам" : "Открытая";
-        
-        
-        //TODO:для чего это
-        // if (adPost.File != null && !string.IsNullOrEmpty(adPost.File.ThumbnailId))
-        // {
-        //     await botClient.EditMessageMediaAsync(data.InlineMessageId,
-        //         new InputMediaVideo(InputFile.FromFileId(adPost.File.FileId!)));
-        // }
 
         List<InlineKeyboardButton> keyboard = null;
 
@@ -339,8 +338,6 @@ public class InlineResultHandler : IUpdatesHandler
                 _logger.LogWarning("Попытка отредактировать сообщение с пустым текстом. InlineMessageId: {InlineMessageId}", data.InlineMessageId);
                 return;
             }
-
-           
             
             
             await botClient.EditMessageTextAsync(data.InlineMessageId, adPost.Text, entities: adPost.Entities.ToArray(),
@@ -364,20 +361,35 @@ public class InlineResultHandler : IUpdatesHandler
         messageBuilder.AppendLine($"📅Дата публикации: {postTime}");
         messageBuilder.AppendLine($"Креатив: {adPost.Title}");
         messageBuilder.AppendLine("Оплачено: Нет❌");
-
-        // var markUp = new List<InlineKeyboardButton>()
-        // {
-        //     InlineKeyboardButton.WithCallbackData("⚙️Изменить", $"zakup:post:{ZakupPostFlowType.UPDATE}:{zakup.Id}"),
-        //     InlineKeyboardButton.WithCallbackData("🗑Удалить", $"zakup:post:{ZakupPostFlowType.DELETE}:{zakup.Id}"),
-        //     InlineKeyboardButton.WithCallbackData("✅Оплачено", $"zakup:post:{ZakupPostFlowType.PAY}:{zakup.Id}")
-        // };
+        
+        var updateData = await _handlersManager.ToCallback(new UpdateZakupCallbackData
+        {
+            ZakupId = zakup.Id
+        });
+        
+        var deleteData = await _handlersManager.ToCallback(new DeleteZakupRequestCallbackData
+        {
+            ZakupId = zakup.Id
+        });
+        
+        var payData = await _handlersManager.ToCallback(new ZakupPayedCallbackData
+        {
+            ZakupId = zakup.Id
+        });
+        
+        var markUp = new List<InlineKeyboardButton>()
+        { 
+            InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Edit, updateData),
+            InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Delete, deleteData),
+            InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.MarkAsPaid, payData)
+        };
 
         var resultMessage = messageBuilder.ToString();
         {
             try
             {
-                await botClient.SendTextMessageAsync(data.From.Id, resultMessage
-                    // replyMarkup: new InlineKeyboardMarkup(markUp)
+                await botClient.SendTextMessageAsync(data.From.Id, resultMessage,
+                replyMarkup: new InlineKeyboardMarkup(markUp)
                     );
             }
             catch (Exception e)

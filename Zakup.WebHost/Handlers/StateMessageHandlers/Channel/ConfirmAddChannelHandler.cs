@@ -2,7 +2,9 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
+using Zakup.Common.DTO.Channel;
 using Zakup.Common.Enums;
 using Zakup.Common.Models;
 using Zakup.Entities;
@@ -17,11 +19,15 @@ public class ConfirmAddChannelHandler : IStateHandler
 {
     private readonly ChannelService _channelService;
     private readonly UserService _userService;
+    private readonly InternalSheetsService _sheetsService;
+    private readonly HandlersManager _handlersManager;
 
-    public ConfirmAddChannelHandler(ChannelService channelService, UserService userService)
+    public ConfirmAddChannelHandler(ChannelService channelService, UserService userService, InternalSheetsService sheetsService, HandlersManager handlersManager)
     {
         _channelService = channelService;
         _userService = userService;
+        _sheetsService = sheetsService;
+        _handlersManager = handlersManager;
     }
 
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -50,8 +56,6 @@ public class ConfirmAddChannelHandler : IStateHandler
       
        // Если канал уже существовал, проверяем Alias
        await CheckChannelAlias(botClient, existChannel, message.From.Id, message, cancellationToken);
-       state.Clear();
-       await _userService.SetUserState(state, cancellationToken);
     }
 
 
@@ -112,15 +116,43 @@ public class ConfirmAddChannelHandler : IStateHandler
     {
         var userState =  await _userService.GetUserState(message.From!.Id, cancellationToken);
         var existChannel = await _channelService.ActivateRemovedChannel(message!.From!.Id, message!.ForwardFromChat!.Id);
+        if (!await _sheetsService.CheckIfSheetExists(userState.UserId, existChannel.Id))
+            await _sheetsService.CreateSheet(existChannel.Id, existChannel.Title, message.From?.Username ?? "stat", userState.UserId);
+        
         var msgText = !string.IsNullOrEmpty(existChannel.Alias)
             ?  MessageTemplate.ChannelRestoredMessage(existChannel.Alias)
             : MessageTemplate.ChannelRestoredNeedAlias;
+        
         var msg = await botClient.SendTextMessageAsync(message.From.Id, msgText, cancellationToken: cancellationToken);
+        
         if (string.IsNullOrEmpty(existChannel.Alias))
         {
-            await ToCreateAliasState(message, existChannel, msg.MessageId,userState, cancellationToken);
+            await ToCreateAliasState(message, existChannel, msg.MessageId,userState, cancellationToken); 
         }
-
+        else if(existChannel.ChannelChatId == null)
+        {
+            var yesData = await _handlersManager.ToCallback(new AddChannelChatDirectlyCallbackData
+            {
+                ChannelId = existChannel.Id,
+                Add = true,
+                RequestFirstPost = false
+            });
+            
+            var noData = await _handlersManager.ToCallback(new AddChannelChatDirectlyCallbackData
+            {
+                ChannelId = existChannel.Id,
+                Add = false,
+                RequestFirstPost = false
+            });
+            var keyboard = new InlineKeyboardMarkup(new List<InlineKeyboardButton>()
+            {
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Yes, yesData),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.No, noData)
+            });
+            
+            await botClient.SendTextMessageAsync(message.From.Id, MessageTemplate.AddChannelChatText, replyMarkup:keyboard, cancellationToken: cancellationToken);
+        }
+    
         return existChannel;
     }
 
@@ -128,15 +160,14 @@ public class ConfirmAddChannelHandler : IStateHandler
     {
         var adminsList = await _userService.GetOrCreateAdminUsers(admins, cancellationToken);
      
-        var channel = await _channelService.CreateOrUpdateChannel(message!.ForwardFromChat!, adminsList, existChannel, cancellationToken);
-       
-        //TODO
-        // await _sheetsService.CreateSheet(
-        //     channel.Id,
-        //     channel.Title,
-        //     requesterUsername,
-        //     userId
-        // );
+        var channel = await _channelService.CreateOrUpdateChannel(message!.ForwardFromChat!.Id, message.ForwardFromChat.Title, adminsList, existChannel, cancellationToken);
+        
+         await _sheetsService.CreateSheet(
+             channel.Id,
+             channel.Title,
+             message.From?.Username ?? "stat",
+             message.From.Id
+         );
         return channel;
     }
 

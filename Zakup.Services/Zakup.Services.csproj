@@ -18,6 +18,16 @@
       <PackageReference Include="Google.Apis.Sheets.v4" Version="1.69.0.3785" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
       <PackageReference Include="Minio" Version="6.0.4" />
+      <PackageReference Include="Mono.TextTemplating" Version="3.0.0" />
+      <PackageReference Include="Quartz" Version="3.14.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Models\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Models\AdPost.cs" />
     </ItemGroup>
 
 </Project>

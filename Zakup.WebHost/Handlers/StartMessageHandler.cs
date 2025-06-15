@@ -85,8 +85,9 @@ public class StartMessageHandler : IUpdatesHandler
                 replyMarkup: keyBoard, cancellationToken: cancellationToken);
             
             user.UserState.MenuMessageId = msg.MessageId;
+            user.UserState.State = UserStateType.ConfirmAddChannel;
             await _userService.SetUserState(user.Id, user.UserState, cancellationToken);
-            //await ProceedToNextState(BotFlows.RECEVIER_CHANNEL_MESSAGE, msg.MessageId);
+            
             
             
         }

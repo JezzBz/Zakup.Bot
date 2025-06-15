@@ -54,4 +54,15 @@ public static class CommandsHelper
         }
         return text;
     }
+
+    public static int WordsCount(string? input)
+    {
+        if (input is null)
+        {
+            return 0;
+        }
+        
+        char[] delimiters = new char[] {' ', '\r', '\n', '\t'};
+        return input.Split(delimiters,StringSplitOptions.RemoveEmptyEntries).Length;
+    }
 }

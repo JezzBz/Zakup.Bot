@@ -1,7 +1,10 @@
-
 using Amazon.S3;
+using app.Services.Handlers;
+using app.Services.Handlers.Chat;
 using Bot.Core;
 using Bot.Core.Extensions;
+using Google.Apis.Drive.v3;
+using Google.Apis.Sheets.v4;
 using Microsoft.EntityFrameworkCore;
 using Minio;
 using NLog.Web;
@@ -16,6 +19,8 @@ using Zakup.WebHost.Handlers.Inline;
 using Zakup.WebHost.Handlers.MessageHandlers;
 using Zakup.WebHost.Handlers.SystemHandlers;
 using Zakup.WebHost.Helpers;
+using Zakup.WebHost.Services;
+using Zakup.WebHost.Handlers.CallbackHandlers.Admin;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,12 +50,17 @@ builder.Services.AddTelegramBot(builder.Configuration["Telegram:BotToken"]!, con
     });
    
    
-    //config.AddHandler<TestHandler>();
+    config.AddHandler<TestHandler>();
+    config.AddHandler<CommentsHandler>();
+    config.AddHandler<JoinRequestHandler>();
+    config.AddHandler<ChatMemberHandler>();
+    config.AddHandler<BotChatMemberHandler>();
     config.AddHandler<StartMessageHandler>();
     config.AddHandler<InlineQueryHandler>();
     config.AddHandler<InlineResultHandler>();
     config.AddHandler<MessageHandler>();
     config.AddHandler<CallbackHandler>();
+ 
     config.AddHandler<MediaGroupUploadHandler>();
     
     config.WithPreHandler<PreHandler>();
@@ -88,11 +98,15 @@ builder.Services.AddScoped<FileStorageService>();
 builder.Services.AddScoped<DocumentsStorageService>();
 builder.Services.AddScoped<AdPostsService>();
 builder.Services.AddScoped<IBigCallbackDataService, BigCallbackDataService>();
+builder.Services.AddScoped<ZakupMessageService>();
+builder.Services.AddScoped<StatisticsService>();
+builder.ConfigureSheetsServices();
+
 
 #endregion
 
 builder.Services.AddHostedService<AbstractWorker<TelegramBotWorker>>();
-
+builder.ConfigureQuartz();
 var app = builder.Build();
 
 

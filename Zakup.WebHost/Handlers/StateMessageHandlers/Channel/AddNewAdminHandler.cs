@@ -16,12 +16,13 @@ public class AddNewAdminHandler : IStateHandler
 {
     private readonly UserService _userService;
     private readonly ChannelService _channelService;
+    private readonly InternalSheetsService _sheetsService;
     
-    
-    public AddNewAdminHandler(UserService userService, ChannelService channelService)
+    public AddNewAdminHandler(UserService userService, ChannelService channelService, InternalSheetsService internalSheetsService)
     {
         _userService = userService;
         _channelService = channelService;
+        _sheetsService = internalSheetsService;
     }
 
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -55,7 +56,17 @@ public class AddNewAdminHandler : IStateHandler
         await _channelService.MakeAdmin(channelId, potentialAdminId, cancellationToken);
         
         await botClient.SendTextMessageAsync(message.From.Id, MessageTemplate.AdminCreated, cancellationToken: cancellationToken);
-        //TODO: добавить таблицы
+        var sheetExists = await _sheetsService.CheckIfSheetExists(potentialAdminId, channelId);
+        if (!sheetExists)
+        {
+            // Создаем новый лист для канала в таблице, принадлежащей данному администратору
+            await _sheetsService.CreateSheet(
+                channelId,
+                channel.Title,
+                potentialAdminUser.UserName ?? "stat",
+                potentialAdminId
+            );
+        }
         state.Clear();
         await _userService.SetUserState(state, cancellationToken);
     }
