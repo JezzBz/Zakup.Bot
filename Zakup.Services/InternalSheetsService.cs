@@ -96,6 +96,8 @@ public class InternalSheetsService
 
     private async Task UpdateInviteLinksForSheet(ChannelSheet sheet)
     {
+        if (!await EnsureSheetExists(sheet)) return;
+
         var clearRequest = CreateClearRequest(sheet.Id);
         var inviteLinks = await GetInviteLinksForChannel(sheet.ChannelId);
         var updateRequests = CreateUpdateRequests(sheet.Id, inviteLinks);
@@ -226,9 +228,93 @@ public class InternalSheetsService
             getRequest.IncludeGridData = true;
             return await getRequest.ExecuteAsync();
         }
+        catch (GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _logger.LogWarning("Spreadsheet {SpreadsheetId} не найден, восстанавливаю...", spreadsheetId);
+            return await RestoreSpreadsheet(spreadsheetId);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching spreadsheet {SpreadsheetId}", spreadsheetId);
+            return null;
+        }
+    }
+
+    private async Task<bool> EnsureSheetExists(ChannelSheet sheet)
+    {
+        try
+        {
+            var spreadsheet = await GetSpreadsheet(sheet.SpreadSheetId);
+            if (spreadsheet == null) return false;
+
+            // Проверяем, существует ли лист в таблице
+            var sheetExists = spreadsheet.Sheets.Any(s => s.Properties.SheetId == sheet.Id);
+            if (sheetExists) return true;
+
+            _logger.LogWarning("Sheet {SheetId} не найден в таблице {SpreadsheetId}, восстанавливаю...", 
+                sheet.Id, sheet.SpreadSheetId);
+
+            // Создаем новый лист
+            var newSheet = await CreateSheetInSpreadsheet(sheet.SpreadSheetId, sheet.Channel.Title);
+            sheet.Id = newSheet.Replies.First().AddSheet!.Properties!.SheetId!.Value;
+            
+            // Добавляем заголовки
+            await AppendRow(sheet.SpreadSheet.UserId, sheet.ChannelId, GetDefaultHeaders());
+            
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to restore sheet {SheetId} in spreadsheet {SpreadsheetId}", 
+                sheet.Id, sheet.SpreadSheetId);
+            return false;
+        }
+    }
+
+    private async Task<Spreadsheet> RestoreSpreadsheet(string spreadsheetId)
+    {
+        try
+        {
+            // Получаем информацию о таблице из БД
+            var spreadSheetEntity = await _context.SpreadSheets
+                .FirstOrDefaultAsync(s => s.Id == spreadsheetId);
+
+            if (spreadSheetEntity == null)
+            {
+                _logger.LogError("Spreadsheet {SpreadsheetId} not found in database", spreadsheetId);
+                return null;
+            }
+
+            // Получаем все листы, связанные с этой таблицей
+            var channelSheets = await _context.ChannelSheets
+                .Include(cs => cs.Channel)
+                .Where(cs => cs.SpreadSheetId == spreadsheetId)
+                .ToListAsync();
+
+            // Создаем новую таблицу
+            var newSpreadsheet = await CreateNewSpreadsheet(spreadSheetEntity.UserId.ToString());
+            
+            // Обновляем ID в БД
+            spreadSheetEntity.Id = newSpreadsheet.SpreadsheetId;
+            await _context.SaveChangesAsync();
+
+            // Восстанавливаем все листы
+            foreach (var channelSheet in channelSheets)
+            {
+                var sheet = await CreateSheetInSpreadsheet(newSpreadsheet.SpreadsheetId, channelSheet.Channel.Title);
+                channelSheet.Id = sheet.Replies.First().AddSheet!.Properties!.SheetId!.Value;
+                
+                // Добавляем заголовки
+                await AppendRow(channelSheet.SpreadSheet.UserId, channelSheet.ChannelId, GetDefaultHeaders());
+            }
+
+            await _context.SaveChangesAsync();
+            return newSpreadsheet;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to restore spreadsheet {SpreadsheetId}", spreadsheetId);
             return null;
         }
     }
@@ -658,6 +744,8 @@ public class InternalSheetsService
             if (sheetEntity == null) return;
         }
 
+        if (!await EnsureSheetExists(sheetEntity)) return;
+
         var data = new ValueRange
         {
             Values = new List<IList<object>> { cells }
@@ -685,6 +773,8 @@ public class InternalSheetsService
             _logger.LogWarning("SheetEntity not found for user {UserId} and channel {ChannelId}", userId, channelId);
             return;
         }
+
+        if (!await EnsureSheetExists(sheetEntity)) return;
 
         var headerRow = await GetHeaderRow(sheetEntity);
         if (headerRow == null) return;
@@ -790,6 +880,8 @@ public class InternalSheetsService
 
     private async Task UpdateCreativeTitlesForSheet(ChannelSheet sheet)
     {
+        if (!await EnsureSheetExists(sheet)) return;
+
         var range = $"{sheet.Channel.Title}!A2:O";
         ValueRange response;
 
