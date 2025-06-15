@@ -3,6 +3,8 @@ using app.Services.Handlers;
 using app.Services.Handlers.Chat;
 using Bot.Core;
 using Bot.Core.Extensions;
+using Google.Apis.Drive.v3;
+using Google.Apis.Sheets.v4;
 using Microsoft.EntityFrameworkCore;
 using Minio;
 using NLog.Web;
@@ -95,7 +97,7 @@ builder.Services.AddScoped<AdPostsService>();
 builder.Services.AddScoped<IBigCallbackDataService, BigCallbackDataService>();
 builder.Services.AddScoped<ZakupMessageService>();
 builder.Services.AddScoped<StatisticsService>();
-
+builder.ConfigureSheetsServices();
 
 
 #endregion

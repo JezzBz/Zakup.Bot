@@ -320,3 +320,5 @@ C:\Rekla\rekla\Zakup.WebHost\obj\Debug\net9.0\refint\Zakup.WebHost.dll
 C:\Rekla\rekla\Zakup.WebHost\obj\Debug\net9.0\Zakup.WebHost.pdb
 C:\Rekla\rekla\Zakup.WebHost\obj\Debug\net9.0\Zakup.WebHost.genruntimeconfig.cache
 C:\Rekla\rekla\Zakup.WebHost\obj\Debug\net9.0\ref\Zakup.WebHost.dll
+C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.WebHost\bin\Debug\net9.0\sheetsCredentials.json
+C:\Users\Bogdan\RiderProjects\ZakupBot\Zakup.WebHost\bin\Debug\net9.0\sheetsCredentials2.json

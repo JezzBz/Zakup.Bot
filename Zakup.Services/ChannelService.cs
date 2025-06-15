@@ -56,10 +56,6 @@ public class ChannelService
             existChannel.HasDeleted = false;
             _context.Update(existChannel);
             await _context.SaveChangesAsync();
-            
-            //TODO
-            //if (!await CheckIfSheetExists(userId, existChannel.Id))
-                //await sheetsService.CreateSheet(existChannel.Id, existChannel.Title, userMessage.From?.Username ?? "stat", State.UserId);
         }
 
         return existChannel;

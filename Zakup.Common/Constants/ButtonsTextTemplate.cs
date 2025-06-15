@@ -17,6 +17,7 @@ public static class ButtonsTextTemplate
     public const string Skip = "Пропустить ➡️";
     public const string Free = "Бесплатно ➡️";
     public const string Continue = "Продолжить ➡️";
+    public const string RefreshData = "♻️Обновить данные";
 
     public const string Menu = "↩️ Меню";
     public const string Yes = "Да";

@@ -153,7 +153,8 @@ public static class BotClientExtensions
             throw;
         }
     }
-    //TODO: зарефакторить нормально
+    
+    
     public static async ValueTask<Message> SendAdPostAsync(this ITelegramBotClient botClient, TelegramAdPost adPost,
         long targetChatId, DocumentsStorageService storageService, CancellationToken cancellationToken = default)
     {

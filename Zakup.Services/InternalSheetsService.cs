@@ -83,6 +83,16 @@ public class InternalSheetsService
             await UpdateInviteLinksForSheet(sheet);
         }
     }
+    
+    public async Task<bool> CheckIfSheetExists(long userId, long channelId)
+    {
+        // Проверяем, есть ли запись, связывающая канал, лист и таблицу пользователя
+        var sheetExists = await _context.ChannelSheets
+            .Include(s => s.SpreadSheet)
+            .Include(s => s.Channel)
+            .AnyAsync(s => s.ChannelId == channelId && s.SpreadSheet.UserId == userId);
+        return sheetExists;
+    }
 
     private async Task UpdateInviteLinksForSheet(ChannelSheet sheet)
     {
@@ -332,6 +342,11 @@ public class InternalSheetsService
         }
     }
 
+    public async Task<UserSpreadSheet?> GetUserSheet(long userId)
+    {
+        return await _context.SpreadSheets.FirstOrDefaultAsync(s => s.UserId == userId);
+    }
+    
     public async Task FixSheetColumns()
     {
         var sheets = await _context.ChannelSheets.ToListAsync();

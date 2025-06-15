@@ -63,5 +63,6 @@ public enum CallbackType
     AdminCustom,
     AdminBroadcast,
     AdminConfirmMute,
-    AdminScamConfirm
+    AdminScamConfirm,
+    RefreshGoogleSheets
 }

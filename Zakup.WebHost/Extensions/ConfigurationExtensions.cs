@@ -1,8 +1,13 @@
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
+using Google.Apis.Sheets.v4;
 using Microsoft.EntityFrameworkCore;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using Npgsql;
 using Quartz;
+using Zakup.Services;
 using Zakup.WebHost.Jobs;
 
 namespace Zakup.WebHost.Extensions;
@@ -104,6 +109,50 @@ public static class ConfigurationExtensions
                 .WithDescription("Send daily subscriber report at 9:00 AM Moscow time")
             );
         });
+        
+        return builder;
+    }
+
+    public static WebApplicationBuilder ConfigureSheetsServices(this WebApplicationBuilder builder)
+    {
+        GoogleCredential driveCredentials;
+        GoogleCredential sheetsCredentials;
+        using (var credentialsStream = new FileStream("sheetsCredentials.json", FileMode.Open, FileAccess.Read))
+        {
+            sheetsCredentials = GoogleCredential.FromStream(credentialsStream)
+                .CreateScoped(SheetsService.ScopeConstants.Spreadsheets);
+        }
+        
+        using (var credentialsStream = new FileStream("sheetsCredentials.json", FileMode.Open, FileAccess.Read))
+        {
+            driveCredentials = GoogleCredential.FromStream(credentialsStream)
+                .CreateScoped(DriveService.ScopeConstants.Drive);
+        }
+        
+
+        if (sheetsCredentials is null)
+        {
+            throw new NullReferenceException(nameof(sheetsCredentials));
+        }
+        
+        if (driveCredentials is null)
+        {
+            throw new NullReferenceException(nameof(driveCredentials));
+        }
+
+        builder.Services.AddScoped<DriveService>(x => new DriveService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = driveCredentials,
+            ApplicationName = "Zakup_Robot_Drive",
+        }));
+        
+        builder.Services.AddScoped<SheetsService>(x => new SheetsService(new BaseClientService.Initializer()
+        {
+            HttpClientInitializer = sheetsCredentials,
+            ApplicationName = "Zakup_Robot",
+        }));
+
+        builder.Services.AddScoped<InternalSheetsService>();
         
         return builder;
     }

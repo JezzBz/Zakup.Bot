@@ -13,6 +13,7 @@
           "Google.Apis.Sheets.v4": "1.69.0.3785",
           "Microsoft.EntityFrameworkCore": "9.0.4",
           "Minio": "6.0.4",
+          "Mono.TextTemplating": "3.0.0",
           "Quartz": "3.14.0",
           "Zakup.Common": "1.0.0",
           "Zakup.Entities": "1.0.0",
@@ -257,6 +258,17 @@
           "lib/net8.0/Minio.dll": {
             "assemblyVersion": "6.0.4.0",
             "fileVersion": "6.0.4.0"
+          }
+        }
+      },
+      "Mono.TextTemplating/3.0.0": {
+        "dependencies": {
+          "System.CodeDom": "7.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/Mono.TextTemplating.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.0.0.1"
           }
         }
       },
@@ -565,6 +577,13 @@
       "sha512": "sha512-JckRL95hQ/eDHTQZ/BB7jeR0JyF+bOctMW6uriXHY5YPjCX61hiJGsswGjuDSEViKJEPxtPi3e4IwD/1TJ7PIw==",
       "path": "minio/6.0.4",
       "hashPath": "minio.6.0.4.nupkg.sha512"
+    },
+    "Mono.TextTemplating/3.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-YqueG52R/Xej4VVbKuRIodjiAhV0HR/XVbLbNrJhCZnzjnSjgMJ/dCdV0akQQxavX6hp/LC6rqLGLcXeQYU7XA==",
+      "path": "mono.texttemplating/3.0.0",
+      "hashPath": "mono.texttemplating.3.0.0.nupkg.sha512"
     },
     "Newtonsoft.Json/13.0.3": {
       "type": "package",

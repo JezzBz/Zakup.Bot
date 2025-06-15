@@ -15,7 +15,6 @@ using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.SystemHandlers;
 
-//TODO:fix files
 public class InlineQueryHandler : IUpdatesHandler
 {
     private readonly ApplicationDbContext _dataContext;

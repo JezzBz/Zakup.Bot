@@ -16,22 +16,26 @@ namespace Zakup.WebHost.Handlers.MessageHandlers.CallbackHandlers.AdPosts;
 public class CreateFirstPostCallbackHandler : ICallbackHandler<FirstAdPostCallbackData>
 {
     private readonly UserService _userService;
-
-    public CreateFirstPostCallbackHandler(UserService userService)
+    private readonly MessagesService _messagesService;
+    public CreateFirstPostCallbackHandler(UserService userService, MessagesService messagesService)
     {
         _userService = userService;
+        _messagesService = messagesService;
     }
 
     public async Task Handle(ITelegramBotClient botClient, FirstAdPostCallbackData data, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
+        var user = await _userService.GetUser(callbackQuery.From.Id, cancellationToken);
         if (!data.Create)
         {
+            await botClient.SafeDelete(callbackQuery.From.Id, callbackQuery.Message.MessageId, cancellationToken);
             await botClient.SendTextMessageAsync(
                 callbackQuery.From.Id,
                 MessageTemplate.FirstPostDecline,
                 parseMode: ParseMode.MarkdownV2,
                 cancellationToken: cancellationToken);
+            await _messagesService.SendMenu(botClient, user, cancellationToken);
             return;
         }
         

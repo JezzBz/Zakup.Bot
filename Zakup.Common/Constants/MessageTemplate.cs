@@ -78,6 +78,8 @@ public static class MessageTemplate
     public const string MarkedAsScam = "Канал отмечен как мошеннический!";
     public const string UserUnMuted = "Пользователь размучен!";
     public const string ChannelScamRemoved = "Метка скама снята!";
+    public const string SheetNotExist = "У вас нет Гугл Таблицы. Попробуйте добавить канал или обратитесь к @gandalfTG.";
+    public static string GoogleSheetsText(string sheetId) =>$"*♻️ ДЛЯ ОБНОВЛЕНИЯ ДАННЫХ НАЖМИТЕ НА КНОПКУ НИЖЕ*\n\nВот ваша таблица: [Перейти](https://docs.google.com/spreadsheets/d/{sheetId})";
 
     public static string MuteRequestConfirm(string userName) => $"Вы уверены, что хотите замутить пользователя [{userName}] и очистить историю его оценок?";
 
@@ -114,6 +116,7 @@ public static class MessageTemplate
     public static string ChannelRestoredMessage(string alias) => $"Канал восстановлен! Метка: {alias}";
 
     public const string ChannelRestoredNeedAlias = "Канал восстановлен! Теперь введите метку (одно слово)";
+    public const string DataRefreshed = "Данные обновлены";
 
     public const string AddChannelAliasRequest = "Теперь напишите метку канала (любое одно слово)";
 
