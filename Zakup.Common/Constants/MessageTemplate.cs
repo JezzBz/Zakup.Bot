@@ -86,6 +86,9 @@ public static class MessageTemplate
     public const string SheetNotExist = "У вас нет Гугл Таблицы. Попробуйте добавить канал или обратитесь к @gandalfTG.";
     public const string AddChannelChatText = "Добавьте меня в качестве администратора в чат вашего канала, чтобы я мог отслеживать статистику по комментаторам.";
     public const string AddedChannelChat = "Успешно добавлен чат канала";
+    public const string AnalyzePointsBuyText = "Для покупки запросов обратитесь к @gandalfTG";
+    public const string AnalyzeChannelStart = "Пришлите мне канал в формате @durov для начала поиска";
+    public const string AnalyzeBalanceError = $"У вас закончились запросы. {AnalyzePointsBuyText}";
 
     public static string GoogleSheetsText(string sheetId) =>$"*♻️ ДЛЯ ОБНОВЛЕНИЯ ДАННЫХ НАЖМИТЕ НА КНОПКУ НИЖЕ*\n\nВот ваша таблица: [Перейти](https://docs.google.com/spreadsheets/d/{sheetId})";
 
@@ -177,6 +180,8 @@ public static class MessageTemplate
     private const string PdpVerificationResult =
         "Сверка завершена: из {0} вступивших, {1} ({2}%) являются подписчиками канала.";
 
+    public static string AnalyzeMenuText(long points) => $"Поиск похожих каналов, вам доступно {points}!";
+    
     public static string PdpVerificationResultMessage(long total, long verifiedCount, double percentage)
     {
         return string.Format(PdpVerificationResult,total,verifiedCount,$"{percentage:F2}");
@@ -294,6 +299,17 @@ public static class MessageTemplate
 
     public static string UserMuted(long userId, long feedbacksCount) =>
         $"Пользователь [{userId}] замучен! Удалено {feedbacksCount} отзывов.";
+
+    public static string AnalyzeProcessStarted(Guid id) => $"Запускаю процесс поиска похожих каналов." +
+                                                           $"\n" +
+                                                           $"Уникальный идентификатор поиска: {id} " +
+                                                           $"\n" +
+                                                           $"\n" +
+                                                           $"По окончанию поиска вы получите excel таблицу с результатом поиска" +
+                                                           $"\n " +
+                                                           $"Ввиду ограничений telegram, не каждый канал может быть проанализирован " +
+                                                           $"\n" +
+                                                           $"Если анализ не удастся, мы вернём вам поинт на баланс поиска!";
 }
 
 public  class HelpMessageTemplate

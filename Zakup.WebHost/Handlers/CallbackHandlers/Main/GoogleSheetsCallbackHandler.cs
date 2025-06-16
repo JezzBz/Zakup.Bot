@@ -3,6 +3,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
+using Zakup.Common;
 using Zakup.Common.DTO;
 using Zakup.Common.Enums;
 using Zakup.Services;
@@ -13,7 +14,7 @@ using Zakup.WebHost.Helpers;
 namespace Zakup.WebHost.Handlers.CallbackHandlers.Main;
 
 [CallbackType(CallbackType.GoogleSheets)]
-public class GoogleSheetsCallbackHandler : ICallbackHandler<EmptyCallbackData>
+public class GoogleSheetsCallbackHandler : IEmptyCallbackHandler
 {
     private readonly InternalSheetsService _sheetsService;
 

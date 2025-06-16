@@ -1,6 +1,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Zakup.Abstractions.Handlers;
+using Zakup.Common;
 using Zakup.Common.DTO;
 using Zakup.Common.Enums;
 using Zakup.Services;
@@ -9,7 +10,7 @@ using Zakup.WebHost.Helpers;
 namespace Zakup.WebHost.Handlers.CallbackHandlers.Admin;
 
 [CallbackType(CallbackType.AdminCustom)]
-public class AdminCustomCallbackHandler : ICallbackHandler<EmptyCallbackData>
+public class AdminCustomCallbackHandler : IEmptyCallbackHandler
 {
     private readonly InternalSheetsService _sheetsService;
 

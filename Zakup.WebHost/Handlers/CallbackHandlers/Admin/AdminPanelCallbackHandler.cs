@@ -35,7 +35,6 @@ public class AdminPanelCallbackHandler : ICallbackHandler<AdminPanelCallbackData
             new[]
             {
                 InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Custom, ((int)CallbackType.AdminCustom).ToString()),
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.SimilarChannels, ((int)CallbackType.AdminCustom).ToString()),
             }
         });
 

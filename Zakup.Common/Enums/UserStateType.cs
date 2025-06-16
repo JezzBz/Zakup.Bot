@@ -21,4 +21,5 @@ public enum UserStateType
     AdminScam,
     AdminUnscam,
     AdminDelete,
+    InitializeSimilarChannelAnalyze
 }

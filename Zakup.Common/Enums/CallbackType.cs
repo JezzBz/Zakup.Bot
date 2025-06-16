@@ -67,5 +67,8 @@ public enum CallbackType
     AdminScamConfirm,
     RefreshGoogleSheets,
     AddChannelChatDirectly,
-    AddChannelDirectly
+    AddChannelDirectly,
+    AnalyzeMenu,
+    AnalyzeBuyPoints,
+    AnalyzeInit
 }

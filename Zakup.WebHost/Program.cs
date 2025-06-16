@@ -92,6 +92,7 @@ builder.Services.AddSingleton<HandlersManager>();
 builder.Services.AddSingleton<MetadataStorage>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<MessagesService>();
+builder.Services.AddScoped<AnalyzeService>();
 builder.Services.AddScoped<ZakupService>();
 builder.Services.AddScoped<ChannelService>();
 builder.Services.AddScoped<FileStorageService>();
@@ -100,14 +101,19 @@ builder.Services.AddScoped<AdPostsService>();
 builder.Services.AddScoped<IBigCallbackDataService, BigCallbackDataService>();
 builder.Services.AddScoped<ZakupMessageService>();
 builder.Services.AddScoped<StatisticsService>();
+builder.Services.AddHttpClient<AnalyzeService>();
 builder.ConfigureSheetsServices();
 
 
 #endregion
 
+builder.Services.AddRouting();
+builder.Services.AddMvc();
+builder.Services.AddControllers();
+
 builder.Services.AddHostedService<AbstractWorker<TelegramBotWorker>>();
 builder.ConfigureQuartz();
 var app = builder.Build();
 
-
+app.MapControllers();
 app.Run();

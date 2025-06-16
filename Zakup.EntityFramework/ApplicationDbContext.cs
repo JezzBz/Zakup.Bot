@@ -24,6 +24,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     
     public DbSet<TelegramChannel?> Channels { get; set; }
     
+    public DbSet<ChannelsAnalyzeProcess?> AnalyzeProcesses { get; set; }
+    
+    public DbSet<AnalyzePointsBalance?> AnalyzeBalances { get; set; }
+    
     public DbSet<BigCallbackData> BigCallbackData { get; set; }
     
     public DbSet<TelegramAdPost> TelegramAdPosts { get; set; }

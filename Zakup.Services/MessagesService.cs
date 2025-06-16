@@ -62,7 +62,8 @@ public class MessagesService
             new List<InlineKeyboardButton>
             {
                 InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.GoogleSheets, ((int)CallbackType.GoogleSheets).ToString()),
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Help, ((int)CallbackType.Help).ToString())
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Help, ((int)CallbackType.Help).ToString()),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.SimilarChannels, ((int)CallbackType.AnalyzeMenu).ToString())
             }
         };
 

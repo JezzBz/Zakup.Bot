@@ -2,6 +2,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
+using Zakup.Common;
 using Zakup.Common.DTO;
 using Zakup.Common.Enums;
 using Zakup.Services.Extensions;
@@ -11,7 +12,7 @@ using Zakup.WebHost.Helpers;
 namespace Zakup.WebHost.Handlers.MessageHandlers.CallbackHandlers.Main;
 
 [CallbackType(CallbackType.Help)]
-public class HelpCallbackHandler : ICallbackHandler<EmptyCallbackData>
+public class HelpCallbackHandler : IEmptyCallbackHandler
 {
     private readonly HandlersManager _handlersManager;
 

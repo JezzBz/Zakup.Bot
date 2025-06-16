@@ -53,7 +53,9 @@ public static class ButtonsTextTemplate
     public const string MarkAsPaid = "✅ Оплачено";
     public const string Edit = "️⚙️Изменить";
     public const string Approve = "️ПОДТВЕРДИТЬ";
-
+    public const string SimilarChannels = "Похожие каналы";
+    
+    
     // Admin panel buttons
     public const string Broadcast = "Рассылка";
     public const string Mute = "Мут на оценки";
@@ -61,5 +63,8 @@ public static class ButtonsTextTemplate
     public const string Unmute = "Размут";
     public const string Unscam = "Снять скам";
     public const string Custom = "Custom";
-    public const string SimilarChannels = "Похожие каналы";
+
+    //Analyze panel buttons
+    public const string BuyPoints = "Купить запросы";
+    public const string AnalyzeStart = "Начать поиск";
 }

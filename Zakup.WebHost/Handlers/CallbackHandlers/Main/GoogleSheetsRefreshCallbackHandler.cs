@@ -1,6 +1,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Zakup.Abstractions.Handlers;
+using Zakup.Common;
 using Zakup.Common.DTO;
 using Zakup.Common.Enums;
 using Zakup.Services;
@@ -10,7 +11,7 @@ using Zakup.WebHost.Helpers;
 namespace Zakup.WebHost.Handlers.MessageHandlers.CallbackHandlers.Main;
 
 [CallbackType(CallbackType.RefreshGoogleSheets)]
-public class GoogleSheetsRefreshCallbackHandler : ICallbackHandler<EmptyCallbackData>
+public class GoogleSheetsRefreshCallbackHandler : IEmptyCallbackHandler
 {
     private readonly InternalSheetsService _sheetsService;
 
