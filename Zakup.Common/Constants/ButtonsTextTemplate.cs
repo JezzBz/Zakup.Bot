@@ -67,4 +67,5 @@ public static class ButtonsTextTemplate
     //Analyze panel buttons
     public const string BuyPoints = "Купить запросы";
     public const string AnalyzeStart = "Начать поиск";
+    public const string UpdatePoints = "Изменить баланс поиска";
 }

@@ -70,5 +70,6 @@ public enum CallbackType
     AddChannelDirectly,
     AnalyzeMenu,
     AnalyzeBuyPoints,
-    AnalyzeInit
+    AnalyzeInit,
+    AdminAddAnalyzePoints
 }

@@ -90,6 +90,10 @@ public static class MessageTemplate
     public const string AnalyzeChannelStart = "Пришлите мне канал в формате @durov для начала поиска";
     public const string AnalyzeBalanceError = $"У вас закончились запросы. {AnalyzePointsBuyText}";
     public const string BadChannelNickname = "Не понял вас, отправьте никнейм канала, к примеру @easyzakup";
+    public const string ForwardBalabceMessage = "Перешилте сообщение от человека, которому нужно начислить баланс";
+    public const string AdminBalanceBadForward = "Не удалось получить пользователя, перешлите сообщение от него";
+    public const string ReceivePointForBalance = "Отправьте количество поинтов, которое нужно начислить пользователю";
+    public const string AdminBadBalanceValue = "Не смог прочитать значение, отправьте количество поинтов целым числом";
 
     public static string? AnalyzeSuccess(Guid id)  => $"Анализ по вашему запросу {id} готов!" ;
 
@@ -314,6 +318,10 @@ public static class MessageTemplate
                                                            $"Ввиду ограничений telegram, не каждый канал может быть проанализирован " +
                                                            $"\n" +
                                                            $"Если анализ не удастся, мы вернём вам поинт на баланс поиска!";
+
+    public static string BalanceUpdated(long newBalance) =>
+        $"Баланс пользователя обновлён, теперь у него {newBalance} поинтов";
+
 }
 
 public  class HelpMessageTemplate

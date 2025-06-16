@@ -135,4 +135,20 @@ public class AnalyzeService
         await _context.SaveChangesAsync();
         return process;
     }
+
+    public async Task<long> UpdateBalance(long userId, long points, CancellationToken cancellationToken = default)
+    {
+        var balance = await _context.AnalyzeBalances.FirstOrDefaultAsync(q => q.UserId == userId, cancellationToken: cancellationToken);
+        if (balance == null)
+        {
+            balance = await CreateBalance(userId, cancellationToken);
+            balance.Balance += points;
+            await _context.SaveChangesAsync(cancellationToken);
+            return points;
+        }
+        
+        balance.Balance += points;
+        await _context.SaveChangesAsync(cancellationToken);
+        return balance.Balance;
+    }
 }
