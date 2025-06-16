@@ -6,6 +6,7 @@ using Zakup.Common;
 using Zakup.Common.DTO;
 using Zakup.Common.Enums;
 using Zakup.Services;
+using Zakup.Services.Extensions;
 using Zakup.WebHost.Constants;
 using Zakup.WebHost.Helpers;
 
@@ -41,5 +42,7 @@ public class AnalyzeMenuCallbackHandler : IEmptyCallbackHandler
         }
         
         var markUp = new InlineKeyboardMarkup(keyboard);
+
+        await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId, messageText, replyMarkup: markUp, cancellationToken: cancellationToken);
     }
 }

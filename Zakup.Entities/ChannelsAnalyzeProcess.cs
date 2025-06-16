@@ -9,4 +9,6 @@ public class ChannelsAnalyzeProcess
     public long UserId { get; set; }
     
     public TelegramUser User { get; set; }
+    
+    public bool? Success { get; set; }
 }

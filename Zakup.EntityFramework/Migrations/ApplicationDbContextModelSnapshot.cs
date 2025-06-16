@@ -44,6 +44,24 @@ namespace Zakup.EntityFramework.Migrations
                     b.ToTable("TelegramDocuments");
                 });
 
+            modelBuilder.Entity("Zakup.Entities.AnalyzePointsBalance", b =>
+                {
+                    b.Property<long>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("UserId"));
+
+                    b.Property<long>("Balance")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("AnalyzeBalances");
+                });
+
             modelBuilder.Entity("Zakup.Entities.BigCallbackData", b =>
                 {
                     b.Property<long>("Id")
@@ -251,6 +269,29 @@ namespace Zakup.EntityFramework.Migrations
                     b.HasIndex("SpreadSheetId");
 
                     b.ToTable("ChannelSheets");
+                });
+
+            modelBuilder.Entity("Zakup.Entities.ChannelsAnalyzeProcess", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AnalyzeTarget")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool?>("Success")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AnalyzeProcesses");
                 });
 
             modelBuilder.Entity("Zakup.Entities.FileMediaGroup", b =>
@@ -613,6 +654,17 @@ namespace Zakup.EntityFramework.Migrations
                     b.Navigation("Channel");
 
                     b.Navigation("SpreadSheet");
+                });
+
+            modelBuilder.Entity("Zakup.Entities.ChannelsAnalyzeProcess", b =>
+                {
+                    b.HasOne("Zakup.Entities.TelegramUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Zakup.Entities.FileMediaGroup", b =>

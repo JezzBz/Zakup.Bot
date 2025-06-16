@@ -13,6 +13,19 @@ namespace Zakup.EntityFramework.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AnalyzeBalances",
+                columns: table => new
+                {
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Balance = table.Column<long>(type: "bigint", nullable: false, defaultValue: 0L)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AnalyzeBalances", x => x.UserId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "BigCallbackData",
                 columns: table => new
                 {
@@ -280,6 +293,20 @@ namespace Zakup.EntityFramework.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AnalyzeProcesses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    AnalyzeTarget = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    Success = table.Column<bool>(type: "boolean", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AnalyzeProcesses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ChannelAdministrators",
                 columns: table => new
                 {
@@ -386,6 +413,11 @@ namespace Zakup.EntityFramework.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AnalyzeProcesses_UserId",
+                table: "AnalyzeProcesses",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ChannelAdministrators_UsersId",
                 table: "ChannelAdministrators",
                 column: "UsersId");
@@ -476,6 +508,14 @@ namespace Zakup.EntityFramework.Migrations
                 column: "ZakupId");
 
             migrationBuilder.AddForeignKey(
+                name: "FK_AnalyzeProcesses_Users_UserId",
+                table: "AnalyzeProcesses",
+                column: "UserId",
+                principalTable: "Users",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_ChannelAdministrators_Users_UsersId",
                 table: "ChannelAdministrators",
                 column: "UsersId",
@@ -521,6 +561,12 @@ namespace Zakup.EntityFramework.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_UserStates_Users_UserId",
                 table: "UserStates");
+
+            migrationBuilder.DropTable(
+                name: "AnalyzeBalances");
+
+            migrationBuilder.DropTable(
+                name: "AnalyzeProcesses");
 
             migrationBuilder.DropTable(
                 name: "BigCallbackData");

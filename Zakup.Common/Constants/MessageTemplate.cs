@@ -89,6 +89,9 @@ public static class MessageTemplate
     public const string AnalyzePointsBuyText = "Для покупки запросов обратитесь к @gandalfTG";
     public const string AnalyzeChannelStart = "Пришлите мне канал в формате @durov для начала поиска";
     public const string AnalyzeBalanceError = $"У вас закончились запросы. {AnalyzePointsBuyText}";
+    public const string BadChannelNickname = "Не понял вас, отправьте никнейм канала, к примеру @easyzakup";
+
+    public static string? AnalyzeSuccess(Guid id)  => $"Анализ по вашему запросу {id} готов!" ;
 
     public static string GoogleSheetsText(string sheetId) =>$"*♻️ ДЛЯ ОБНОВЛЕНИЯ ДАННЫХ НАЖМИТЕ НА КНОПКУ НИЖЕ*\n\nВот ваша таблица: [Перейти](https://docs.google.com/spreadsheets/d/{sheetId})";
 
@@ -211,6 +214,7 @@ public static class MessageTemplate
     public const string AutoApproveWasDisabled = "✅ Автоприём заявок отключён.";
 
     public const string WriteNewLabel = "Введите новую метку (одно слово не длиннее 15 символов, без #$!().)";
+    public const string AnalyzeError = "К сожалению не удалось найти похожи каналы. \n Вернули вам поинт на баланс";
 
     private const string AdminInfoTemplate = "📊 Статистика для {0}:\n\n" +
                                      "💸 Сумма закупов: {1} руб.\n" +

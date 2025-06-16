@@ -13,5 +13,8 @@ public class ChannelsAnalyzeProcessTypeConfiguration : IEntityTypeConfiguration<
         builder.HasOne(q => q.User)
             .WithMany()
             .HasForeignKey(q => q.UserId);
+        
+        builder.Property(q => q.Success)
+            .HasDefaultValue(null);
     }
 }

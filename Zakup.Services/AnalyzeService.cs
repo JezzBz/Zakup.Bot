@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Zakup.Entities;
 using Zakup.EntityFramework;
+using Zakup.Services.Extensions;
 
 public class AnalyzeService
 {
@@ -22,7 +23,7 @@ public class AnalyzeService
         _context = context;
         _httpClient = httpClient;
         _logger = logger;
-        _apiBaseUrl = configuration["AnalyzeApi:BaseUrl"] ?? "http://localhost:8000";
+        _apiBaseUrl = configuration["AnalyzeApi:BaseUrl"]!;
     }
     
     public async Task<long> GetAnalyzePoints(long userId, CancellationToken cancellationToken = default)
@@ -57,87 +58,41 @@ public class AnalyzeService
             AnalyzeTarget = channel,
             UserId = userId,
         };
-        
-        balance.Balance--;
-        _context.AnalyzeBalances.Update(balance);
-        await _context.AnalyzeProcesses.AddAsync(analyze, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-        
-        try
+
+        await _context.ExecuteInTransactionAsync(async () =>
         {
-            await StartAnalysis(analyze.Id, channel, cancellationToken);
-            return analyze.Id;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при запуске анализа для канала {Channel}", channel);
-            throw;
-        }
+            balance.Balance--;
+            _context.AnalyzeBalances.Update(balance);
+            await _context.AnalyzeProcesses.AddAsync(analyze, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        
+            try
+            {
+                await StartAnalysis(analyze.Id, channel, cancellationToken);
+               
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при запуске анализа для канала {Channel}", channel);
+                throw;
+            }
+        });
+        
+        return analyze.Id;
     }
 
     private async Task StartAnalysis(Guid taskId, string channel, CancellationToken cancellationToken)
     {
         var request = new AnalyzeRequest
         {
-            TaskId = taskId.ToString(),
-            Channel = channel,
-            OutputFormat = "xlsx"
+           guid = taskId.ToString(),
+           channel_name = channel
         };
 
         var response = await _httpClient.PostAsJsonAsync($"{_apiBaseUrl}/analyze", request, cancellationToken);
         response.EnsureSuccessStatusCode();
-        
-        var result = await response.Content.ReadFromJsonAsync<AnalyzeResponse>(cancellationToken: cancellationToken);
-        if (result?.Status != "processing")
-        {
-            throw new InvalidOperationException($"Не удалось запустить анализ. Статус: {result?.Status}");
-        }
     }
-
-    public async Task<AnalyzeResult> GetAnalysisResult(Guid taskId, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var response = await _httpClient.GetAsync($"{_apiBaseUrl}/result/{taskId}", cancellationToken);
-            
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                return new AnalyzeResult { Status = "not_found" };
-            }
-
-            if (response.StatusCode == HttpStatusCode.Accepted)
-            {
-                return new AnalyzeResult { Status = "processing" };
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            // Если получили файл
-            if (response.Content.Headers.ContentType?.MediaType?.Contains("application/") == true)
-            {
-                var fileName = response.Content.Headers.ContentDisposition?.FileName?.Trim('"') 
-                               ?? $"analysis_{taskId}.xlsx";
-                
-                var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-                
-                return new AnalyzeResult
-                {
-                    Status = "completed",
-                    FileStream = stream,
-                    FileName = fileName
-                };
-            }
-
-            // Если получили JSON с ошибкой
-            var errorResult = await response.Content.ReadFromJsonAsync<AnalyzeResult>(cancellationToken: cancellationToken);
-            return errorResult ?? new AnalyzeResult { Status = "error", Error = "Unknown error" };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при получении результата анализа для задачи {TaskId}", taskId);
-            return new AnalyzeResult { Status = "error", Error = ex.Message };
-        }
-    }
+    
     
     private async Task<AnalyzePointsBalance> CreateBalance(long userId, CancellationToken cancellationToken = default)
     {
@@ -149,32 +104,35 @@ public class AnalyzeService
         
         return (await _context.AddAsync(balance, cancellationToken)).Entity;
     }
-
-
-    public async Task<bool> IsAnalysisComplete(Guid taskId, CancellationToken cancellationToken = default)
-    {
-        var result = await GetAnalysisResult(taskId, cancellationToken);
-        return result.Status == "completed";
-    }
+    
     
     public class AnalyzeRequest
     {
-        public string TaskId { get; set; }
-        public string Channel { get; set; }
-        public string OutputFormat { get; set; } = "xlsx";
+        public string guid { get; set; }
+        public string channel_name { get; set; }
     }
 
     public class AnalyzeResponse
     {
-        public string TaskId { get; set; }
+        public string Guid { get; set; }
         public string Status { get; set; }
     }
 
-    public class AnalyzeResult
+    public async Task<ChannelsAnalyzeProcess> Complete(Guid id, bool result)
     {
-        public string Status { get; set; }
-        public Stream FileStream { get; set; }
-        public string FileName { get; set; }
-        public string Error { get; set; }
+        var process = await _context.AnalyzeProcesses.FirstOrDefaultAsync(q => q.Id == id);
+        process.Success = result;
+        _context.Update(process);
+        
+        if (!result)
+        {
+            var balance = await _context.AnalyzeBalances.FirstAsync(q => q.UserId == process.UserId);
+            balance.Balance++;
+            _context.AnalyzeBalances.Update(balance);
+            await _context.SaveChangesAsync();
+        }
+        
+        await _context.SaveChangesAsync();
+        return process;
     }
 }

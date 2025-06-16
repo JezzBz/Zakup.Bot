@@ -24,9 +24,14 @@ public class InitializeSimilarChannelAnalyzeHandler : IStateHandler
 
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        //TODO: проверки
+        if (string.IsNullOrEmpty(update.Message?.Text) ||!CommandsHelper.IsNickname(update.Message?.Text ?? ""))
+        {
+            await botClient.SafeEdit(update.Message!.From!.Id, update.Message.MessageId, MessageTemplate.BadChannelNickname, cancellationToken: cancellationToken);
+            return;
+        }
+        
         var message = update.Message;
-        var channel = "@durov";
+        var channel = message!.Text;
         
         var balance = await _analyzeService.GetAnalyzePoints(message.From.Id, cancellationToken);
         var state = await _userService.GetUserState(message.From.Id, cancellationToken);
@@ -42,6 +47,8 @@ public class InitializeSimilarChannelAnalyzeHandler : IStateHandler
             return;
         }
         var id = await _analyzeService.Analyze(message.From.Id, channel, cancellationToken);
-        await botClient.SafeEdit(state.UserId, state.PreviousMessageId, MessageTemplate.AnalyzeProcessStarted(id), cancellationToken: cancellationToken);
+        await botClient.SafeEdit(message.From.Id, state!.PreviousMessageId, MessageTemplate.AnalyzeProcessStarted(id), cancellationToken: cancellationToken);
     }
+    
+    
 }

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Zakup.Common.DTO;
 using Zakup.Common.Enums;
 
@@ -64,5 +65,11 @@ public static class CommandsHelper
         
         char[] delimiters = new char[] {' ', '\r', '\n', '\t'};
         return input.Split(delimiters,StringSplitOptions.RemoveEmptyEntries).Length;
+    }
+
+    public static bool IsNickname(string text)
+    {
+        var regex = new Regex(@"^@[A-Za-z0-9_]{5,32}$");
+        return regex.IsMatch(text);
     }
 }
