@@ -1,32 +1,47 @@
-version: '3.8'
-
 services:
   telegram-analyzer:
-    build: .
+    build: 
+      context: ./tg
+      dockerfile: Dockerfile
     container_name: telegram-analyzer
     volumes:
-      - ./sessionsPREM:/app/sessionsPREM
-      - ./similar:/app/similar
+      - ./tg/sessionsPREM:/app/sessionsPREM
+      - ./tg/similar:/app/similar
     ports:
       - "8000:8000"
     networks:
       - analyzer-network
     environment:
       - PYTHONUNBUFFERED=1
+    depends_on:
+      - db
+    restart: unless-stopped
 
   zakup-api:
     build:
-      context: ./Zakup.WebHost
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Zakup.WebHost/Dockerfile
     container_name: zakup-api
     ports:
       - "8080:8080"
-      - "8081:8081"
     networks:
       - analyzer-network
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080;https://+:8081
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DbContext=Server=db;Port=5432;Database=PostBot;User Id=postgres;Password=the_password
+      - MinIO__Endpoint=minio:9000
+      - MinIO__AccessKey=minioadmin
+      - MinIO__SecretKey=minioadmin
+      - MinIO__UseSSL=false
+      - MinIO__BucketName=zakup
+      - AnalyzeApi__BaseUrl=http://telegram-analyzer:8000
+    depends_on:
+      db:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
   minio:
     image: minio/minio:latest
@@ -47,10 +62,47 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+    restart: unless-stopped
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: minio-init
+    networks:
+      - analyzer-network
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin &&
+        /usr/bin/mc mb myminio/zakup --ignore-existing
+      "
+    restart: "no"
+
+  db:
+    image: postgres:latest
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: PostBot
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: the_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - analyzer-network
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d PostBot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 networks:
   analyzer-network:
     driver: bridge
 
 volumes:
-  minio_data: 
+  minio_data:
+  postgres_data: 

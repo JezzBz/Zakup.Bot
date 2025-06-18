@@ -115,5 +115,53 @@ builder.Services.AddHostedService<AbstractWorker<TelegramBotWorker>>();
 builder.ConfigureQuartz();
 var app = builder.Build();
 
+// Применяем миграции при запуске
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    var maxRetries = 10;
+    var retryDelay = 5000; // 5 секунд
+    
+    for (int i = 0; i < maxRetries; i++)
+    {
+        try
+        {
+            logger.LogInformation("Attempting to apply migrations (attempt {Attempt}/{MaxAttempts})", i + 1, maxRetries);
+            
+            // Проверяем, есть ли pending миграции
+            var pendingMigrations = context.Database.GetPendingMigrations().ToList();
+            if (pendingMigrations.Any())
+            {
+                logger.LogInformation("Applying {Count} pending migrations: {Migrations}", 
+                    pendingMigrations.Count, string.Join(", ", pendingMigrations));
+                context.Database.Migrate();
+                logger.LogInformation("Migrations applied successfully");
+            }
+            else
+            {
+                logger.LogInformation("No pending migrations found");
+            }
+            
+            // Если дошли сюда, значит миграции применились успешно
+            break;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Error applying migrations on attempt {Attempt}/{MaxAttempts}", i + 1, maxRetries);
+            
+            if (i == maxRetries - 1)
+            {
+                logger.LogError(ex, "Failed to apply migrations after {MaxAttempts} attempts", maxRetries);
+                throw;
+            }
+            
+            logger.LogInformation("Waiting {Delay}ms before retry...", retryDelay);
+            Thread.Sleep(retryDelay);
+        }
+    }
+}
+
 app.MapControllers();
 app.Run();
