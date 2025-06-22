@@ -47,6 +47,8 @@ public class InitializeSimilarChannelAnalyzeHandler : IStateHandler
             return;
         }
         var id = await _analyzeService.Analyze(message.From.Id, channel, cancellationToken);
+        state.Clear();
+        await _userService.SetUserState(state, cancellationToken);
         await botClient.SafeEdit(message.From.Id, state!.PreviousMessageId, MessageTemplate.AnalyzeProcessStarted(id), cancellationToken: cancellationToken);
     }
     

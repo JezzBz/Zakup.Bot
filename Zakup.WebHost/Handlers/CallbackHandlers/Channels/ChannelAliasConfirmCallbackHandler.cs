@@ -71,7 +71,7 @@ public class ChannelAliasConfirmCallbackHandler :  ICallbackHandler<ConfirmChann
             {
                 ChannelId = channel.Id,
                 Add = false,
-                RequestFirstPost = false
+                RequestFirstPost = true
             });
             var keyboard = new InlineKeyboardMarkup(new List<InlineKeyboardButton>()
             {

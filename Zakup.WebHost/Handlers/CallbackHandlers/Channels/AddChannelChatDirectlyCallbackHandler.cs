@@ -29,6 +29,7 @@ public class AddChannelChatDirectlyCallbackHandler : ICallbackHandler<AddChannel
     public async Task Handle(ITelegramBotClient botClient, AddChannelChatDirectlyCallbackData data, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
+        
         var user = await _userService.GetUser(callbackQuery.From.Id, cancellationToken);
 
         if (data.RequestFirstPost && !data.Add)
@@ -42,12 +43,18 @@ public class AddChannelChatDirectlyCallbackHandler : ICallbackHandler<AddChannel
             await _messagesService.SendMenu(botClient, user, cancellationToken);
             return;
         }
-        
+        var skipData = await _handlersManager.ToCallback(new AddChannelChatDirectlyCallbackData
+        {
+            ChannelId = data.ChannelId,
+            Add = false,
+            RequestFirstPost = true
+        });
         if(data.Add)
         {   
             var keyboard = new InlineKeyboardMarkup(new List<InlineKeyboardButton>
             {
                 InlineKeyboardButton.WithUrl(ButtonsTextTemplate.AddBot,"https://t.me/zakup_robot?startgroup&admin=invite_users"),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Skip, skipData)
             });
             
             await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId, MessageTemplate.AddChannelChatText, replyMarkup:keyboard, cancellationToken: cancellationToken);

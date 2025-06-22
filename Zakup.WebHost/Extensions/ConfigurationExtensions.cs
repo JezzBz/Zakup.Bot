@@ -147,13 +147,13 @@ public static class ConfigurationExtensions
         builder.Services.AddScoped<DriveService>(x => new DriveService(new BaseClientService.Initializer
         {
             HttpClientInitializer = driveCredentials,
-            ApplicationName = "Zakup_Robot_Drive",
+            ApplicationName = "zakup_robot_Drive",
         }));
         
         builder.Services.AddScoped<SheetsService>(x => new SheetsService(new BaseClientService.Initializer()
         {
             HttpClientInitializer = sheetsCredentials,
-            ApplicationName = "Zakup_Robot",
+            ApplicationName = "zakup_robot",
         }));
 
         builder.Services.AddScoped<InternalSheetsService>();

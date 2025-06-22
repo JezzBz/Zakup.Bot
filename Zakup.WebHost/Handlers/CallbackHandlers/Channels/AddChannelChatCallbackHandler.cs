@@ -16,10 +16,12 @@ public class AddChannelChatCallbackHandler : ICallbackHandler<AddChannelChatCall
 {
     private readonly ChannelService _channelService;
     private readonly UserService _userService;
-    public AddChannelChatCallbackHandler(ChannelService channelService, UserService userService)
+    private readonly HandlersManager _handlersManager;
+    public AddChannelChatCallbackHandler(ChannelService channelService, UserService userService, HandlersManager handlersManager)
     {
         _channelService = channelService;
         _userService = userService;
+        _handlersManager = handlersManager;
     }
 
     public async Task Handle(ITelegramBotClient botClient, AddChannelChatCallbackData data, CallbackQuery callbackQuery,
@@ -32,10 +34,17 @@ public class AddChannelChatCallbackHandler : ICallbackHandler<AddChannelChatCall
         {
             return;
         }
-        
+
+        var skipData = await _handlersManager.ToCallback(new AddChannelChatDirectlyCallbackData
+        {
+            ChannelId = data.ChannelId,
+            Add = false,
+            RequestFirstPost = true
+        });
         var keyboard = new InlineKeyboardMarkup(new List<InlineKeyboardButton>
         {
             InlineKeyboardButton.WithUrl(ButtonsTextTemplate.AddBot,"https://t.me/zakup_robot?startgroup&admin=invite_users"),
+            InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.Skip, skipData)
         });
             
         await botClient.SafeEdit(callbackQuery.From.Id, callbackQuery.Message.MessageId, MessageTemplate.AddChannelChatText, replyMarkup:keyboard, cancellationToken: cancellationToken);

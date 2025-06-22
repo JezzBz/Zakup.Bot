@@ -15,10 +15,14 @@ public class BotChatMemberHandler : IUpdatesHandler
 {
     private readonly HandlersManager _handlersManager;
     private readonly ChannelService _channelService;
-    public BotChatMemberHandler(HandlersManager handlersManager, ChannelService channelService)
+    private readonly MessagesService _messagesService;
+    private readonly UserService _userService;
+    public BotChatMemberHandler(HandlersManager handlersManager, ChannelService channelService, MessagesService messagesService, UserService userService)
     {
         _handlersManager = handlersManager;
         _channelService = channelService;
+        _messagesService = messagesService;
+        _userService = userService;
     }
 
     public static bool ShouldHandle(Update update)
@@ -126,7 +130,8 @@ public class BotChatMemberHandler : IUpdatesHandler
                     chatId: cmu.From.Id,
                     text: MessageTemplate.AddedChannelChat,
                     parseMode: ParseMode.MarkdownV2, cancellationToken: cancellationToken);
-                    
+                var user = await _userService.GetUser(cmu.From.Id, cancellationToken);
+                await _messagesService.SendMenu(botClient, user, cancellationToken);
                 Console.WriteLine("Confirm button sent successfully.");
             }
             catch (Exception ex)

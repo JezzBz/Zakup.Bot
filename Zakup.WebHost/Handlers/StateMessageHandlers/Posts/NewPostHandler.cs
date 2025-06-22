@@ -124,7 +124,7 @@ public class NewPostHandler : IStateHandler
             return false; // Прекращаем выполнение, если длина подписи превышает лимит
         }
 
-        if (message.Document?.FileSize > 20_000_000 || message.Video?.FileSize > 20_000_000)
+        if (message.Document?.FileSize > 49_500_000 || message.Video?.FileSize >  49_500_000)
         {
             await botClient.SendTextMessageAsync(message.Chat.Id, MessageTemplate.FileTooHeavy);
             return false;
