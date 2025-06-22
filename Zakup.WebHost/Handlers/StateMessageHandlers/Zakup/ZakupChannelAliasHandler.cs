@@ -3,6 +3,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
 using Zakup.Common.DTO.Channel;
+using Zakup.Common.DTO.Post;
 using Zakup.Common.DTO.Zakup;
 using Zakup.Common.Enums;
 using Zakup.Services;
@@ -60,11 +61,17 @@ public class ZakupChannelAliasHandler : IStateHandler
         {
             ZakupId = zakupId
         });
+
+        var replaceData = await _handlersManager.ToCallback(new ReplacePostChooseCreativeCallbackData
+        {
+            ZakupId = zakup.Id
+        });
+        
         var optionsMarkup = new InlineKeyboardMarkup(new List<List<InlineKeyboardButton>>
         {
             new List<InlineKeyboardButton>
             {
-                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.FinalAdPost, $"replace:{zakupId}"),
+                InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.FinalAdPost, replaceData),
                 InlineKeyboardButton.WithCallbackData(ButtonsTextTemplate.OnlyLink, linkData)
             },
             new List<InlineKeyboardButton>
@@ -74,5 +81,7 @@ public class ZakupChannelAliasHandler : IStateHandler
         });
         await botClient.SafeDelete(state.UserId, message.MessageId, cancellationToken);
         await botClient.SafeEdit(state.UserId, state.PreviousMessageId,MessageTemplate.ZakupActions ,replyMarkup: optionsMarkup, cancellationToken:cancellationToken);
+        state.Clear();
+        await _userService.SetUserState(state, cancellationToken);
     }
 }

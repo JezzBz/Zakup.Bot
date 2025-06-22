@@ -4,6 +4,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using Zakup.Abstractions.Handlers;
 using Zakup.Common.DTO.Post;
 using Zakup.Common.DTO.Zakup;
+using Zakup.Common.Enums;
 using Zakup.Services;
 using Zakup.Services.Extensions;
 using Zakup.WebHost.Constants;
@@ -11,6 +12,7 @@ using Zakup.WebHost.Helpers;
 
 namespace Zakup.WebHost.Handlers.CallbackHandlers.Zakup;
 
+[CallbackType(CallbackType.ReplacePoseChoose)]
 public class ReplacePostChooseCreativeCallbackHandler : ICallbackHandler<ReplacePostChooseCreativeCallbackData>
 {
     private readonly AdPostsService _adPostsService;
@@ -38,10 +40,9 @@ public class ReplacePostChooseCreativeCallbackHandler : ICallbackHandler<Replace
                 var row = new List<InlineKeyboardButton>();
                 for (int j = i; j < Math.Min(i + 2, adPosts.Count); j++)
                 {
-                    var callback = await _handlersManager.ToCallback(new PremiumEmojiCallbackData()
+                    var callback = await _handlersManager.ToCallback(new GenerateAdPostCallbackData()
                     {
-                        AdPostId = adPosts[j].Id,
-                        ZakupId = data.ZakupId
+                        PostId = adPosts[j].Id,
                     });
                     
                     var title = string.IsNullOrEmpty(adPosts[j].Title) ? adPosts[j].Text[..4]  + "..." : adPosts[j].Title;

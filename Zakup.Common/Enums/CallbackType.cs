@@ -71,5 +71,6 @@ public enum CallbackType
     AnalyzeMenu,
     AnalyzeBuyPoints,
     AnalyzeInit,
-    AdminAddAnalyzePoints
+    AdminAddAnalyzePoints,
+    ReplacePoseChoose
 }

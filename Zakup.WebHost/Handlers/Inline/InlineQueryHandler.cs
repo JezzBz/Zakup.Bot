@@ -134,9 +134,8 @@ public class InlineQueryHandler : IUpdatesHandler
                             new InlineKeyboardMarkup(
                                 InlineKeyboardButton.WithCallbackData("Замена ссылок..", "replace")) 
                     },
-                    TelegramDocumentKind.VIDEO => new InlineQueryResultCachedPhoto($"{site.Id}", file.ThumbnailId)
+                    TelegramDocumentKind.VIDEO => new InlineQueryResultCachedVideo($"{site.Id}", file.FileId, site.Title)
                     {
-                        Title = site.Title,
                         Caption = site.Text,
                         CaptionEntities = site.Entities.ToArray(),
                         ReplyMarkup =

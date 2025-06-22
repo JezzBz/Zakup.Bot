@@ -35,7 +35,7 @@ public class DocumentsStorageService
 
         if (message.Video != null)
         {
-            var documntId =await SaveDocument( message.Video ,  botClient, TelegramDocumentKind.VIDEO, "video/mp4", message.MediaGroupId, message?.Video?.Thumbnail?.FileId );
+            var documntId =await SaveDocument( message.Video ,  botClient, TelegramDocumentKind.VIDEO, "video/mp4", message.MediaGroupId, message?.Video?.Thumbnail.FileId);
             await AttachFileToMediaGroup(documntId, mediaGroupId);
         }
         
