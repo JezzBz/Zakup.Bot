@@ -17,20 +17,22 @@ public class AddPostTitleHandler : IStateHandler
 {
     private readonly UserService _userService;
     private readonly AdPostsService _adPostsService;
+    private readonly MessagesService _messagesService;
 
-    public AddPostTitleHandler(UserService userService, AdPostsService adPostsService)
+    public AddPostTitleHandler(UserService userService, AdPostsService adPostsService, MessagesService messagesService)
     {
         _userService = userService;
         _adPostsService = adPostsService;
+        _messagesService = messagesService;
     }
 
     public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        var state = await _userService.GetUserState(update.Message!.From!.Id, cancellationToken);
-        var data = CacheHelper.ToData<AddPostAliasCache>(state!.CachedValue!);
+        var user = await _userService.GetUser(update.Message!.From!.Id, cancellationToken);
+        var data = CacheHelper.ToData<AddPostAliasCache>(user!.UserState!.CachedValue!);
         var post = await _adPostsService.Get(data!.PostId, cancellationToken);
         var title = update.Message.Text?.Trim() ?? "";
-        var isValid = await ValidateMessage(botClient, title, state.UserId, cancellationToken);
+        var isValid = await ValidateMessage(botClient, title, user!.UserState.UserId, cancellationToken);
         if (!isValid)
         {
             return;
@@ -42,11 +44,12 @@ public class AddPostTitleHandler : IStateHandler
         
         await botClient.SafeDelete(update.Message!.From!.Id, update.Message.MessageId, cancellationToken);
         await botClient.SendTextMessageAsync(
-            state.UserId,
+            user!.UserState.UserId,
             $"✅ Креатив *{CommandsHelper.EscapeMarkdownV2(post.Title)}* успешно добавлен\\!\n\nТеперь создайте новый закуп через меню или с помощью inline вызова\\.",
             parseMode: ParseMode.MarkdownV2, cancellationToken: cancellationToken);
-        state.Clear();
-        await _userService.SetUserState(state, cancellationToken);
+        user!.UserState.Clear();
+        await _userService.SetUserState(user!.UserState, cancellationToken);
+        await _messagesService.SendMenu(botClient, user, cancellationToken, user!.UserState.PreviousMessageId);
     }
 
     private async Task<bool> ValidateMessage(ITelegramBotClient botClient, string text, long userId, CancellationToken cancellationToken)

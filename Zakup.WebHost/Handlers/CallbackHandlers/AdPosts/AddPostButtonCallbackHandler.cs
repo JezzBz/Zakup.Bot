@@ -44,8 +44,8 @@ public class AddPostButtonCallbackHandler : ICallbackHandler<AddPostButtonCallba
         {
             PostId = data.AdPostId
         });
-        state.State = UserStateType.AddPostTitle;
         
+        state.State = UserStateType.AddPostTitle;
         state.PreviousMessageId = msg.MessageId;
         await _userService.SetUserState(callbackQuery!.From!.Id, state, cancellationToken);
         await botClient.SafeDelete(callbackQuery.From.Id, callbackQuery.Message!.MessageId, cancellationToken);

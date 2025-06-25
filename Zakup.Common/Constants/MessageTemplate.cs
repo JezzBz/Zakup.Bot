@@ -64,7 +64,7 @@ public static class MessageTemplate
     public const string IsAlreadyAdmin = "Пользователь уже является администратором этого канала.";
     public const string AdminCreated = "Пользователь успешно добавлен в качестве администратора.";
     public const string ZakupActions = "Выберите действие для закупа:";
-    public static string PriceSaved = "✅Цена сохранена";
+    public const string PriceSaved = "✅Цена сохранена";
     public const string ChannelDeleted = "Канал удалён";
     public const string DeleteChannelAlert = "Вы уверены? Канал, вся статистика и все креативы будут удалены, остановится обработка вступлений." +
                                              "\n" +

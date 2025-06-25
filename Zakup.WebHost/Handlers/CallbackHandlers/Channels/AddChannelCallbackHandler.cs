@@ -39,6 +39,7 @@ public class AddChannelCallbackHandler : IEmptyCallbackHandler
         var state = await _userService.GetUserState(callbackQuery.From.Id, cancellationToken);
         
         state!.State = UserStateType.ConfirmAddChannel;
+        state.PreviousMessageId = callbackQuery.Message!.MessageId;
         var inlineKeyboard = GetKeyboardMarkup(callbackQuery.Message!.MessageId);
         
         await botClient.SafeEdit(

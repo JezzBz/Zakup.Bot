@@ -41,7 +41,6 @@ public class AddPostButtonTextHandler : IStateHandler
             PostId = data.PostId
         });
         state.State = UserStateType.AddPostTitle;
-        
         state.PreviousMessageId = msg.MessageId;
         await _userService.SetUserState(update.Message!.From!.Id, state, cancellationToken);
     }

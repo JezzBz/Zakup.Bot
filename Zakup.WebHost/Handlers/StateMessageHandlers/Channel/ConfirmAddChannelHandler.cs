@@ -9,6 +9,7 @@ using Zakup.Common.Enums;
 using Zakup.Common.Models;
 using Zakup.Entities;
 using Zakup.Services;
+using Zakup.Services.Extensions;
 using Zakup.WebHost.Constants;
 using Zakup.WebHost.Helpers;
 
@@ -49,6 +50,7 @@ public class ConfirmAddChannelHandler : IStateHandler
        if (existChannel?.HasDeleted == true)
        {
            await RestoreChannel(botClient, message, cancellationToken);
+           await botClient.SafeDelete(message.From.Id, state.PreviousMessageId, cancellationToken);
            return;
        }
        
@@ -56,6 +58,7 @@ public class ConfirmAddChannelHandler : IStateHandler
       
        // Если канал уже существовал, проверяем Alias
        await CheckChannelAlias(botClient, existChannel, message.From.Id, message, cancellationToken);
+       await botClient.SafeDelete(message.From.Id, state.PreviousMessageId, cancellationToken);
     }
 
 

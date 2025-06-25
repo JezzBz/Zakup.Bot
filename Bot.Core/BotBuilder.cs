@@ -15,11 +15,11 @@ using Telegram.Bot.Types;
 public class BotBuilder
 {
     private List<Type> _handlerTypes;
-    private IUpdatesHandler _defaultHandler;
     private readonly IServiceCollection _servicesCollection;
     private IServiceProvider _serviceProvider;
     private readonly ITelegramBotClient _client;
     private Type? _preHandlerType = null;
+    private Type? _defaultHandlerType = typeof(DefaultHandler);
     private IPreHandler? _preHandler;
     
     #region Bot configuration
@@ -64,6 +64,12 @@ public class BotBuilder
         return this;
     }
     
+    public BotBuilder WithDefaultHandler<T>() where T : IUpdatesHandler
+    {
+        _defaultHandlerType = typeof(T);
+        return this;
+    }    
+    
     private async Task HandleUpdates(ITelegramBotClient botClient, Update updates, CancellationToken cancellationToken)
     {
         if (_preHandler != null)
@@ -75,7 +81,7 @@ public class BotBuilder
         }
         
         
-        var handlerType = typeof(DefaultHandler);
+        var handlerType = _defaultHandlerType;
         try
         {
             handlerType = _handlerTypes.FirstOrDefault(q => CallShouldHandle(q, updates)) ?? handlerType;
@@ -146,8 +152,6 @@ public class BotBuilder
     
     private void BuildHandlers(IServiceProvider provider)
     {
-        _defaultHandler = (IUpdatesHandler)ActivatorUtilities.CreateInstance(provider, typeof(DefaultHandler))!;
-
         if (_preHandlerType != null)
         {
             _preHandler = (IPreHandler)ActivatorUtilities.CreateInstance(provider, _preHandlerType);

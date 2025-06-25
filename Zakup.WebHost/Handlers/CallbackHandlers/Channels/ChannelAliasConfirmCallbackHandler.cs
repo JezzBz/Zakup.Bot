@@ -52,7 +52,8 @@ public class ChannelAliasConfirmCallbackHandler :  ICallbackHandler<ConfirmChann
             await _userService.SetUserState(user.UserState, cancellationToken);
             return;
         }
-        
+
+        await _messagesService.SendMenu(botClient, user, cancellationToken);
         var channel = await _channelService.GetChannel(data.ChannelId, cancellationToken);
         channel!.Alias = data.Alias;
         await _channelService.UpdateChannel(channel, cancellationToken: cancellationToken);

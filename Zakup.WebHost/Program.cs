@@ -64,6 +64,7 @@ builder.Services.AddTelegramBot(builder.Configuration["Telegram:BotToken"]!, con
     config.AddHandler<MediaGroupUploadHandler>();
     
     config.WithPreHandler<PreHandler>();
+    config.WithDefaultHandler<StartMessageHandler>();
     config.UseLogging();
 });
 
