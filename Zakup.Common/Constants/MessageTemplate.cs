@@ -322,6 +322,7 @@ public static class MessageTemplate
     public static string BalanceUpdated(long newBalance) =>
         $"Баланс пользователя обновлён, теперь у него {newBalance} поинтов";
 
+    public static string PointsAdded(long points, long newBalance) => $"На ваш баланс начислено {points} поинтов, ваш баланс {newBalance}";
 }
 
 public  class HelpMessageTemplate

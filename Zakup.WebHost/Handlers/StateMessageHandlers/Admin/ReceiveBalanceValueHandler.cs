@@ -38,5 +38,6 @@ public class ReceiveBalanceValueHandler : IStateHandler
         var newBalance = await _analyzeService.UpdateBalance(userId, points, cancellationToken);
 
         await botClient.SendTextMessageAsync(admin.Id, MessageTemplate.BalanceUpdated(newBalance), cancellationToken: cancellationToken);
+        await botClient.SendTextMessageAsync(userId, MessageTemplate.PointsAdded(points, newBalance), cancellationToken: cancellationToken);
     }
 }
