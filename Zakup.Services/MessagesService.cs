@@ -31,6 +31,7 @@ public class MessagesService
         var channelsStatistic = await _channelService.GetSubscribeStatistic(user.Id, period.StartTime, period.EndTime, cancellationToken);
         var menuMessage = MessageTemplate.GetMenu(zakupStatistic.Price, zakupStatistic.PaidPrice, channelsStatistic.SubscribeCount, channelsStatistic.SubscribeCount);
         var keyboard = GetKeyboard(user.Id);
+        Console.WriteLine(user.UserState.Id);
         user.UserState.State = UserStateType.None;
         if (menuMessageId != null)
         {
