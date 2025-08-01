@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Zakup.Abstractions")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dc088c975a2bbc51165774f009ffe044535c43aa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8bb856c8a8fcb1485b47ecd409de49525ddf3b7a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Zakup.Abstractions")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Zakup.Abstractions")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
