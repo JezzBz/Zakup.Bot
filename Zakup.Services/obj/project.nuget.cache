@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "dk01ftfSVVI=",
+  "dgSpecHash": "VsaVyIRqApc=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\Zakup.Services.csproj",
+  "projectFilePath": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\Zakup.Services.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Bogdan\\.nuget\\packages\\awssdk.core\\4.0.0.5\\awssdk.core.4.0.0.5.nupkg.sha512",
     "C:\\Users\\Bogdan\\.nuget\\packages\\awssdk.s3\\4.0.0.7\\awssdk.s3.4.0.0.7.nupkg.sha512",

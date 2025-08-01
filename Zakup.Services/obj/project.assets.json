@@ -1472,11 +1472,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\Zakup.Services.csproj",
+      "projectUniqueName": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\Zakup.Services.csproj",
       "projectName": "Zakup.Services",
-      "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\Zakup.Services.csproj",
+      "projectPath": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\Zakup.Services.csproj",
       "packagesPath": "C:\\Users\\Bogdan\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\obj\\",
+      "outputPath": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Services\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1500,8 +1500,8 @@
             "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Common\\Zakup.Common.csproj": {
               "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Common\\Zakup.Common.csproj"
             },
-            "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj": {
-              "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj"
+            "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj": {
+              "projectPath": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj"
             },
             "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.EntityFramework\\Zakup.EntityFramework.csproj": {
               "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.EntityFramework\\Zakup.EntityFramework.csproj"

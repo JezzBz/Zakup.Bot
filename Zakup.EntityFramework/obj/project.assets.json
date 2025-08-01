@@ -847,8 +847,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj": {
-              "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj"
+            "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj": {
+              "projectPath": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Entities\\Zakup.Entities.csproj"
             }
           }
         }

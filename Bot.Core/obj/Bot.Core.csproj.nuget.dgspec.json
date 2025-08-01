@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\Bot.Core.csproj": {}
+    "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\Bot.Core.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\Bot.Core.csproj": {
+    "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\Bot.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\Bot.Core.csproj",
+        "projectUniqueName": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\Bot.Core.csproj",
         "projectName": "Bot.Core",
-        "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\Bot.Core.csproj",
+        "projectPath": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\Bot.Core.csproj",
         "packagesPath": "C:\\Users\\Bogdan\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\obj\\",
+        "outputPath": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Bot.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

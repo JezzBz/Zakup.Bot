@@ -135,8 +135,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Abstractions\\Zakup.Abstractions.csproj": {
-              "projectPath": "C:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Abstractions\\Zakup.Abstractions.csproj"
+            "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Abstractions\\Zakup.Abstractions.csproj": {
+              "projectPath": "c:\\Users\\Bogdan\\RiderProjects\\ZakupBot\\Zakup.Abstractions\\Zakup.Abstractions.csproj"
             }
           }
         }
