@@ -48,6 +48,11 @@ public class StartMessageHandler : IUpdatesHandler
             return;
         }
         
+        if (user?.UserState == null)
+        {
+            await _userService.SetUserState(user!.Id, new TelegramUserState(), cancellationToken);
+        }
+        
         if (user?.UserState?.MenuMessageId != null)
         { 
             await botClient.SafeDelete(update.Message?.Chat.Id ?? update.CallbackQuery!.From.Id, user.UserState.MenuMessageId.Value, cancellationToken);   
