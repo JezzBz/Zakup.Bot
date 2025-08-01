@@ -23,7 +23,7 @@ public static class ConfigurationExtensions
     {
         builder.Logging.ClearProviders();
         builder.Host.UseNLog();
-        builder.Logging.AddNLogWeb("nlog.config");
+        builder.Logging.AddNLogWeb("NLog.config");
         
         return builder;
     }
@@ -109,7 +109,7 @@ public static class ConfigurationExtensions
             // Добавляем ежедневный отчет в 9:00 по Москве
             q.ScheduleJob<DailyReportJob>(trigger => trigger
                 .WithIdentity("Daily report at 9:00 AM MSK")
-                //.WithCronSchedule("0 0 9 * * ?", x => x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow")))
+                .WithCronSchedule("0 0 9 * * ?", x => x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow")))
                 .WithDescription("Send daily subscriber report at 9:00 AM Moscow time")
             );
         });

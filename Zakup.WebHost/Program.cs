@@ -32,10 +32,6 @@ builder.Configuration
 builder.ConfigureLogging();
 builder.ConfigureMvc();
 
-builder.Logging.ClearProviders();
-builder.Host.UseNLog();
-builder.Logging.AddNLogWeb("NLog.config");
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration["Storage:ConnectionStrings:DbContext"]));
 
@@ -108,9 +104,6 @@ builder.ConfigureSheetsServices();
 
 #endregion
 
-builder.Services.AddRouting();
-builder.Services.AddMvc();
-builder.Services.AddControllers();
 
 builder.Services.AddHostedService<AbstractWorker<TelegramBotWorker>>();
 builder.ConfigureQuartz();

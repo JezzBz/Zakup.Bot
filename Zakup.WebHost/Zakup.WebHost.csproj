@@ -15,6 +15,7 @@
       <Content Include="oferta.docx">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="..\..\..\.nuget\packages\nlog.config\4.7.15\contentFiles\any\any\NLog.config" />
     </ItemGroup>
 
     <ItemGroup>
@@ -39,12 +40,6 @@
       <ProjectReference Include="..\Zakup.Abstractions\Zakup.Abstractions.csproj" />
       <ProjectReference Include="..\Zakup.EntityFramework\Zakup.EntityFramework.csproj" />
       <ProjectReference Include="..\Zakup.Services\Zakup.Services.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Update="..\..\..\.nuget\packages\nlog.config\4.7.15\contentFiles\any\any\NLog.config">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
     </ItemGroup>
 
 </Project>
