@@ -51,6 +51,7 @@ public class StartMessageHandler : IUpdatesHandler
         if (user?.UserState == null)
         {
             await _userService.SetUserState(user!.Id, new TelegramUserState(), cancellationToken);
+            user = await _userService.GetUser(update.Message?.From?.Id ?? update.CallbackQuery!.From.Id, cancellationToken); //FIx for merge
         }
         
         if (user?.UserState?.MenuMessageId != null)
