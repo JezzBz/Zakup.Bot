@@ -49,6 +49,10 @@ public class MyChannelsCallbackHandler : IEmptyCallbackHandler
             };
             if (i + 1 < channels.Count)
             {
+                buttonData = await _handlersManager.ToCallback(new ShowChannelMenuCallbackData
+                {
+                    ChannelId = channels[i+ 1].Id
+                });
                 row.Add(InlineKeyboardButton.WithCallbackData($"[{channels[i + 1].Alias}] {channels[i + 1].Title}", buttonData));
             }
             buttons.Add(row);
