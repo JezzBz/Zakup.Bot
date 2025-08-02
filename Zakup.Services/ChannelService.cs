@@ -41,6 +41,7 @@ public class ChannelService
         return await _context.Channels
             .Where(c => !c.HasDeleted)
             .Where(c => c.Administrators.Any(a => a.Id == administratorId))
+            .Take(95)
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
