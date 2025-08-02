@@ -40,7 +40,7 @@ public class ZakupCheckChannelPrivateCallbackHandler : ICallbackHandler<ZakupChe
         var publicData = await _handlersManager.ToCallback(new ZakupLinkTypeCallbackData
         {
             ZakupId = data.ZakupId,
-            Private = true
+            Private = false
         });
         
         
