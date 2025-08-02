@@ -54,16 +54,17 @@ public class StartMessageHandler : IUpdatesHandler
             user.UserState = state;
         }
         
-        if (user?.UserState?.MenuMessageId != null)
-        { 
-            await botClient.SafeDelete(update.Message?.Chat.Id ?? update.CallbackQuery!.From.Id, user.UserState.MenuMessageId.Value, cancellationToken);   
-        }
         
         if (update.CallbackQuery?.Data?.StartsWith("menu") ?? false)
         {
             var msgId = int.Parse(update.CallbackQuery?.Data.Split("|")[1]!);
             await _messagesService.SendMenu(botClient, user!, cancellationToken, msgId);
             return;
+        }
+        
+        if (user?.UserState?.MenuMessageId != null)
+        { 
+            await botClient.SafeDelete(update.Message?.Chat.Id ?? update.CallbackQuery!.From.Id, user.UserState.MenuMessageId.Value, cancellationToken);   
         }
       
         
